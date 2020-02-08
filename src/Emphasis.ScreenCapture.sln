@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture", "Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj", "{58D8F62A-AB3D-460D-B30F-F732B251A8FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ScreenCapture.Tests", "Emphasis.ScreenCapture.Tests\Emphasis.ScreenCapture.Tests.csproj", "{41C31144-25CC-4CCD-B755-7DC9A2F97598}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{58D8F62A-AB3D-460D-B30F-F732B251A8FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58D8F62A-AB3D-460D-B30F-F732B251A8FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58D8F62A-AB3D-460D-B30F-F732B251A8FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58D8F62A-AB3D-460D-B30F-F732B251A8FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {403BF554-2884-4050-996C-144B9DE4143F}
+	EndGlobalSection
+EndGlobal
