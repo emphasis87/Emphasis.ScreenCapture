@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Emphasis.ScreenCapture.Windows.Gdi
 {
@@ -8,8 +9,10 @@ namespace Emphasis.ScreenCapture.Windows.Gdi
 
 		public IEnumerable<ScreenCaptureMethod> Create()
 		{
-			var method = new ScreenCaptureMethod(Code);
+			if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				yield break;
 
+			var method = new ScreenCaptureMethod(Code);
 			yield return method;
 		}
 	}
