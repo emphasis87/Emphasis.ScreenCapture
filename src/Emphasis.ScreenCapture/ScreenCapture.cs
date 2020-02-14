@@ -11,7 +11,7 @@ namespace Emphasis.ScreenCapture
 
 		public ScreenCaptureInfo Capture(ScreenCaptureSettings settings = null)
 		{
-
+			return null;
 		}
 
 		public void AddMethodFactory(IScreenCaptureMethodFactory methodFactory)
