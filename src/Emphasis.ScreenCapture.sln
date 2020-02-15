@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture", "Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj", "{58D8F62A-AB3D-460D-B30F-F732B251A8FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ScreenCapture.Tests", "Emphasis.ScreenCapture.Tests\Emphasis.ScreenCapture.Tests.csproj", "{41C31144-25CC-4CCD-B755-7DC9A2F97598}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.Tests", "Emphasis.ScreenCapture.Tests\Emphasis.ScreenCapture.Tests.csproj", "{41C31144-25CC-4CCD-B755-7DC9A2F97598}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ScreenCapture.OpenCL", "Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj", "{17C5CCF0-B385-4613-B84A-8443CF2C2E15}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

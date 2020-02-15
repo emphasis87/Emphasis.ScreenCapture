@@ -1,8 +1,13 @@
-﻿namespace Emphasis.ScreenCapture
+﻿using SharpDX.DXGI;
+
+namespace Emphasis.ScreenCapture
 {
 	public class ScreenCaptureSettings
 	{
-		public int DisplayId { get; set; }
-		public string[] Methods { get; set; }
+		public int AdapterId { get; set; }
+		public int OutputId { get; set; }
+
+		public Adapter1 Adapter { get; set; }
+		public Output Output { get; set; }
 	}
 }
