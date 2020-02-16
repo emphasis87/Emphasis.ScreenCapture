@@ -48,7 +48,8 @@ namespace Emphasis.ScreenCapture.Windows.Dxgi
 				if (result != Result.Ok)
 					yield break;
 
-				yield return new DxgiScreenCapture(screenResource);
+				//yield return new DxgiScreenCapture(screenResource);
+				yield break;
 			}
 		}
 

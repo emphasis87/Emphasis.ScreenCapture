@@ -6,9 +6,13 @@ namespace Emphasis.ScreenCapture.Windows.Dxgi
 	{
 		public Resource ScreenResource { get; }
 
-		public DxgiScreenCapture(Resource screenResource)
+		public DxgiScreenCapture(Adapter1 adapter, Output1 output, int width, int height) : base(adapter, output, width, height)
 		{
-			ScreenResource = screenResource;
+		}
+
+		public override byte[] GetBytes()
+		{
+			return null;
 		}
 
 		public override void Dispose()

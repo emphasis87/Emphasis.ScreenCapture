@@ -22,6 +22,7 @@ namespace Emphasis.ScreenCapture
 				{
 					Adapter = adapter
 				});
+			yield break;
 		}
 
 		public void Dispose()
