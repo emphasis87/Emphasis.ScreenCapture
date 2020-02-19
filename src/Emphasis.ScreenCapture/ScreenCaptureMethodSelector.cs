@@ -6,7 +6,7 @@ namespace Emphasis.ScreenCapture
 {
 	public interface IScreenCaptureMethodSelector
 	{
-
+		IEnumerable<IScreenCaptureMethod> GetMethods();
 	}
 
 	public class ScreenCaptureMethodSelector : IScreenCaptureMethodSelector

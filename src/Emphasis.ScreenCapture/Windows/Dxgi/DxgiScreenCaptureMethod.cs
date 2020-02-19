@@ -10,7 +10,12 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace Emphasis.ScreenCapture.Windows.Dxgi
 {
-	public class DxgiScreenCaptureMethod : IScreenCaptureMethod
+	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod
+	{
+
+	}
+
+	public class DxgiScreenCaptureMethod : IDxgiScreenCaptureMethod
 	{
 		public async IAsyncEnumerable<ScreenCapture> Capture(
 			Screen screen,

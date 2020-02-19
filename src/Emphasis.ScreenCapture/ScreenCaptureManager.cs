@@ -55,14 +55,34 @@ namespace Emphasis.ScreenCapture
 			IScreenCaptureMethodSelector selector = default,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
+
 			selector ??= new ScreenCaptureMethodSelector();
+			
+			var tcs = new CancellationTokenSource();
+			//await foreach (var screens in GetScreenChanges(TimeSpan.FromSeconds(1), cancellationToken))
+			//{
+			//	await fo
+			//}
+			//	.SelectMany(screens => screens
+			//		.Select(screen => Capture(screen, selector, cancellationToken))
+			//		.Zip(cancellationToken));
 
-			await foreach (var screens in GetScreenChanges(TimeSpan.FromSeconds(1), cancellationToken))
-			{
-				
-			}
 
-			yield break;
 		}
+
+		//private async IAsyncEnumerable<ScreenCapture> CaptureAllInner()
+		//{
+
+		//}
+
+		//public async IAsyncEnumerable<ScreenCapture> Capture(
+		//	Screen screen,
+		//	IScreenCaptureMethodSelector selector = default,
+		//	[EnumeratorCancellation] CancellationToken cancellationToken = default)
+		//{
+
+		//}
 	}
 }
