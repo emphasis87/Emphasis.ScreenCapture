@@ -37,8 +37,10 @@ namespace Emphasis.ScreenCapture.Windows.Dxgi
 			{
 				OutputDuplicateFrameInformation frameInformation = default;
 				Resource screenResource = default;
+				
 				var result = await Task.Run(() => 
 					outputDuplication.TryAcquireNextFrame(1000, out frameInformation, out screenResource), cancellationToken);
+
 				if (result != Result.Ok)
 					yield break;
 

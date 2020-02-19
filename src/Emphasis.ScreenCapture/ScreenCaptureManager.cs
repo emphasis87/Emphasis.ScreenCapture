@@ -8,16 +8,12 @@ using SharpDX.DXGI;
 
 namespace Emphasis.ScreenCapture
 {
-	public class ScreenCaptureManager : IDisposable
+	public class ScreenCaptureManager
 	{
-		private readonly Lazy<Factory1> _factory1 =
-			new Lazy<Factory1>(() => new Factory1());
-
-		protected Factory1 Factory1 => _factory1.Value;
-
 		public Screen[] GetScreens()
 		{
-			var adapters = Factory1.Adapters1;
+			using var factory = new Factory1();
+			var adapters = factory.Adapters1;
 			var screens =
 				adapters.SelectMany(adapter =>
 					adapter.Outputs.Select(output =>
@@ -56,20 +52,17 @@ namespace Emphasis.ScreenCapture
 		}
 
 		public async IAsyncEnumerable<ScreenCapture> CaptureAll(
+			IScreenCaptureMethodSelector selector = default,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
+			selector ??= new ScreenCaptureMethodSelector();
+
 			await foreach (var screens in GetScreenChanges(TimeSpan.FromSeconds(1), cancellationToken))
 			{
 				
 			}
 
 			yield break;
-		}
-
-		public void Dispose()
-		{
-			if (_factory1.IsValueCreated)
-				_factory1.Value.Dispose();
 		}
 	}
 }
