@@ -20,10 +20,11 @@ namespace Emphasis.ScreenCapture
 		public Screen[] GetScreens()
 		{
 			var adapters = Factory1.Adapters1;
-			var screens = adapters.SelectMany(adapter =>
+			var screens =
+				adapters.SelectMany(adapter =>
 					adapter.Outputs.Select(output =>
-						new Screen(adapter, output.QueryInterface<Output1>())))
-				.ToArray();
+						new Screen(adapter, output.QueryInterface<Output1>()))
+				).ToArray();
 			return screens;
 		}
 
@@ -31,20 +32,37 @@ namespace Emphasis.ScreenCapture
 			TimeSpan pollingInterval,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
+			var time = DateTime.Now;
 			var current = GetScreens();
+			var currentSet = current.ToHashSet();
 			yield return current;
 
 			while (!cancellationToken.IsCancellationRequested)
 			{
-				await Task.Delay(pollingInterval, cancellationToken);
+				var now = DateTime.Now;
+				var diff = time - now;
+				if (diff < pollingInterval)
+					await Task.Delay(pollingInterval - diff, cancellationToken);
 
+				time = DateTime.Now;
+				var next = GetScreens();
+				var nextSet = next.ToHashSet();
+				if (currentSet.SetEquals(nextSet)) 
+					continue;
+
+				current = next;
+				currentSet = nextSet;
+				yield return current;
 			}
-			
 		}
 
 		public async IAsyncEnumerable<ScreenCapture> CaptureAll(
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
+			await foreach (var screens in GetScreenChanges(TimeSpan.FromSeconds(1), cancellationToken))
+			{
+
+			}
 
 			var f = new DxgiScreenCaptureMethod();
 			
