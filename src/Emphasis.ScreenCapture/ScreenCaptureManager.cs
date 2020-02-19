@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Emphasis.ScreenCapture.Windows.Dxgi;
 using SharpDX.DXGI;
 
 namespace Emphasis.ScreenCapture
@@ -23,15 +21,16 @@ namespace Emphasis.ScreenCapture
 			var screens =
 				adapters.SelectMany(adapter =>
 					adapter.Outputs.Select(output =>
-						new Screen(adapter, output.QueryInterface<Output1>()))
+						new Screen(adapter.Description.DeviceId, output.Description.DeviceName))
 				).ToArray();
 			return screens;
 		}
 
 		public async IAsyncEnumerable<Screen[]> GetScreenChanges(
-			TimeSpan pollingInterval,
+			TimeSpan? pollingInterval = null,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
+			var interval = pollingInterval ?? TimeSpan.FromSeconds(1);
 			var time = DateTime.Now;
 			var current = GetScreens();
 			var currentSet = current.ToHashSet();
@@ -40,9 +39,9 @@ namespace Emphasis.ScreenCapture
 			while (!cancellationToken.IsCancellationRequested)
 			{
 				var now = DateTime.Now;
-				var diff = time - now;
+				var diff = now - time;
 				if (diff < pollingInterval)
-					await Task.Delay(pollingInterval - diff, cancellationToken);
+					await Task.Delay(interval - diff, cancellationToken);
 
 				time = DateTime.Now;
 				var next = GetScreens();
@@ -61,30 +60,10 @@ namespace Emphasis.ScreenCapture
 		{
 			await foreach (var screens in GetScreenChanges(TimeSpan.FromSeconds(1), cancellationToken))
 			{
-
+				
 			}
 
-			var f = new DxgiScreenCaptureMethod();
-			
-			try
-			{
-				await foreach (var r in f.Capture(new ScreenCaptureSettings(),cancellationToken))
-				{
-
-				}
-			}
-			catch
-			{
-
-			}
-
-			var outputs = Factory1.Adapters1.SelectMany(x => x.Outputs,
-				(adapter, output) => new ScreenCaptureSettings()
-				{
-					Adapter = adapter
-				});
 			yield break;
-
 		}
 
 		public void Dispose()

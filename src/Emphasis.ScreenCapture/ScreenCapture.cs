@@ -1,27 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using SharpDX.DXGI;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Emphasis.ScreenCapture
 {
-	public abstract class ScreenCapture : IDisposable
+	public class ScreenCapture
 	{
-		public Adapter1 Adapter { get; }
-		public Output1 Output { get; }
-
+		public Screen Screen { get; }
+		public DateTime Time { get; }
 		public int Width { get; }
 		public int Height { get; }
 
-		protected ScreenCapture(Adapter1 adapter, Output1 output, int width, int height)
+		public IScreenCaptureMethod Method { get; }
+
+		public ScreenCapture(
+			[NotNull] Screen screen,
+			DateTime time,
+			int width,
+			int height,
+			[NotNull] IScreenCaptureMethod method)
 		{
-			Adapter = adapter;
-			Output = output;
+			Screen = screen;
+			Time = time;
 			Width = width;
 			Height = height;
+			Method = method;
 		}
-
-		public abstract byte[] GetBytes();
-		public abstract void Dispose();
 	}
 }

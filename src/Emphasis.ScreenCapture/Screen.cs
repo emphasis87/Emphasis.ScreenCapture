@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using SharpDX.DXGI;
 
 namespace Emphasis.ScreenCapture
 {
 	public class Screen : IEquatable<Screen>
 	{
-		public Adapter1 Adapter { get; }
-		public int AdapterId => Adapter.Description.DeviceId;
+		/// <summary>
+		/// DeviceId of the selected adapter
+		/// </summary>
+		public int AdapterId { get; }
 
-		public Output1 Output { get; }
-		public string OutputName => Output.Description.DeviceName;
+		/// <summary>
+		/// DeviceName of the selected output
+		/// </summary>
+		public string OutputName { get; }
 
-		public Screen(
-			[NotNull]Adapter1 adapter,
-			[NotNull]Output1 output)
+		public Screen(int adapterId, [NotNull]string outputName)
 		{
-			Adapter = adapter;
-			Output = output;
+			AdapterId = adapterId;
+			OutputName = outputName;
 		}
 
 		public bool Equals(Screen other)
