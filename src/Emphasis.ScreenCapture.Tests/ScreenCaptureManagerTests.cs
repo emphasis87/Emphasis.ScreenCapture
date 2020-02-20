@@ -46,5 +46,21 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 			}
 		}
+
+		[Test]
+		public async Task Can_CaptureAll()
+		{
+			var manager = new ScreenCaptureManager();
+			
+			var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+			var captureList = new List<ScreenCapture>();
+			await foreach (var capture in manager.CaptureAll(cancellationToken: tcs.Token))
+			{
+				captureList.Add(capture);
+				await Task.Delay(TimeSpan.FromSeconds(1));
+			}
+
+			captureList.Should().HaveCount(10);
+		}
 	}
 }

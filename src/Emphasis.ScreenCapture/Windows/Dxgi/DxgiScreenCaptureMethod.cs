@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,13 +47,18 @@ namespace Emphasis.ScreenCapture.Windows.Dxgi
 				var result = await Task.Run(() => 
 					outputDuplication.TryAcquireNextFrame(1000, out frameInformation, out screenResource), cancellationToken);
 
-				if (result != Result.Ok)
-					yield break;
+				var cleanup = new CompositeDisposable(
+					new[] {screenResource, Disposable.Create(outputDuplication.ReleaseFrame)}.Where(x => x != null));
 
-				var capture = new DxgiScreenCapture(screen, DateTime.Now, width, height, this, adapter, output1, outputDuplication, screenResource, frameInformation);
-				yield return capture;
+				using (cleanup)
+				{
+					if (result != Result.Ok)
+						yield break;
 
-				outputDuplication.ReleaseFrame();
+					var capture = new DxgiScreenCapture(screen, DateTime.Now, width, height, this, adapter, output1,
+						outputDuplication, screenResource, frameInformation);
+					yield return capture;
+				}
 			}
 		}
 	}

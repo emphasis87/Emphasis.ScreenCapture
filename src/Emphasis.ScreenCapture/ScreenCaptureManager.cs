@@ -60,29 +60,58 @@ namespace Emphasis.ScreenCapture
 
 			selector ??= new ScreenCaptureMethodSelector();
 			
-			var tcs = new CancellationTokenSource();
-			//await foreach (var screens in GetScreenChanges(TimeSpan.FromSeconds(1), cancellationToken))
-			//{
-			//	await fo
-			//}
-			//	.SelectMany(screens => screens
-			//		.Select(screen => Capture(screen, selector, cancellationToken))
-			//		.Zip(cancellationToken));
+			var screenChanges = GetScreenChanges(TimeSpan.FromSeconds(1), cancellationToken)
+				.GetAsyncEnumerator(cancellationToken);
 
+			if (!await screenChanges.MoveNextAsync())
+				yield break;
 
+			while (!cancellationToken.IsCancellationRequested)
+			{
+				var screens = screenChanges.Current;
+				var cts = new CancellationTokenSource();
+				var compositeToken =
+					CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken).Token;
+				
+				var _ = Task.Run(async () =>
+				{
+					await screenChanges.MoveNextAsync();
+					cts.Cancel();
+				}, cancellationToken);
+
+				await foreach (var capture in screens
+					.Select(screen => Capture(screen, selector, compositeToken))
+					.Zip(compositeToken))
+					yield return capture;
+			}
 		}
 
-		//private async IAsyncEnumerable<ScreenCapture> CaptureAllInner()
-		//{
+		public async IAsyncEnumerable<ScreenCapture> Capture(
+			Screen screen,
+			IScreenCaptureMethodSelector selector = default,
+			[EnumeratorCancellation] CancellationToken cancellationToken = default)
+		{
+			foreach (var method in selector.GetMethods())
+			{
+				var captureEnumerator = method.Capture(screen, cancellationToken)
+					.GetAsyncEnumerator(cancellationToken);
+				
+				while (!cancellationToken.IsCancellationRequested)
+				{
+					try
+					{
+						if (!await captureEnumerator.MoveNextAsync(cancellationToken))
+							break;
+					}
+					catch
+					{
+						break;
+					}
 
-		//}
+					yield return captureEnumerator.Current;
+				}
+			}
 
-		//public async IAsyncEnumerable<ScreenCapture> Capture(
-		//	Screen screen,
-		//	IScreenCaptureMethodSelector selector = default,
-		//	[EnumeratorCancellation] CancellationToken cancellationToken = default)
-		//{
-
-		//}
+		}
 	}
 }
