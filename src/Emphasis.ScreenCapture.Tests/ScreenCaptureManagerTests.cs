@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Emphasis.ScreenCapture.Windows.Dxgi;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -61,6 +64,39 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 			captureList.Should().HaveCount(10);
+		}
+
+		[Test]
+		public async Task CaptureAll()
+		{
+			var manager = new ScreenCaptureManager();
+
+			var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+			var count = 0;
+			await foreach (var capture in manager.CaptureAll(cancellationToken: tcs.Token))
+			{
+				if (count++ > 3)
+					return;
+
+				await Task.Delay(TimeSpan.FromSeconds(1));
+
+				if (capture is DxgiScreenCapture dxgiScreenCapture && 
+				    capture.Method is IDxgiScreenCaptureMethod dxgiScreenCaptureMethod)
+				{
+					try
+					{
+						var bitmap = await dxgiScreenCaptureMethod.ToBitmap(dxgiScreenCapture);
+						var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{count}.bmp");
+						bitmap.Save(path);
+						Process.Start(path);
+					}
+					catch (Exception ex)
+					{
+
+					}
+				}
+			}
 		}
 	}
 }
