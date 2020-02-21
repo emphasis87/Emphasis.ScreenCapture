@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
   </ItemGroup>
 

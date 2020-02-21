@@ -68,34 +68,6 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 		}
 
-		[Test]
-		public void Opencl()
-		{
-			foreach (var platform in ComputePlatform.Platforms)
-			{
-				Console.WriteLine($"Platform Name: {platform.Name}");
-				Console.WriteLine($"Platform Vendor: {platform.Vendor}");
-				Console.WriteLine($"Platform Extensions: {platform.Extensions.Aggregate((x,y) => $"{x} {y}")}");
-
-				foreach (var device in platform.Devices)
-				{
-					Console.WriteLine($"\tDevice Name: {device.Name}");
-					Console.WriteLine($"\tDevice Type: {device.Type}");
-					Console.WriteLine($"\tDevice Vendor: {device.Vendor}");
-					Console.WriteLine($"\tDevice VendorId: {device.VendorId}");
-					Console.WriteLine($"\tDevice Max Compute Units: {device.MaxComputeUnits}");
-					Console.WriteLine($"\tDevice Global Memory: {device.GlobalMemorySize}");
-					Console.WriteLine($"\tDevice Max Clock Frequency: {device.MaxClockFrequency}");
-					Console.WriteLine($"\tDevice Max Allocatable Memory: {device.MaxMemoryAllocationSize}");
-					Console.WriteLine($"\tDevice Local Memory: {device.LocalMemorySize}");
-					Console.WriteLine($"\tDevice Max Work-group size: {device.MaxWorkGroupSize}");
-					Console.WriteLine($"\tDevice Available: {device.Available}");
-					Console.WriteLine($"\tDevice Extensions: {device.Extensions.Aggregate((x, y) => $"{x} {y}")}");
-					Console.WriteLine($"\t===");
-				}
-			}
-		}
-
         [Test]
 		public async Task Screen_Capture()
 		{
