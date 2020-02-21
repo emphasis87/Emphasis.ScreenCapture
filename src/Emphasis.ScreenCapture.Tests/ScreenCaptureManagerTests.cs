@@ -71,12 +71,12 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var manager = new ScreenCaptureManager();
 
-			var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+			var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
 			var count = 0;
 			await foreach (var capture in manager.CaptureAll(cancellationToken: tcs.Token))
 			{
-				if (count++ > 3)
+				if (count++ >= 3)
 					return;
 
 				await Task.Delay(TimeSpan.FromSeconds(1));
@@ -93,6 +93,26 @@ namespace Emphasis.ScreenCapture.Tests
 					});
 				}
 			}
+		}
+
+		[Test]
+		public async Task CaptureAll_fps()
+		{
+			var manager = new ScreenCaptureManager();
+
+			var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+
+			var sw = Stopwatch.StartNew();
+			var count = 0;
+			await foreach (var capture in manager.CaptureAll(cancellationToken: tcs.Token))
+			{
+				count++;
+			}
+			sw.Stop();
+			Console.WriteLine($"Count: {count}");
+			Console.WriteLine($"Elapsed: {sw.Elapsed}");
+			Console.WriteLine($"Average: {sw.Elapsed / count}");
+			Console.WriteLine($"FPS: {count/sw.Elapsed.TotalSeconds}");
 		}
 	}
 }
