@@ -71,7 +71,7 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var manager = new ScreenCaptureManager();
 
-			var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+			var tcs = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
 			var count = 0;
 			await foreach (var capture in manager.CaptureAll(cancellationToken: tcs.Token))
@@ -84,17 +84,13 @@ namespace Emphasis.ScreenCapture.Tests
 				if (capture is DxgiScreenCapture dxgiScreenCapture && 
 				    capture.Method is IDxgiScreenCaptureMethod dxgiScreenCaptureMethod)
 				{
-					try
+					var bitmap = await dxgiScreenCaptureMethod.ToBitmap(dxgiScreenCapture);
+					var path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, $"{count}.bmp"));
+					bitmap.Save(path);
+					Process.Start(new ProcessStartInfo(path)
 					{
-						var bitmap = await dxgiScreenCaptureMethod.ToBitmap(dxgiScreenCapture);
-						var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{count}.bmp");
-						bitmap.Save(path);
-						Process.Start(path);
-					}
-					catch (Exception ex)
-					{
-
-					}
+						UseShellExecute = true
+					});
 				}
 			}
 		}

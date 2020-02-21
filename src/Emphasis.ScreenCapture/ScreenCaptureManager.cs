@@ -91,6 +91,11 @@ namespace Emphasis.ScreenCapture
 			IScreenCaptureMethodSelector selector = default,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
+			if (cancellationToken.IsCancellationRequested)
+				yield break;
+
+			selector ??= new ScreenCaptureMethodSelector();
+
 			foreach (var method in selector.GetMethods())
 			{
 				var captureEnumerator = method.Capture(screen, cancellationToken)
@@ -102,6 +107,10 @@ namespace Emphasis.ScreenCapture
 					{
 						if (!await captureEnumerator.MoveNextAsync(cancellationToken))
 							break;
+					}
+					catch (OperationCanceledException)
+					{
+						yield break;
 					}
 					catch
 					{

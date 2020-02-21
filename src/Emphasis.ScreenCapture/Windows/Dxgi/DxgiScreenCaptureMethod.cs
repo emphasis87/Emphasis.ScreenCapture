@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -53,18 +54,23 @@ namespace Emphasis.ScreenCapture.Windows.Dxgi
 				var result = await Task.Run(() => 
 					outputDuplication.TryAcquireNextFrame(1000, out frameInformation, out screenResource), cancellationToken);
 
-				var cleanup = new CompositeDisposable(
-					new[] {screenResource, Disposable.Create(outputDuplication.ReleaseFrame)}.Where(x => x != null));
-
-				using (cleanup)
+				using var cleanup = new CompositeDisposable(
+					new[] { screenResource, Disposable.Create(outputDuplication.ReleaseFrame) }.Where(x => x != null));
+				
+				if (frameInformation.AccumulatedFrames == 0)
 				{
-					if (result != Result.Ok)
-						yield break;
-
-					var capture = new DxgiScreenCapture(screen, DateTime.Now, width, height, this, adapter, output1,
-						outputDuplication, screenResource, frameInformation);
-					yield return capture;
+					cleanup.Dispose();
+					continue;
 				}
+
+				if (result != Result.Ok)
+					yield break;
+
+				var capture = new DxgiScreenCapture(screen, DateTime.Now, width, height, this, adapter, output1,
+					device, outputDuplication, screenResource, frameInformation);
+				yield return capture;
+
+				cleanup.Dispose();
 			}
 		}
 
@@ -72,9 +78,8 @@ namespace Emphasis.ScreenCapture.Windows.Dxgi
 		{
 			var width = capture.Width;
 			var height = capture.Height;
+			var device = capture.Device;
 			var screenResource = capture.ScreenResource;
-
-			using var device = new Device(capture.Adapter);
 
 			// Create Staging texture CPU-accessible
 			var textureDesc = new Texture2DDescription
