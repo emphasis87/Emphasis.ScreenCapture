@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Cloo;
-using Emphasis.ScreenCapture.OpenCL;
+using Emphasis.OpenCL;
 using NUnit.Framework;
 using SharpDX.DXGI;
 
@@ -20,23 +20,23 @@ namespace Emphasis.ScreenCapture.Tests
 
 				if (CL12x.TryFindClGetDeviceIDsFromD3D11KHR(platform, out var clGetDeviceIDsFromD3D11KHR))
 				{
-					Console.WriteLine("D3D11 KHR sharing");
-
+					var count = 0;
 					var factory = new Factory1();
 					foreach (var adapter1 in factory.Adapters1)
 					{
 						var devices = new IntPtr[10];
 						clGetDeviceIDsFromD3D11KHR(
 							platform.Handle.Value,
-							cl_d3d11_device_source_khr.CL_D3D11_DEVICE_KHR,
+							cl_d3d11_device_source_khr.CL_D3D11_DXGI_ADAPTER_KHR,
 							adapter1.NativePointer,
 							cl_d3d11_device_set_khr.CL_ALL_DEVICES_FOR_D3D11_KHR,
 							10,
 							devices,
 							out var numDevices);
 
+						count += numDevices;
 						if (numDevices > 0)
-							Console.WriteLine($"\tAdapter {adapter1.Description1.Description}: {numDevices}");
+							Console.WriteLine($"\tAdapter {adapter1.Description1.Description} [{numDevices}]:");
 
 						foreach (var deviceId in devices)
 						{
@@ -46,11 +46,12 @@ namespace Emphasis.ScreenCapture.Tests
 						}
 
 					}
+
+					Console.WriteLine($"D3D11 KHR sharing [{count}]");
 				}
 				if (CL12x.TryFindClGetDeviceIDsFromD3D11NV(platform, out var clGetDeviceIDsFromD3D11NV))
 				{
-					Console.WriteLine("D3D11 NV sharing");
-
+					var count = 0;
 					var factory = new Factory1();
 					foreach (var adapter1 in factory.Adapters1)
 					{
@@ -64,8 +65,9 @@ namespace Emphasis.ScreenCapture.Tests
 							devices,
 							out var numDevices);
 
+						count += numDevices;
 						if (numDevices > 0)
-							Console.WriteLine($"\tAdapter {adapter1.Description1.Description}: {numDevices}");
+							Console.WriteLine($"\tAdapter {adapter1.Description1.Description} [{numDevices}]:");
 
 						foreach (var deviceId in devices)
 						{
@@ -75,6 +77,8 @@ namespace Emphasis.ScreenCapture.Tests
 						}
 						
 					}
+
+					Console.WriteLine($"D3D11 NV sharing [{count}]");
 				}
 
 				foreach (var device in platform.Devices)
