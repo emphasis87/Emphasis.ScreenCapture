@@ -7,6 +7,14 @@ namespace Emphasis.OpenCL
 {
 	public static partial class CL12x
 	{
+		/// <summary>
+		/// https://www.khronos.org/registry/OpenCL/extensions/nv/cl_nv_d3d11_sharing.txt
+		/// http://developer.download.nvidia.com/compute/cuda/3_0/toolkit/docs/opencl_extensions/cl_nv_d3d11_sharing.txt
+		/// https://github.com/sschaetz/nvidia-opencl-examples/blob/master/OpenCL/common/inc/CL/cl_d3d11_ext.h
+		/// </summary>
+		/// <param name="platform"></param>
+		/// <param name="getDeviceIdsFromD3D11NV"></param>
+		/// <returns></returns>
 		public static bool TryFindClGetDeviceIDsFromD3D11NV(
 			ComputePlatform platform,
 			out OclDelegates.clGetDeviceIDsFromD3D11NV getDeviceIdsFromD3D11NV)

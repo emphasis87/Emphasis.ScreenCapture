@@ -7,6 +7,13 @@ namespace Emphasis.OpenCL
 {
 	public static partial class CL12x
 	{
+		/// <summary>
+		/// https://www.khronos.org/registry/OpenCL/sdk/1.2/docs/man/xhtml/cl_khr_d3d11_sharing.html
+		/// https://github.com/KhronosGroup/OpenCL-Headers/blob/master/CL/cl_d3d11.h
+		/// </summary>
+		/// <param name="platform"></param>
+		/// <param name="getDeviceIdsFromD3D11KHR"></param>
+		/// <returns></returns>
 		public static bool TryFindClGetDeviceIDsFromD3D11KHR(
 			ComputePlatform platform, 
 			out OclDelegates.clGetDeviceIDsFromD3D11KHR getDeviceIdsFromD3D11KHR)
