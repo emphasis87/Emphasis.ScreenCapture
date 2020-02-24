@@ -2,7 +2,7 @@
 
 namespace Emphasis.TextDetection
 {
-	public class Class1
+	public class TextDetector
 	{
 	}
 }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Disposables;
 
 namespace Emphasis.ScreenCapture
 {
-	public class ScreenCapture
+	public class ScreenCapture : IDisposable, ICancelable
 	{
 		public Screen Screen { get; }
 		public DateTime Time { get; }
@@ -24,6 +25,24 @@ namespace Emphasis.ScreenCapture
 			Width = width;
 			Height = height;
 			Method = method;
+		}
+
+		public bool IsDisposed => _disposable.IsDisposed;
+		private readonly CompositeDisposable _disposable =new CompositeDisposable();
+
+		public void Dispose()
+		{
+			_disposable.Dispose();
+		}
+
+		public void Add([NotNull] IDisposable disposable)
+		{
+			_disposable.Add(disposable);
+		}
+
+		public void Remove([NotNull] IDisposable disposable)
+		{
+			_disposable.Remove(disposable);
 		}
 	}
 }

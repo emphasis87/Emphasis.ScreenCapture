@@ -92,6 +92,8 @@ namespace Emphasis.ScreenCapture.Tests
 						UseShellExecute = true
 					});
 				}
+
+				capture.Dispose();
 			}
 		}
 
