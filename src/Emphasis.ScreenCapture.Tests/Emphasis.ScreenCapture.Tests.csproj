@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Emphasis.OpenCL\Emphasis.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
+    <ProjectReference Include="..\Emphasis.TextDetection\Emphasis.TextDetection.csproj" />
   </ItemGroup>
 
 </Project>
