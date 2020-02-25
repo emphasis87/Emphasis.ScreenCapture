@@ -309,7 +309,7 @@ void kernel copy(
 			var sourceBuffer = new ComputeImage2D(
 				context,
 				ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer,
-				new ComputeImageFormat(ComputeImageChannelOrder.Bgra, ComputeImageChannelType.UNormInt8),
+				new ComputeImageFormat(ComputeImageChannelOrder.Rgba, ComputeImageChannelType.UNormInt8),
 				w,
 				h,
 				0,
@@ -346,47 +346,47 @@ void kernel copy(
 
 			File.WriteAllText("target.txt", Print(target, w, h));
 
-			var targetHandle = GCHandle.Alloc(target, GCHandleType.Pinned);
-			var targetPointer = targetHandle.AddrOfPinnedObject();
-
-			var result = new Bitmap(w, h);
-
-			var bounds = new System.Drawing.Rectangle(0, 0, w, h);
-			var resultData = result.LockBits(bounds, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-			var resultPointer = resultData.Scan0;
-
-			for (var y = 0; y < h; y++)
-			{
-				Utilities.CopyMemory(resultPointer, targetPointer, w * 4);
-
-				targetPointer = IntPtr.Add(targetPointer, w * 4);
-				resultPointer = IntPtr.Add(resultPointer, w * 4);
-			}
-
-			result.UnlockBits(resultData);
-
+			var result = ToBitmap(target, w, h, PixelFormat.Format32bppArgb);
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "copy.png"));
 			result.Save(resultPath);
 
 			sourceHandle.Free();
+			
+			Run("source.txt");
+			Run("target.txt");
+			Run(resultPath);
+		}
+
+		public static Bitmap ToBitmap(byte[] data, int width, int height, PixelFormat format)
+		{
+			var targetHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+			var targetPointer = targetHandle.AddrOfPinnedObject();
+
+			var result = new Bitmap(width, height);
+
+			var bounds = new System.Drawing.Rectangle(0, 0, width, height);
+			var resultData = result.LockBits(bounds, ImageLockMode.WriteOnly, format);
+			var resultPointer = resultData.Scan0;
+
+			for (var y = 0; y < height; y++)
+			{
+				Utilities.CopyMemory(resultPointer, targetPointer, width * 4);
+
+				targetPointer = IntPtr.Add(targetPointer, width * 4);
+				resultPointer = IntPtr.Add(resultPointer, width * 4);
+			}
+
+			result.UnlockBits(resultData);
+
 			targetHandle.Free();
 
-			// Display the texture using system associated viewer
+			return result;
+		}
 
+		public static void Run(string path)
+		{
 			System.Diagnostics.Process.Start(
-				new ProcessStartInfo("source.txt")
-				{
-					UseShellExecute = true
-				});
-
-			System.Diagnostics.Process.Start(
-				new ProcessStartInfo("target.txt")
-				{
-					UseShellExecute = true
-				});
-
-			System.Diagnostics.Process.Start(
-				new ProcessStartInfo(resultPath)
+				new ProcessStartInfo(path)
 				{
 					UseShellExecute = true
 				});
