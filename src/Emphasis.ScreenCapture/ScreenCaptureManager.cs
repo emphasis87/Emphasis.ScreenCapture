@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Emphasis.ScreenCapture.Helpers;
 using SharpDX.DXGI;
 
 namespace Emphasis.ScreenCapture

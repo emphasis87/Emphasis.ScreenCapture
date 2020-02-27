@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using SharpDX;
@@ -160,6 +161,31 @@ namespace Emphasis.ScreenCapture.Windows.Dxgi
 			bitmap.UnlockBits(mapTarget);
 
 			return bitmap;
+		}
+
+		public async Task<byte[]> ToBytes(DxgiScreenCapture capture)
+		{
+			var width = capture.Width;
+			var height = capture.Height;
+
+			using var texture = await MapTexture(capture);
+			var sourcePointer = texture.DataPointer;
+
+			var target = new byte[height * width * 4];
+			var targetHandle = GCHandle.Alloc(target, GCHandleType.Pinned);
+			var targetPointer = targetHandle.AddrOfPinnedObject();
+
+			for (var y = 0; y < height; y++)
+			{
+				Utilities.CopyMemory(targetPointer, sourcePointer, width * 4);
+
+				sourcePointer = IntPtr.Add(sourcePointer, texture.RowPitch);
+				targetPointer = IntPtr.Add(targetPointer, width * 4);
+			}
+
+			targetHandle.Free();
+
+			return target;
 		}
 	}
 }

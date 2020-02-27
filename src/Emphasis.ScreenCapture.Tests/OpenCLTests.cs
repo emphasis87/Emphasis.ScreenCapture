@@ -9,9 +9,12 @@ using System.Text;
 using Cloo;
 using Cloo.Bindings;
 using Emphasis.OpenCL;
+using Emphasis.ScreenCapture.Helpers;
 using NUnit.Framework;
 using SharpDX;
 using SharpDX.DXGI;
+
+using static Emphasis.ScreenCapture.Helpers.DebugHelper;
 
 namespace Emphasis.ScreenCapture.Tests
 {
@@ -217,58 +220,6 @@ void kernel copy(
 }
 ";
 
-		public byte[] ToRawArgb(Bitmap image)
-		{
-			var w = image.Width;
-			var h = image.Height;
-			var bounds = new System.Drawing.Rectangle(0, 0, w, h);
-			var data = image.LockBits(bounds, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-
-			var result = new byte[h * w * 4];
-			var resultHandler = GCHandle.Alloc(result, GCHandleType.Pinned);
-			var resultPointer = resultHandler.AddrOfPinnedObject();
-
-			var sourcePointer = data.Scan0;
-			for (var y = 0; y < h; y++)
-			{
-				Utilities.CopyMemory(resultPointer, sourcePointer, w * 4);
-
-				sourcePointer = IntPtr.Add(sourcePointer, data.Stride);
-				resultPointer = IntPtr.Add(resultPointer, w * 4);
-			}
-			
-			image.UnlockBits(data);
-
-			resultHandler.Free();
-
-			return result;
-		}
-
-		public string Print(byte[] data, int w, int h)
-		{
-			var sb = new StringBuilder();
-			var source = data.AsSpan();
-			for (var y = 0; y < h; y++)
-			{
-				var line = source.Slice(y * w * 4, w * 4);
-				for (var x = 0; x < w; x++)
-				{
-					var pixel = line.Slice(x * 4, 4);
-					for (var i = 0; i < 4; i++)
-					{
-						sb.Append($"{pixel[i],3} ");
-					}
-
-					sb.Append(", ");
-				}
-
-				sb.AppendLine();
-			}
-
-			return sb.ToString();
-		}
-
-
 		[Test]
 		public void Can_copy()
 		{
@@ -298,9 +249,9 @@ void kernel copy(
 			var w = sourceImage.Width;
 			var h = sourceImage.Height;
 
-			var source = ToRawArgb(sourceImage);
+			var source = sourceImage.ToBytes();
 
-			File.WriteAllText("source.txt", Print(source, w, h));
+			source.SaveToFile("source.txt", w, h);
 
 			var sourceHandle = GCHandle.Alloc(source, GCHandleType.Pinned);
 			var sourcePointer = sourceHandle.AddrOfPinnedObject();
@@ -344,9 +295,9 @@ void kernel copy(
 
 			queue.Finish();
 
-			File.WriteAllText("target.txt", Print(target, w, h));
+			target.SaveToFile("target.txt", w, h);
 
-			var result = ToBitmap(target, w, h, PixelFormat.Format32bppArgb);
+			var result = target.ToBitmap(w, h, PixelFormat.Format32bppArgb);
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "copy.png"));
 			result.Save(resultPath);
 
@@ -357,39 +308,6 @@ void kernel copy(
 			Run(resultPath);
 		}
 
-		public static Bitmap ToBitmap(byte[] data, int width, int height, PixelFormat format)
-		{
-			var targetHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-			var targetPointer = targetHandle.AddrOfPinnedObject();
-
-			var result = new Bitmap(width, height);
-
-			var bounds = new System.Drawing.Rectangle(0, 0, width, height);
-			var resultData = result.LockBits(bounds, ImageLockMode.WriteOnly, format);
-			var resultPointer = resultData.Scan0;
-
-			for (var y = 0; y < height; y++)
-			{
-				Utilities.CopyMemory(resultPointer, targetPointer, width * 4);
-
-				targetPointer = IntPtr.Add(targetPointer, width * 4);
-				resultPointer = IntPtr.Add(resultPointer, width * 4);
-			}
-
-			result.UnlockBits(resultData);
-
-			targetHandle.Free();
-
-			return result;
-		}
-
-		public static void Run(string path)
-		{
-			System.Diagnostics.Process.Start(
-				new ProcessStartInfo(path)
-				{
-					UseShellExecute = true
-				});
-		}
+		
 	}
 }

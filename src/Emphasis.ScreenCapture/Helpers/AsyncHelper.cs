@@ -3,9 +3,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Emphasis.ScreenCapture
+namespace Emphasis.ScreenCapture.Helpers
 {
-	public static class Helpers
+	public static class AsyncHelper
 	{
 		public static async IAsyncEnumerable<TSource> Zip<TSource>(
 			this IEnumerable<IAsyncEnumerable<TSource>> sources,
