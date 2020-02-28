@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using Cloo;
-using Cloo.Bindings;
-using Emphasis.OpenCL;
 using Emphasis.OpenCL.Extensions;
 using Emphasis.OpenCL.Helpers;
 using Emphasis.ScreenCapture.Helpers;
 using NUnit.Framework;
-using SharpDX;
 using SharpDX.DXGI;
 
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
@@ -142,32 +136,15 @@ void kernel sum(
 			using var kernel = program.CreateKernel("sum");
 
 			var source = new byte[] {1, 2, 3, 4, 5};
-			var sourceBuffer = new ComputeBuffer<byte>(
-				context,
-				ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer,
-				source);
+			using var sourceBuffer = context.CreateBuffer(source);
 
 			var target = new byte[5];
-			var targetBuffer = new ComputeBuffer<byte>(
-				context,
-				ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer,
-				target);
+			using var targetBuffer = context.CreateBuffer(target);
 
 			kernel.SetMemoryArgument(0, sourceBuffer);
 			kernel.SetMemoryArgument(1, targetBuffer);
 
-			var globalWorkSize = new[] { (IntPtr)source.Length };
-			var errorCode = CL10.EnqueueNDRangeKernel(
-				queue.Handle,
-				kernel.Handle,
-				globalWorkSize.Length,
-				null,
-				globalWorkSize,
-				null,
-				0,
-				null,
-				null);
-
+			var errorCode = queue.Enqueue(kernel, new[] {source.Length});
 			if (errorCode != ComputeErrorCode.Success)
 			{
 				Console.WriteLine(errorCode);
@@ -234,8 +211,7 @@ void kernel copy(
 
 			try
 			{
-				program.Build(new[] {device}, "-cl-std=CL1.2", (handle, ptr) => OnProgramBuilt(program, device),
-					IntPtr.Zero);
+				program.Build(new[] {device}, "-cl-std=CL1.2", null, IntPtr.Zero);
 			}
 			catch (Exception ex)
 			{
@@ -254,30 +230,16 @@ void kernel copy(
 
 			var source = sourceImage.ToBytes();
 
-			source.SaveToFile("source.txt", w, h);
+			source.SaveFormatted("source.txt", w, h, bpp: 4);
 			using var sourceBuffer = context.CreateImage2D(source, w, h);
 
 			var target = new byte[h * w * 4];
-			var targetBuffer = new ComputeBuffer<byte>(
-				context,
-				ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer,
-				target);
+			using var targetBuffer = context.CreateBuffer(target);
 
 			kernel.SetMemoryArgument(0, sourceBuffer);
 			kernel.SetMemoryArgument(1, targetBuffer);
 
-			var globalWorkSize = new[] {(IntPtr) w, (IntPtr) h};
-			var errorCode = CL10.EnqueueNDRangeKernel(
-				queue.Handle,
-				kernel.Handle,
-				globalWorkSize.Length,
-				null,
-				globalWorkSize,
-				null,
-				0,
-				null,
-				null);
-
+			var errorCode = queue.Enqueue(kernel, new[] {w, h});
 			if (errorCode != ComputeErrorCode.Success)
 			{
 				Console.WriteLine(errorCode);
@@ -285,9 +247,9 @@ void kernel copy(
 
 			queue.Finish();
 
-			target.SaveToFile("target.txt", w, h);
+			target.SaveFormatted("target.txt", w, h, bpp: 4);
 
-			var result = target.ToBitmap(w, h, PixelFormat.Format32bppArgb);
+			var result = target.ToBitmap(w, h, 4);
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "copy.png"));
 			result.Save(resultPath);
 

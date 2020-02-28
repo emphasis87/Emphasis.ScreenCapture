@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -7,17 +8,16 @@ namespace Emphasis.ScreenCapture.Helpers
 {
 	public static class DebugHelper
 	{
-		public static string Print(this byte[] data, int width, int height)
+		public static IEnumerable<string> PrintFormatted(this byte[] data, int width, int height, int bpp = 1)
 		{
 			var sb = new StringBuilder();
-			var source = data.AsSpan();
 			for (var y = 0; y < height; y++)
 			{
-				var line = source.Slice(y * width * 4, width * 4);
+				var line = data.AsSpan(y * width * bpp, width * bpp);
 				for (var x = 0; x < width; x++)
 				{
-					var pixel = line.Slice(x * 4, 4);
-					for (var i = 0; i < 4; i++)
+					var pixel = line.Slice(x * bpp, bpp);
+					for (var i = 0; i < bpp; i++)
 					{
 						sb.Append($"{pixel[i],3} ");
 					}
@@ -25,15 +25,19 @@ namespace Emphasis.ScreenCapture.Helpers
 					sb.Append("| ");
 				}
 
-				sb.AppendLine();
-			}
+				yield return sb.ToString();
 
-			return sb.ToString();
+				sb.Clear();
+			}
 		}
 
-		public static void SaveToFile(this byte[] data, string path, int width, int height)
+		public static void SaveFormatted(this byte[] data, string path, int width, int height, int bpp = 1)
 		{
-			File.WriteAllText(path, Print(data, width, height));
+			using var stream = new StreamWriter(path, false, Encoding.UTF8);
+			foreach (var line in PrintFormatted(data, width, height, bpp))
+			{
+				stream.WriteLine(line);
+			}
 		}
 
 		public static void Run(string path)

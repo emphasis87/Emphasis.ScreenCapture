@@ -35,30 +35,47 @@ namespace Emphasis.ScreenCapture.Helpers
 			return result;
 		}
 
-		public static Bitmap ToBitmap(this byte[] data, int width, int height, PixelFormat format)
+		public static Bitmap ToBitmap(this byte[] data, int width, int height, int bpp = 1)
 		{
-			var targetHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-			var targetPointer = targetHandle.AddrOfPinnedObject();
-
-			var result = new Bitmap(width, height);
-
+			var bitmap = new Bitmap(width, height);
 			var bounds = new System.Drawing.Rectangle(0, 0, width, height);
-			var resultData = result.LockBits(bounds, ImageLockMode.WriteOnly, format);
-			var resultPointer = resultData.Scan0;
+
+			var bitmapData = bitmap.LockBits(bounds, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+			var bitmapPointer = bitmapData.Scan0;
+
+			// grayscale
+			if (bpp == 1)
+			{
+				var p = 0;
+				var source = new byte[height * width * 4];
+				for (var i = 0; i < height * width; i++)
+				{
+					var value = data[i];
+					source[p++] = value;
+					source[p++] = value;
+					source[p++] = value;
+					source[p++] = 255;
+				}
+
+				data = source;
+			}
+
+			var dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
+			var dataPointer = dataHandle.AddrOfPinnedObject();
 
 			for (var y = 0; y < height; y++)
 			{
-				Utilities.CopyMemory(resultPointer, targetPointer, width * 4);
+				Utilities.CopyMemory(bitmapPointer, dataPointer, width * 4);
 
-				targetPointer = IntPtr.Add(targetPointer, width * 4);
-				resultPointer = IntPtr.Add(resultPointer, width * 4);
+				dataPointer = IntPtr.Add(dataPointer, width * 4);
+				bitmapPointer = IntPtr.Add(bitmapPointer, width * 4);
 			}
 
-			result.UnlockBits(resultData);
+			bitmap.UnlockBits(bitmapData);
 
-			targetHandle.Free();
+			dataHandle.Free();
 
-			return result;
+			return bitmap;
 		}
 	}
 }

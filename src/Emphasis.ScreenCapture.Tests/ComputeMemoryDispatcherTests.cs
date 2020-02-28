@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Cloo;
-using Cloo.Bindings;
+using Emphasis.OpenCL.Helpers;
+using Emphasis.ScreenCapture.Helpers;
 using Emphasis.ScreenCapture.OpenCL;
-using Emphasis.ScreenCapture.Windows.Dxgi;
 using Emphasis.TextDetection;
 using NUnit.Framework;
+using static Emphasis.ScreenCapture.Helpers.DebugHelper;
 
 namespace Emphasis.ScreenCapture.Tests
 {
@@ -23,6 +23,8 @@ namespace Emphasis.ScreenCapture.Tests
 			var screen = manager.GetScreens().First();
 
 			using var capture = await manager.Capture(screen).FirstAsync();
+			var width = capture.Width;
+			var height = capture.Height;
 
 			var device = ComputePlatform.Platforms
 				.SelectMany(x => x.Devices)
@@ -33,39 +35,30 @@ namespace Emphasis.ScreenCapture.Tests
 
 			using var program = new ComputeProgram(context, Kernels.grayscale);
 			
-			program.Build(new[] {device}, "-cl-std=CL1.2", (handle, ptr) => OnProgramBuilt(program, device), IntPtr.Zero);
+			program.Build(new[] {device}, "-cl-std=CL1.2", null, IntPtr.Zero);
 			
 			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
 			using var kernel = program.CreateKernel("grayscale_u8");
 
-			var size = capture.Height * capture.Width * 4;
-			var result = new byte[size];
-			var resultBuffer = new ComputeBuffer<byte>(
-				context,
-				ComputeMemoryFlags.WriteOnly | ComputeMemoryFlags.UseHostPointer,
-				result);
+			var target = new byte[width * height];
+			using var resultBuffer = context.CreateBuffer(target);
 
 			kernel.SetMemoryArgument(0, memory);
 			kernel.SetMemoryArgument(1, resultBuffer);
 
-			var globalWorkSize = new[] {(IntPtr) capture.Width, (IntPtr) capture.Height};
-			var errorCode = CL10.EnqueueNDRangeKernel(
-				queue.Handle, 
-				kernel.Handle, 
-				2, 
-				null,
-				globalWorkSize, 
-				null, 
-				0, 
-				null, 
-				null);
-
+			var errorCode = queue.Enqueue(kernel, new[] {width, height});
 			if (errorCode != ComputeErrorCode.Success)
 			{
 				Console.WriteLine(errorCode);
 			}
 
 			queue.Finish();
+
+			var result = target.ToBitmap(width, height, 1);
+			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
+			result.Save(resultPath);
+
+			Run(resultPath);
 		}
 
 		private void OnProgramBuilt(ComputeProgram program, ComputeDevice device)

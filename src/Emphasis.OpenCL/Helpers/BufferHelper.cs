@@ -27,5 +27,15 @@ namespace Emphasis.OpenCL.Helpers
 
 			return image;
 		}
+
+		public static ComputeBuffer<byte> CreateBuffer(this ComputeContext context, byte[] data)
+		{
+			var buffer = new ComputeBuffer<byte>(
+				context,
+				ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer,
+				data);
+
+			return buffer;
+		}
 	}
 }
