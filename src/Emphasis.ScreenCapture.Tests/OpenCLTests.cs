@@ -9,12 +9,15 @@ using System.Text;
 using Cloo;
 using Cloo.Bindings;
 using Emphasis.OpenCL;
+using Emphasis.OpenCL.Extensions;
+using Emphasis.OpenCL.Helpers;
 using Emphasis.ScreenCapture.Helpers;
 using NUnit.Framework;
 using SharpDX;
 using SharpDX.DXGI;
 
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
+using CL12x = Emphasis.OpenCL.Extensions.CL12x;
 
 namespace Emphasis.ScreenCapture.Tests
 {
@@ -244,7 +247,7 @@ void kernel copy(
 			using var kernel = program.CreateKernel("copy");
 
 			var sourcePath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sample00.png"));
-			var sourceImage = (Bitmap)Image.FromFile(sourcePath);
+			using var sourceImage = (Bitmap)Image.FromFile(sourcePath);
 
 			var w = sourceImage.Width;
 			var h = sourceImage.Height;
@@ -252,20 +255,7 @@ void kernel copy(
 			var source = sourceImage.ToBytes();
 
 			source.SaveToFile("source.txt", w, h);
-
-			var sourceHandle = GCHandle.Alloc(source, GCHandleType.Pinned);
-			var sourcePointer = sourceHandle.AddrOfPinnedObject();
-
-#pragma warning disable CS0618 // Type or member is obsolete
-			var sourceBuffer = new ComputeImage2D(
-				context,
-				ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.UseHostPointer,
-				new ComputeImageFormat(ComputeImageChannelOrder.Rgba, ComputeImageChannelType.UNormInt8),
-				w,
-				h,
-				0,
-				sourcePointer);
-#pragma warning restore CS0618 // Type or member is obsolete
+			using var sourceBuffer = context.CreateImage2D(source, w, h);
 
 			var target = new byte[h * w * 4];
 			var targetBuffer = new ComputeBuffer<byte>(
@@ -301,13 +291,9 @@ void kernel copy(
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "copy.png"));
 			result.Save(resultPath);
 
-			sourceHandle.Free();
-			
 			Run("source.txt");
 			Run("target.txt");
 			Run(resultPath);
 		}
-
-		
 	}
 }

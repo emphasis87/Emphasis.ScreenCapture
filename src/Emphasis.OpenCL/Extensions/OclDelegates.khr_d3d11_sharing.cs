@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Cloo;
 using Cloo.Bindings;
 
-namespace Emphasis.OpenCL
+namespace Emphasis.OpenCL.Extensions
 {
 	/// <summary>
 	/// Vendor specific extension delegates.

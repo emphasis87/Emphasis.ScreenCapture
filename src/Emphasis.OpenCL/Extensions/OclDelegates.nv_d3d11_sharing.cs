@@ -3,14 +3,13 @@ using System.Runtime.InteropServices;
 using Cloo;
 using Cloo.Bindings;
 
-namespace Emphasis.OpenCL
+namespace Emphasis.OpenCL.Extensions
 {
 	/// <summary>
 	/// Vendor specific extension delegates.
 	/// </summary>
 	public static partial class OclDelegates
 	{
-		
 		public delegate ComputeErrorCode clGetDeviceIDsFromD3D11NV(
 			IntPtr platform,
 			cl_d3d11_device_source_nv d3dDeviceSource,
