@@ -34,7 +34,7 @@ namespace Emphasis.ScreenCapture.Tests
 			using var memory = await dispatcher.Dispatch(capture, context);
 
 			using var program = new ComputeProgram(context, Kernels.grayscale);
-			
+
 			program.Build(new[] {device}, "-cl-std=CL1.2", null, IntPtr.Zero);
 			
 			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);

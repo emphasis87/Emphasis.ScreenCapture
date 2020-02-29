@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Cloo;
+using Emphasis.OpenCL.Helpers;
 using Emphasis.ScreenCapture.Windows.Dxgi;
 using SharpDX.Direct3D11;
 
@@ -21,21 +22,15 @@ namespace Emphasis.ScreenCapture.OpenCL
 
 				}
 
+				// Map the texture into the main memory
 				var texture = await method.MapTexture(dxgiScreenCapture);
-				var size = capture.Height * capture.Width * 4;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-				return new ComputeImage2D(
-					context,
-					ComputeMemoryFlags.ReadOnly | ComputeMemoryFlags.CopyHostPointer,
-					new ComputeImageFormat(ComputeImageChannelOrder.Bgra, ComputeImageChannelType.UNormInt8),
-					capture.Width,
-					capture.Height,
-					0,
-					texture.DataPointer);
-#pragma warning restore CS0618 // Type or member is obsolete
+				var image = context.CreateImage2D(texture.DataPointer, capture.Width, capture.Height);
+				
+				// Dispose of the texture after the image is disposed
+				image.Add(texture);
 
-				//return new ComputeBuffer<byte>(context, flags, size, texture.DataPointer);
+				return image;
 			}
 
 			return null;
