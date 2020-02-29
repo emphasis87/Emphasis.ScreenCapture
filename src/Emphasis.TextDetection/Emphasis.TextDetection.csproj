@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Cloo.clSharp" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Kernels.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
