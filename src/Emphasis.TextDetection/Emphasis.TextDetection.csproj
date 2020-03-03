@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,37 +9,41 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Kernels.Designer.cs">
+    <ProjectReference Include="..\Emphasis.OpenCL\Emphasis.OpenCL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="KernelSources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Kernels.resx</DependentUpon>
+      <DependentUpon>KernelSources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Kernels.resx">
+    <EmbeddedResource Update="KernelSources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Kernels.Designer.cs</LastGenOutput>
+      <LastGenOutput>KernelSources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="kernels\canny.cl">
+    <None Update="KernelSources\canny.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="kernels\grayscale.cl">
+    <None Update="KernelSources\grayscale.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="kernels\hysteresis.cl">
+    <None Update="KernelSources\hysteresis.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="kernels\non_maximum_supression.cl">
+    <None Update="KernelSources\non_maximum_supression.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="kernels\prefix_scan.cl">
+    <None Update="KernelSources\prefix_scan.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="kernels\sobel.cl">
+    <None Update="KernelSources\sobel.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

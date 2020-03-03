@@ -33,7 +33,7 @@ namespace Emphasis.ScreenCapture.Tests
 			using var context = new ComputeContext(new[] {device}, new ComputeContextPropertyList(device.Platform), null, IntPtr.Zero);			
 			using var memory = await dispatcher.Dispatch(capture, context);
 
-			using var program = new ComputeProgram(context, Kernels.grayscale);
+			using var program = new ComputeProgram(context, KernelSources.grayscale);
 
 			program.Build(new[] {device}, "-cl-std=CL1.2", null, IntPtr.Zero);
 			

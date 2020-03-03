@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Cloo.clSharp" Version="1.0.1" />
+    <PackageReference Include="Emgu.CV" Version="4.2.0.3662" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.2.0.3662" />
     <PackageReference Include="FluentAssertions" Version="5.10.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
@@ -34,6 +36,108 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="screen01.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\concrt140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\cvextern.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\msvcp140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\msvcp140_1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\msvcp140_2.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\msvcp140_codecvt_ids.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\opencv_videoio_ffmpeg420_64.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\vcruntime140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x64\vcruntime140_1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\concrt140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\cvextern.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\msvcp140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\msvcp140_1.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\msvcp140_2.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\msvcp140_codecvt_ids.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\opencv_videoio_ffmpeg420.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\vcruntime140.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
