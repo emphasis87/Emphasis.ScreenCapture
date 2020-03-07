@@ -28,6 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="KernelSources\threshold.cl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="KernelSources\canny.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

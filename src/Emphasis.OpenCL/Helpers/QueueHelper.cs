@@ -1,30 +1,67 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Cloo;
-using Cloo.Bindings;
 
 namespace Emphasis.OpenCL.Helpers
 {
 	public static class QueueHelper
 	{
-		public static ComputeErrorCode Enqueue(
+		public static async Task ExecuteAsync(
 			this ComputeCommandQueue queue,
 			ComputeKernel kernel,
-			int[] dimensions)
+			long[] globalWorkOffset = null,
+			long[] globalWorkSize = null,
+			long[] localWorkSize = null,
+			ICollection<ComputeEventBase> events = null)
 		{
-			var globalWorkSize = dimensions.Select(x => (IntPtr) x).ToArray();
-			var errorCode = CL10.EnqueueNDRangeKernel(
-				queue.Handle,
-				kernel.Handle,
-				globalWorkSize.Length,
-				null,
-				globalWorkSize,
-				null,
-				0,
-				null,
-				null);
+			events ??= new List<ComputeEventBase>();
 
-			return errorCode;
+			queue.Execute(kernel, globalWorkOffset, globalWorkSize, localWorkSize, events);
+
+			await events.WaitForEvents();
+		}
+
+		public static void Enqueue(
+			this ComputeCommandQueue queue,
+			ComputeKernel kernel,
+			long[] globalWorkOffset = null,
+			long[] globalWorkSize = null,
+			long[] localWorkSize = null,
+			ICollection<ComputeEventBase> events = null)
+		{
+			events ??= new List<ComputeEventBase>();
+
+			queue.Execute(kernel, globalWorkOffset, globalWorkSize, localWorkSize, events);
+		}
+
+		public static async Task WaitForEvents(this ICollection<ComputeEventBase> events)
+		{
+			if (events.Count == 0)
+				return;
+
+			var notCompleted = events.Where(x => x.Status != ComputeCommandExecutionStatus.Complete).ToArray();
+			if (notCompleted.Length == 0)
+				return;
+
+			var tcs = new TaskCompletionSource<bool>();
+			foreach (var evt in notCompleted)
+			{
+				if (evt.Status == ComputeCommandExecutionStatus.Complete)
+					continue;
+
+				evt.Completed += delegate (object sender, ComputeCommandStatusArgs args)
+				{
+					if (notCompleted.All(x => x.Status == ComputeCommandExecutionStatus.Complete))
+						tcs.TrySetResult(true);
+				};
+				evt.Aborted += delegate (object sender, ComputeCommandStatusArgs args)
+				{
+					tcs.TrySetCanceled();
+				};
+			}
+
+			await tcs.Task;
 		}
 	}
 }

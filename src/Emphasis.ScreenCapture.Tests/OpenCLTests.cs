@@ -144,12 +144,7 @@ void kernel sum(
 			kernel.SetMemoryArgument(0, sourceBuffer);
 			kernel.SetMemoryArgument(1, targetBuffer);
 
-			var errorCode = queue.Enqueue(kernel, new[] {source.Length});
-			if (errorCode != ComputeErrorCode.Success)
-			{
-				Console.WriteLine(errorCode);
-			}
-
+			queue.Execute(kernel, null, new long[] {source.Length}, null, null);
 			queue.Finish();
 
 			for (var i = 0; i < source.Length; i++)
@@ -239,12 +234,7 @@ void kernel copy(
 			kernel.SetMemoryArgument(0, sourceBuffer);
 			kernel.SetMemoryArgument(1, targetBuffer);
 
-			var errorCode = queue.Enqueue(kernel, new[] {w, h});
-			if (errorCode != ComputeErrorCode.Success)
-			{
-				Console.WriteLine(errorCode);
-			}
-
+			queue.Execute(kernel, null, new long[] {w, h}, null, null);
 			queue.Finish();
 
 			target.SaveFormatted("target.txt", w, h, bpp: 4);

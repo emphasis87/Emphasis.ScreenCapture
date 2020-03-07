@@ -6,7 +6,7 @@ using Cloo;
 
 namespace Emphasis.OpenCL
 {
-	public interface IComputeManager
+	public interface IComputeManager : IDisposable, ICancelable
 	{
 		ComputeContext GetContext(ComputeDevice device);
 		ComputeCommandQueue GetQueue(ComputeDevice device);
@@ -15,7 +15,7 @@ namespace Emphasis.OpenCL
 		void AddProgram(string source, string options);
 	}
 
-	public class ComputeManager : IDisposable, ICancelable, IComputeManager
+	public class ComputeManager : IComputeManager
 	{
 		private readonly Dictionary<ComputeDevice, ComputeContext> _contexts = 
 			new Dictionary<ComputeDevice, ComputeContext>();

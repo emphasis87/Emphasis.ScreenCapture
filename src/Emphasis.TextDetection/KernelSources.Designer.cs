@@ -241,5 +241,26 @@ namespace Emphasis.TextDetection {
                 return ResourceManager.GetString("sobel", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
+        ///
+        ///void kernel threshold_u8(
+        ///	global uchar* source,
+        ///	global uchar* target,
+        ///	int threshold,
+        ///	uchar lower_than_value,
+        ///	uchar higher_than_value)
+        ///{
+        ///	int x = get_global_id(0);
+        ///    target[x] = source[x] &lt; threshold ? lower_than_value : higher_than_value;
+        ///}
+        ///.
+        /// </summary>
+        public static string threshold {
+            get {
+                return ResourceManager.GetString("threshold", resourceCulture);
+            }
+        }
     }
 }

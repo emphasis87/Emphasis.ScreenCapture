@@ -9,7 +9,7 @@ namespace Emphasis.ScreenCapture.OpenCL
 {
 	public class ComputeMemoryDispatcher
 	{
-		public async Task<ComputeMemory> Dispatch(ScreenCapture capture, ComputeContext context)
+		public async Task<ComputeImage2D> Dispatch(ScreenCapture capture, ComputeContext context)
 		{
 			if (capture is DxgiScreenCapture dxgiScreenCapture && capture.Method is IDxgiScreenCaptureMethod method)
 			{

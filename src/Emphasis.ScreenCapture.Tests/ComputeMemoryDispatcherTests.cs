@@ -46,11 +46,7 @@ namespace Emphasis.ScreenCapture.Tests
 			kernel.SetMemoryArgument(0, memory);
 			kernel.SetMemoryArgument(1, resultBuffer);
 
-			var errorCode = queue.Enqueue(kernel, new[] {width, height});
-			if (errorCode != ComputeErrorCode.Success)
-			{
-				Console.WriteLine(errorCode);
-			}
+			queue.Execute(kernel, null, new long[] {width, height}, null, null);
 
 			queue.Finish();
 
