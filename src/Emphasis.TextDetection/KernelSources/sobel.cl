@@ -5,7 +5,7 @@ void kernel sobel_u8(
 	global uchar* out_sobel_x,
 	global uchar* out_sobel_y,
 	global uchar* out_sobel_gradient,
-	global uchar* out_sobel_angle) 
+	global uchar* out_sobel_direction) 
 {
 	int x = get_global_id(0);
     int y = get_global_id(1);
@@ -46,6 +46,10 @@ void kernel sobel_u8(
 
 	out_sobel_gradient[d] = convert_uchar_sat(gradient);
 
+	// Convert the direction into 8 distinct directions
 	float direction = (angle  + 1.125) * 4 - 1;
-	out_sobel_angle[d] = convert_uchar_rtz(direction);
+	uchar direction_u8 = convert_uchar_rtz(direction);
+	
+	// Indexes 0,8,9 denote the same direction
+	out_sobel_direction[d] = direction_u8 > 7 ? 0 : direction_u8;
 }

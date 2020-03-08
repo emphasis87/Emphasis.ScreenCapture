@@ -11,7 +11,7 @@ constant short2 S  = {  0,  1 };
 constant short2 SW = {  1,  1 };
 */
 
-constant short4 edge_neighbours[] = 
+constant short4 edge_perpendicular_neighbours[] = 
 {   
 	// x0, y0, x1, y1
 	{ -1,  0,  1,  0 }, // W/E
@@ -24,11 +24,11 @@ constant short4 edge_neighbours[] =
 	{  1, -1, -1,  1 }, // NW/SE
 };
 
-void kernel non_maximum_suppression_u8(
-	global uchar* in_gradient,
+void kernel stroke_width_transform_u8(
+	global uchar* in_canny,
 	global uchar* in_direction,
-	global uchar* out_nms,
-	int min_gradient)
+	global uchar* out_stroke_width,
+	int max_stroke_width)
 {
 	int x = get_global_id(0);
     int y = get_global_id(1);
@@ -36,25 +36,15 @@ void kernel non_maximum_suppression_u8(
     int h = get_global_size(1);
 	int d = x + y * w;
 
-	uchar gradient = in_gradient[d];
-
-	if (gradient < min_gradient){
-		out_nms[d] = 0;
-		return;
-	}
-
 	uchar direction = in_direction[d];
-	short4 n = edge_neighbours[direction];
-	
+	short4 n = edge_perpendicular_neighbours[direction];
+
+	// Find the neighbouring positions in the perpendicular direction to the edge direction
 	short2 n1 = n.s01;
-	uchar g1 = in_gradient[x + n1.x + (y + n1.y) * w];
-
 	short2 n2 = n.s23;
-	uchar g2 = in_gradient[x + n2.x + (y + n2.y) * w];
+	int d1 = x + n1.x + (y + n1.y) * w;
+	int d2 = x + n2.x + (y + n2.y) * w
 
-	// Suppress gradient if neighbours are larger
-	if (g1 > gradient || g2 > gradient) 
-		out_nms[d] = 0;
-	else
-		out_nms[d] = gradient;
+	uchar g1 = in_canny[d1];
+	uchar g2 = in_canny[d2];
 }

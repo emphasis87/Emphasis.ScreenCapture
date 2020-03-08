@@ -28,6 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="KernelSources\stroke_width_transform.cl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="KernelSources\threshold.cl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

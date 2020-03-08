@@ -129,8 +129,8 @@ namespace Emphasis.ScreenCapture.Tests
 			var sobelGradient = new byte[height * width];
 			using var sobelGradientBuffer = context.CreateBuffer(sobelGradient);
 
-			var sobelAngle = new byte[height * width];
-			using var sobelAngleBuffer = context.CreateBuffer(sobelAngle);
+			var sobelDirection = new byte[height * width];
+			using var sobelDirectionBuffer = context.CreateBuffer(sobelDirection);
 
 			var nms = new byte[height * width];
 			using var nmsBuffer = context.CreateBuffer(nms);
@@ -138,16 +138,21 @@ namespace Emphasis.ScreenCapture.Tests
 			// Enqueue kernels
 			var events = new List<ComputeEventBase>();
 			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
-			kernels.EnqueueSobel(device, globalWorkSize, grayscaleBuffer, sobelDxBuffer, sobelDyBuffer, sobelGradientBuffer, sobelAngleBuffer, events);
-			kernels.EnqueueNonMaximumSuppression(device, globalWorkSize, sobelGradientBuffer, sobelAngleBuffer, nmsBuffer, 10, events);
+			kernels.EnqueueSobel(device, globalWorkSize, grayscaleBuffer, sobelDxBuffer, sobelDyBuffer, sobelGradientBuffer, sobelDirectionBuffer, events);
+			kernels.EnqueueNonMaximumSuppression(device, globalWorkSize, sobelGradientBuffer, sobelDirectionBuffer, nmsBuffer, 10, events);
 
 			await events.WaitForEvents();
 
-			var result = nms.ToBitmap(width, height, 1);
-			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "nms.png"));
-			result.Save(resultPath);
+			var sobelBitmap = sobelGradient.ToBitmap(width, height, 1);
+			var sobelPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sobel_gradient.png"));
+			sobelBitmap.Save(sobelPath);
 
-			Run(resultPath);
+			var nmsBitmap = nms.ToBitmap(width, height, 1);
+			var nmsPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "nms.png"));
+			nmsBitmap.Save(nmsPath);
+
+			Run(sobelPath);
+			Run(nmsPath);
 		}
 	}
 }

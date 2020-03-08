@@ -73,7 +73,7 @@ namespace Emphasis.TextDetection
 			ComputeBuffer<byte> sobelDxBuffer,
 			ComputeBuffer<byte> sobelDyBuffer,
 			ComputeBuffer<byte> sobelGradientBuffer,
-			ComputeBuffer<byte> sobelAngleBuffer,
+			ComputeBuffer<byte> sobelDirectionBuffer,
 			ICollection<ComputeEventBase> events)
 		{
 			events ??= new List<ComputeEventBase>();
@@ -85,7 +85,7 @@ namespace Emphasis.TextDetection
 			kernel.SetMemoryArgument(1, sobelDxBuffer);
 			kernel.SetMemoryArgument(2, sobelDyBuffer);
 			kernel.SetMemoryArgument(3, sobelGradientBuffer);
-			kernel.SetMemoryArgument(4, sobelAngleBuffer);
+			kernel.SetMemoryArgument(4, sobelDirectionBuffer);
 
 			queue.Enqueue(kernel, globalWorkSize: globalWorkSize, events: events);
 		}
@@ -94,7 +94,7 @@ namespace Emphasis.TextDetection
 			ComputeDevice device,
 			long[] globalWorkSize,
 			ComputeBuffer<byte> sobelGradientBuffer,
-			ComputeBuffer<byte> sobelAngleBuffer,
+			ComputeBuffer<byte> sobelDirectionBuffer,
 			ComputeBuffer<byte> nmsBuffer,
 			int minGradient,
 			ICollection<ComputeEventBase> events)
@@ -105,7 +105,7 @@ namespace Emphasis.TextDetection
 			var queue = _computeManager.GetQueue(device);
 
 			kernel.SetMemoryArgument(0, sobelGradientBuffer);
-			kernel.SetMemoryArgument(1, sobelAngleBuffer);
+			kernel.SetMemoryArgument(1, sobelDirectionBuffer);
 			kernel.SetMemoryArgument(2, nmsBuffer);
 			kernel.SetValueArgument(3, minGradient);
 
