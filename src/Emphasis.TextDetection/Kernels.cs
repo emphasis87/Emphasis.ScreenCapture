@@ -21,6 +21,7 @@ namespace Emphasis.TextDetection
 			computeManager.AddProgram(KernelSources.sobel, options);
 			computeManager.AddProgram(KernelSources.canny, options);
 			computeManager.AddProgram(KernelSources.non_maximum_supression, options);
+			computeManager.AddProgram(KernelSources.gauss_blur, options);
 
 			_computeManager = computeManager;
 		}
@@ -64,6 +65,24 @@ namespace Emphasis.TextDetection
 			kernel.SetValueArgument(4, higherThanValue);
 
 			queue.Enqueue(kernel, globalWorkSize: new[] {sourceBuffer.Count}, events: events);
+		}
+
+		public void EnqueueGaussBlur(
+			ComputeDevice device,
+			long[] globalWorkSize,
+			ComputeBuffer<byte> grayscaleBuffer,
+			ComputeBuffer<byte> gaussBlurBuffer,
+			ICollection<ComputeEventBase> events)
+		{
+			events ??= new List<ComputeEventBase>();
+
+			var kernel = _computeManager.GetKernel(device, "gauss_blur_u8");
+			var queue = _computeManager.GetQueue(device);
+
+			kernel.SetMemoryArgument(0, grayscaleBuffer);
+			kernel.SetMemoryArgument(1, gaussBlurBuffer);
+
+			queue.Enqueue(kernel, globalWorkSize: globalWorkSize, events: events);
 		}
 
 		public void EnqueueSobel(

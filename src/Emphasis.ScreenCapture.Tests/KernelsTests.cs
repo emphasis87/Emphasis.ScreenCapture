@@ -95,6 +95,89 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public async Task Can_EnqueueGaussBlur()
+		{
+			var device = ComputePlatform.Platforms
+				.SelectMany(x => x.Devices)
+				.First(x => x.Type == ComputeDeviceTypes.Gpu);
+
+			using var computeManager = new ComputeManager();
+			using var kernels = new Kernels(computeManager);
+
+			var context = computeManager.GetContext(device);
+			var sample = Samples.sample02;
+			var sampleBytes = sample.ToBytes();
+			
+			var width = sample.Width;
+			var height = sample.Height;
+			var globalWorkSize = new long[] { width, height };
+
+			using var image = context.CreateImage2D(sampleBytes, width, height);
+
+			var grayscale = new byte[height * width];
+			using var grayscaleBuffer = context.CreateBuffer(grayscale);
+
+			var gaussBlur = new byte[height * width];
+			using var gaussBlurBuffer = context.CreateBuffer(gaussBlur);
+
+			var events = new List<ComputeEventBase>();
+			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
+			kernels.EnqueueGaussBlur(device, globalWorkSize, grayscaleBuffer, gaussBlurBuffer, events);
+
+			await events.WaitForEvents();
+
+			var grayscaleBitmap = grayscale.ToBitmap(width, height, 1);
+			var grayscalePath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
+			grayscaleBitmap.Save(grayscalePath);
+
+			var gaussBlurBitmap = gaussBlur.ToBitmap(width, height, 1);
+			var gaussBlurPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "gauss_blur.png"));
+			gaussBlurBitmap.Save(gaussBlurPath);
+
+			var gauss = new float[][]
+			{
+				new[] {0.0625f, 0.1250f, 0.0625f},
+				new[] {0.1250f, 0.2500f, 0.1250f},
+				new[] {0.0625f, 0.1250f, 0.0625f},
+			};
+
+			var gauss2 = new byte[height * width];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					if (y == 0 || y == height - 1 || x == 0 || x == width - 1)
+					{
+						gauss2[d] = grayscale[d];
+					}
+					else
+					{
+						var sum =
+							gauss[0][0] * grayscale[(y - 1) * width + (x - 1)] +
+							gauss[0][1] * grayscale[(y - 1) * width + (x + 0)] +
+							gauss[0][2] * grayscale[(y - 1) * width + (x + 1)] +
+							gauss[1][0] * grayscale[(y + 0) * width + (x - 1)] +
+							gauss[1][1] * grayscale[(y + 0) * width + (x + 0)] +
+							gauss[1][2] * grayscale[(y + 0) * width + (x + 1)] +
+							gauss[2][0] * grayscale[(y + 1) * width + (x - 1)] +
+							gauss[2][1] * grayscale[(y + 1) * width + (x + 0)] +
+							gauss[2][2] * grayscale[(y + 1) * width + (x + 1)];
+						gauss2[d] = (byte)Math.Round(Math.Min(255, sum));
+					}
+				}
+			}
+
+			var gauss2Bitmap = gauss2.ToBitmap(width, height, 1);
+			var gauss2Path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "gauss2.png"));
+			gauss2Bitmap.Save(gauss2Path);
+
+			Run(grayscalePath);
+			Run(gaussBlurPath);
+			Run(gauss2Path);
+		}
+
+		[Test]
 		public async Task Can_EnqueueNonMaximumSuppression()
 		{
 			var manager = new ScreenCaptureManager();

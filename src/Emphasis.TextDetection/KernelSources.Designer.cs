@@ -104,6 +104,37 @@ namespace Emphasis.TextDetection {
         /// <summary>
         ///   Looks up a localized string similar to #pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
         ///
+        ///constant float gauss[] = 
+        ///{   
+        ///	{ 0.0625, 0.1250, 0.0625 },
+        ///	{ 0.1250, 0.2500, 0.1250 },
+        ///    { 0.0625, 0.1250, 0.0625 },
+        ///};
+        ///
+        ///void kernel gauss_blur_u8(
+        ///	global uchar* in_grayscale,
+        ///	global uchar* out_blur) 
+        ///{
+        ///	const int x = get_global_id(0);
+        ///    const int y = get_global_id(1);
+        ///	const int w = get_global_size(0);
+        ///    const int h = get_global_size(1);
+        ///
+        ///	x = max(1, min(x, w-1));
+        ///	y = max(1, min(y, h-1));
+        ///	
+        ///	int sum = 
+        ///		gauss [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string gauss_blur {
+            get {
+                return ResourceManager.GetString("gauss_blur", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to #pragma OPENCL EXTENSION cl_khr_byte_addressable_store : enable
+        ///
         ///constant sampler_t sampler = 
         ///	CLK_NORMALIZED_COORDS_FALSE | 
         ///	CLK_FILTER_NEAREST | 
@@ -221,7 +252,7 @@ namespace Emphasis.TextDetection {
         ///	global uchar* out_sobel_x,
         ///	global uchar* out_sobel_y,
         ///	global uchar* out_sobel_gradient,
-        ///	global uchar* out_sobel_angle) 
+        ///	global uchar* out_sobel_direction) 
         ///{
         ///	int x = get_global_id(0);
         ///    int y = get_global_id(1);
@@ -234,7 +265,7 @@ namespace Emphasis.TextDetection {
         ///	int d = y * w + x;
         ///
         ///	uchar i00 = in_gray[(x -1) + (y -1) * w];
-        ///	uchar i01 = i [rest of string was truncated]&quot;;.
+        ///	uchar i01 [rest of string was truncated]&quot;;.
         /// </summary>
         public static string sobel {
             get {
@@ -248,7 +279,7 @@ namespace Emphasis.TextDetection {
         ///void kernel threshold_u8(
         ///	global uchar* source,
         ///	global uchar* target,
-        ///	int threshold,
+        ///	uchar threshold,
         ///	uchar lower_than_value,
         ///	uchar higher_than_value)
         ///{

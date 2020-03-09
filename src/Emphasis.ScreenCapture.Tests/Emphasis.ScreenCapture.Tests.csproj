@@ -19,6 +19,7 @@
     </PackageReference>
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +27,21 @@
     <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
     <ProjectReference Include="..\Emphasis.TextDetection\Emphasis.TextDetection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Samples.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Samples.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Samples.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Samples.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
