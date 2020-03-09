@@ -180,24 +180,22 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public async Task Can_EnqueueNonMaximumSuppression()
 		{
-			var manager = new ScreenCaptureManager();
-			var dispatcher = new ComputeMemoryDispatcher();
-
-			var screen = manager.GetScreens().First();
-
-			using var capture = await manager.Capture(screen).FirstAsync();
-			var width = capture.Width;
-			var height = capture.Height;
-			var globalWorkSize = new long[] { width, height };
-
 			var device = ComputePlatform.Platforms
 				.SelectMany(x => x.Devices)
 				.First(x => x.Type == ComputeDeviceTypes.Gpu);
 
 			using var computeManager = new ComputeManager();
 			using var kernels = new Kernels(computeManager);
+
 			var context = computeManager.GetContext(device);
-			using var image = await dispatcher.Dispatch(capture, context);
+			var sample = Samples.sample02;
+			var sampleBytes = sample.ToBytes();
+
+			var width = sample.Width;
+			var height = sample.Height;
+			var globalWorkSize = new long[] { width, height };
+
+			using var image = context.CreateImage2D(sampleBytes, width, height);
 
 			// Allocate buffers
 			var grayscale = new byte[height * width];
@@ -215,12 +213,16 @@ namespace Emphasis.ScreenCapture.Tests
 			var sobelDirection = new byte[height * width];
 			using var sobelDirectionBuffer = context.CreateBuffer(sobelDirection);
 
+			var gaussBlur = new byte[height * width];
+			using var gaussBlurBuffer = context.CreateBuffer(gaussBlur);
+
 			var nms = new byte[height * width];
 			using var nmsBuffer = context.CreateBuffer(nms);
 
 			// Enqueue kernels
 			var events = new List<ComputeEventBase>();
 			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
+			kernels.EnqueueGaussBlur(device, globalWorkSize, grayscaleBuffer, gaussBlurBuffer, events);
 			kernels.EnqueueSobel(device, globalWorkSize, grayscaleBuffer, sobelDxBuffer, sobelDyBuffer, sobelGradientBuffer, sobelDirectionBuffer, events);
 			kernels.EnqueueNonMaximumSuppression(device, globalWorkSize, sobelGradientBuffer, sobelDirectionBuffer, nmsBuffer, 10, events);
 
