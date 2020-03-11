@@ -83,7 +83,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var events = new List<ComputeEventBase>();
 			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
-			kernels.EnqueueThreshold(device, grayscaleBuffer, thresholdBuffer, 123, 0, 255, events);
+			kernels.EnqueueThreshold(device, grayscaleBuffer, thresholdBuffer, 123, events);
 
 			await events.WaitForEvents();
 
@@ -178,7 +178,7 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
-		public async Task Can_EnqueueNonMaximumSuppression()
+		public async Task Canny_edge_detection_grayscale()
 		{
 			var device = ComputePlatform.Platforms
 				.SelectMany(x => x.Devices)
@@ -201,11 +201,76 @@ namespace Emphasis.ScreenCapture.Tests
 			var grayscale = new byte[height * width];
 			using var grayscaleBuffer = context.CreateBuffer(grayscale);
 
-			var sobelDx = new byte[height * width];
-			using var sobelDxBuffer = context.CreateBuffer(sobelDx);
+			var sobelGradient = new byte[height * width];
+			using var sobelGradientBuffer = context.CreateBuffer(sobelGradient);
 
-			var sobelDy = new byte[height * width];
-			using var sobelDyBuffer = context.CreateBuffer(sobelDy);
+			var sobelDirection = new byte[height * width];
+			using var sobelDirectionBuffer = context.CreateBuffer(sobelDirection);
+
+			var gaussBlur = new byte[height * width];
+			using var gaussBlurBuffer = context.CreateBuffer(gaussBlur);
+
+			var nms = new byte[height * width];
+			using var nmsBuffer = context.CreateBuffer(nms);
+
+			var threshold = new byte[height * width];
+			using var thresholdBuffer = context.CreateBuffer(threshold);
+
+			// Enqueue kernels
+			var events = new List<ComputeEventBase>();
+			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
+			kernels.EnqueueGaussBlur(device, globalWorkSize, grayscaleBuffer, gaussBlurBuffer, events);
+			kernels.EnqueueSobel(device, globalWorkSize, grayscaleBuffer, sobelGradientBuffer, sobelDirectionBuffer, events);
+			kernels.EnqueueNonMaximumSuppression(device, globalWorkSize, sobelGradientBuffer, sobelDirectionBuffer, nmsBuffer, events);
+			kernels.EnqueueDoubleThreshold(device, nmsBuffer, thresholdBuffer, 30, 70, events);
+
+			await events.WaitForEvents();
+
+			var grayscaleBitmap = grayscale.ToBitmap(width, height, 1);
+			var grayscalePath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
+			grayscaleBitmap.Save(grayscalePath);
+
+			var sobelBitmap = sobelGradient.ToBitmap(width, height, 1);
+			var sobelPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sobel_gradient.png"));
+			sobelBitmap.Save(sobelPath);
+
+			var nmsBitmap = nms.ToBitmap(width, height, 1);
+			var nmsPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "nms.png"));
+			nmsBitmap.Save(nmsPath);
+
+			var thresholdBitmap = threshold.ToBitmap(width, height, 1);
+			var thresholdPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "threshold.png"));
+			thresholdBitmap.Save(thresholdPath);
+
+			Run(grayscalePath);
+			Run(sobelPath);
+			Run(nmsPath);
+			Run(thresholdPath);
+		}
+
+		[Test]
+		public async Task Canny_edge_detection()
+		{
+			var device = ComputePlatform.Platforms
+				.SelectMany(x => x.Devices)
+				.First(x => x.Type == ComputeDeviceTypes.Gpu);
+
+			using var computeManager = new ComputeManager();
+			using var kernels = new Kernels(computeManager);
+
+			var context = computeManager.GetContext(device);
+			var sample = Samples.sample02;
+			var sampleBytes = sample.ToBytes();
+
+			var width = sample.Width;
+			var height = sample.Height;
+			var globalWorkSize = new long[] { width, height };
+
+			using var image = context.CreateImage2D(sampleBytes, width, height);
+
+			// Allocate buffers
+			var grayscale = new byte[height * width];
+			using var grayscaleBuffer = context.CreateBuffer(grayscale);
 
 			var sobelGradient = new byte[height * width];
 			using var sobelGradientBuffer = context.CreateBuffer(sobelGradient);
@@ -219,14 +284,22 @@ namespace Emphasis.ScreenCapture.Tests
 			var nms = new byte[height * width];
 			using var nmsBuffer = context.CreateBuffer(nms);
 
+			var threshold = new byte[height * width];
+			using var thresholdBuffer = context.CreateBuffer(threshold);
+
 			// Enqueue kernels
 			var events = new List<ComputeEventBase>();
 			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
 			kernels.EnqueueGaussBlur(device, globalWorkSize, grayscaleBuffer, gaussBlurBuffer, events);
-			kernels.EnqueueSobel(device, globalWorkSize, grayscaleBuffer, sobelDxBuffer, sobelDyBuffer, sobelGradientBuffer, sobelDirectionBuffer, events);
-			kernels.EnqueueNonMaximumSuppression(device, globalWorkSize, sobelGradientBuffer, sobelDirectionBuffer, nmsBuffer, 10, events);
+			kernels.EnqueueSobel(device, globalWorkSize, grayscaleBuffer, sobelGradientBuffer, sobelDirectionBuffer, events);
+			kernels.EnqueueNonMaximumSuppression(device, globalWorkSize, sobelGradientBuffer, sobelDirectionBuffer, nmsBuffer, events);
+			kernels.EnqueueDoubleThreshold(device, nmsBuffer, thresholdBuffer, 30, 70, events);
 
 			await events.WaitForEvents();
+
+			var grayscaleBitmap = grayscale.ToBitmap(width, height, 1);
+			var grayscalePath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
+			grayscaleBitmap.Save(grayscalePath);
 
 			var sobelBitmap = sobelGradient.ToBitmap(width, height, 1);
 			var sobelPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sobel_gradient.png"));
@@ -236,8 +309,14 @@ namespace Emphasis.ScreenCapture.Tests
 			var nmsPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "nms.png"));
 			nmsBitmap.Save(nmsPath);
 
+			var thresholdBitmap = threshold.ToBitmap(width, height, 1);
+			var thresholdPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "threshold.png"));
+			thresholdBitmap.Save(thresholdPath);
+
+			Run(grayscalePath);
 			Run(sobelPath);
 			Run(nmsPath);
+			Run(thresholdPath);
 		}
 	}
 }

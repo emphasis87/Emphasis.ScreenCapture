@@ -49,8 +49,6 @@ namespace Emphasis.TextDetection
 			ComputeBuffer<byte> sourceBuffer,
 			ComputeBuffer<byte> thresholdBuffer,
 			byte threshold,
-			byte lowerThanValue,
-			byte higherThanValue,
 			ICollection<ComputeEventBase> events)
 		{
 			events ??= new List<ComputeEventBase>();
@@ -61,10 +59,29 @@ namespace Emphasis.TextDetection
 			kernel.SetMemoryArgument(0, sourceBuffer);
 			kernel.SetMemoryArgument(1, thresholdBuffer);
 			kernel.SetValueArgument(2, threshold);
-			kernel.SetValueArgument(3, lowerThanValue);
-			kernel.SetValueArgument(4, higherThanValue);
 
 			queue.Enqueue(kernel, globalWorkSize: new[] {sourceBuffer.Count}, events: events);
+		}
+
+		public void EnqueueDoubleThreshold(
+			ComputeDevice device,
+			ComputeBuffer<byte> sourceBuffer,
+			ComputeBuffer<byte> thresholdBuffer,
+			byte low_threshold,
+			byte high_threshold,
+			ICollection<ComputeEventBase> events)
+		{
+			events ??= new List<ComputeEventBase>();
+
+			var kernel = _computeManager.GetKernel(device, "double_threshold_u8");
+			var queue = _computeManager.GetQueue(device);
+
+			kernel.SetMemoryArgument(0, sourceBuffer);
+			kernel.SetMemoryArgument(1, thresholdBuffer);
+			kernel.SetValueArgument(2, low_threshold);
+			kernel.SetValueArgument(3, high_threshold);
+
+			queue.Enqueue(kernel, globalWorkSize: new[] { sourceBuffer.Count }, events: events);
 		}
 
 		public void EnqueueGaussBlur(
@@ -89,8 +106,6 @@ namespace Emphasis.TextDetection
 			ComputeDevice device, 
 			long[] globalWorkSize,
 			ComputeBuffer<byte> grayscaleBuffer,
-			ComputeBuffer<byte> sobelDxBuffer,
-			ComputeBuffer<byte> sobelDyBuffer,
 			ComputeBuffer<byte> sobelGradientBuffer,
 			ComputeBuffer<byte> sobelDirectionBuffer,
 			ICollection<ComputeEventBase> events)
@@ -101,10 +116,8 @@ namespace Emphasis.TextDetection
 			var queue = _computeManager.GetQueue(device);
 			
 			kernel.SetMemoryArgument(0, grayscaleBuffer);
-			kernel.SetMemoryArgument(1, sobelDxBuffer);
-			kernel.SetMemoryArgument(2, sobelDyBuffer);
-			kernel.SetMemoryArgument(3, sobelGradientBuffer);
-			kernel.SetMemoryArgument(4, sobelDirectionBuffer);
+			kernel.SetMemoryArgument(1, sobelGradientBuffer);
+			kernel.SetMemoryArgument(2, sobelDirectionBuffer);
 
 			queue.Enqueue(kernel, globalWorkSize: globalWorkSize, events: events);
 		}
@@ -115,7 +128,6 @@ namespace Emphasis.TextDetection
 			ComputeBuffer<byte> sobelGradientBuffer,
 			ComputeBuffer<byte> sobelDirectionBuffer,
 			ComputeBuffer<byte> nmsBuffer,
-			int minGradient,
 			ICollection<ComputeEventBase> events)
 		{
 			events ??= new List<ComputeEventBase>();
@@ -126,7 +138,6 @@ namespace Emphasis.TextDetection
 			kernel.SetMemoryArgument(0, sobelGradientBuffer);
 			kernel.SetMemoryArgument(1, sobelDirectionBuffer);
 			kernel.SetMemoryArgument(2, nmsBuffer);
-			kernel.SetValueArgument(3, minGradient);
 
 			queue.Enqueue(kernel, globalWorkSize: globalWorkSize, events: events);
 		}

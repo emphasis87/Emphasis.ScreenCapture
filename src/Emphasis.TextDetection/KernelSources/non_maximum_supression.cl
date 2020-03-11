@@ -27,8 +27,7 @@ constant short4 edge_neighbours[] =
 void kernel non_maximum_suppression_u8(
 	global uchar* in_gradient,
 	global uchar* in_direction,
-	global uchar* out_nms,
-	int min_gradient)
+	global uchar* out_nms)
 {
 	int x = get_global_id(0);
     int y = get_global_id(1);
@@ -37,11 +36,6 @@ void kernel non_maximum_suppression_u8(
 	int d = x + y * w;
 
 	uchar gradient = in_gradient[d];
-
-	if (gradient < min_gradient){
-		out_nms[d] = 0;
-		return;
-	}
 
 	uchar direction = in_direction[d];
 	short4 n = edge_neighbours[direction];
@@ -52,7 +46,7 @@ void kernel non_maximum_suppression_u8(
 	short2 n2 = n.s23;
 	uchar g2 = in_gradient[x + n2.x + (y + n2.y) * w];
 
-	// Suppress gradient if neighbours are larger
+	// Suppress the gradient if there is a larger neighbour
 	if (g1 > gradient || g2 > gradient) 
 		out_nms[d] = 0;
 	else
