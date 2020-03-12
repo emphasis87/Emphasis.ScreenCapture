@@ -65,27 +65,27 @@ void kernel sobel(
 		dot(m1, (float4)(p00.x, p10.x, p20.x, 0)) +
 		dot(m2, (float4)(p02.x, p12.x, p22.x, 0));
 	const float sum_x1 =
-		dot(m1, (float3)(p00.y, p10.y, p20.y, 0)) +
-		dot(m2, (float3)(p02.y, p12.y, p22.y, 0));
+		dot(m1, (float4)(p00.y, p10.y, p20.y, 0)) +
+		dot(m2, (float4)(p02.y, p12.y, p22.y, 0));
 	const float sum_x2 =
-		dot(m1, (float3)(p00.z, p10.z, p20.z, 0)) +
-		dot(m2, (float3)(p02.z, p12.z, p22.z, 0));
+		dot(m1, (float4)(p00.z, p10.z, p20.z, 0)) +
+		dot(m2, (float4)(p02.z, p12.z, p22.z, 0));
 	const float sum_x3 =
-		dot(m1, (float3)(p00.w, p10.w, p20.w, 0)) +
-		dot(m2, (float3)(p02.w, p12.w, p22.w, 0));
+		dot(m1, (float4)(p00.w, p10.w, p20.w, 0)) +
+		dot(m2, (float4)(p02.w, p12.w, p22.w, 0));
 
 	const float sum_y0 =
-		dot(m1, (float3)(p00.x, p01.x, p02.x, 0)) +
-		dot(m2, (float3)(p20.x, p21.x, p22.x, 0));
+		dot(m1, (float4)(p00.x, p01.x, p02.x, 0)) +
+		dot(m2, (float4)(p20.x, p21.x, p22.x, 0));
 	const float sum_y1 =
-		dot(m1, (float3)(p00.y, p01.y, p02.y, 0)) +
-		dot(m2, (float3)(p20.y, p21.y, p22.y, 0));
+		dot(m1, (float4)(p00.y, p01.y, p02.y, 0)) +
+		dot(m2, (float4)(p20.y, p21.y, p22.y, 0));
 	const float sum_y2 =
-		dot(m1, (float3)(p00.z, p01.z, p02.z, 0)) +
-		dot(m2, (float3)(p20.z, p21.z, p22.z, 0));
+		dot(m1, (float4)(p00.z, p01.z, p02.z, 0)) +
+		dot(m2, (float4)(p20.z, p21.z, p22.z, 0));
 	const float sum_y3 =
-		dot(m1, (float3)(p00.w, p01.w, p02.w, 0)) +
-		dot(m2, (float3)(p20.w, p21.w, p22.w, 0));
+		dot(m1, (float4)(p00.w, p01.w, p02.w, 0)) +
+		dot(m2, (float4)(p20.w, p21.w, p22.w, 0));
 	
 	const float sum_x = maxmag(maxmag(maxmag(sum_x0, sum_x1), sum_x2), sum_x3);
 	const float sum_y = maxmag(maxmag(maxmag(sum_y0, sum_y1), sum_y2), sum_y3);
