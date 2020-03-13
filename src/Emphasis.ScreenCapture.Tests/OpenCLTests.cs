@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cloo;
 using Cloo.Bindings;
@@ -126,7 +127,7 @@ void kernel sum(
 ";
 
 		[Test]
-		public async Task Can_multiply()
+		public async Task Can_multiply_with_device_allocated_memory()
 		{
 			var platform = ComputePlatform.Platforms.First();
 			var device = platform.Devices.First();
@@ -170,6 +171,52 @@ void kernel sum(
 
 			queue.Unmap(targetBuffer, ref targetPtr, events);
 			await events.WaitForEvents();
+		}
+
+		[Test]
+		public async Task Can_multiply_using_pinned_host_pointer()
+		{
+			var platform = ComputePlatform.Platforms.First();
+			var device = platform.Devices.First();
+			var context = new ComputeContext(new[] { device }, new ComputeContextPropertyList(platform), null, IntPtr.Zero);
+
+			using var program = new ComputeProgram(context, Sum_kernel);
+
+			program.Build(new[] { device }, "-cl-std=CL1.2", (handle, ptr) => OnProgramBuilt(program, device), IntPtr.Zero);
+
+			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
+			using var kernel = program.CreateKernel("sum");
+
+			var source = new byte[] { 1, 2, 3, 4, 5 };
+			var sourceHandle = GCHandle.Alloc(source, GCHandleType.Pinned);
+			var sourcePtr = sourceHandle.AddrOfPinnedObject();
+			using var sourceBuffer = new ComputeBuffer<byte>(
+				context,
+				ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer,
+				source.LongLength,
+				sourcePtr);
+
+			var target = new byte[5];
+			var targetHandle = GCHandle.Alloc(target, GCHandleType.Pinned);
+			var targetPtr = targetHandle.AddrOfPinnedObject();
+			using var targetBuffer = new ComputeBuffer<byte>(
+				context,
+				ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer,
+				target.LongLength,
+				targetPtr);
+
+			kernel.SetMemoryArgument(0, sourceBuffer);
+			kernel.SetMemoryArgument(1, targetBuffer);
+
+			var events = new List<ComputeEventBase>();
+			queue.Execute(kernel, null, new long[] { source.Length }, null, events);
+
+			await events.WaitForEvents();
+
+			for (var i = 0; i < target.Length; i++)
+			{
+				Console.WriteLine($"{source[i]} * 2 = {target[i]}");
+			}
 		}
 
 		private void OnProgramBuilt(ComputeProgram program, ComputeDevice device)
