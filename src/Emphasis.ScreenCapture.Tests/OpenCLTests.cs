@@ -176,18 +176,21 @@ void kernel sum(
 		[Test]
 		public async Task Can_multiply_using_pinned_host_pointer()
 		{
+			// This doesn't seem to work on NVidia platforms
 			var platform = ComputePlatform.Platforms.First();
 			var device = platform.Devices.First();
-			var context = new ComputeContext(new[] { device }, new ComputeContextPropertyList(platform), null, IntPtr.Zero);
+			var context = new ComputeContext(new[] {device}, new ComputeContextPropertyList(platform), null,
+				IntPtr.Zero);
 
 			using var program = new ComputeProgram(context, Sum_kernel);
 
-			program.Build(new[] { device }, "-cl-std=CL1.2", (handle, ptr) => OnProgramBuilt(program, device), IntPtr.Zero);
+			program.Build(new[] {device}, "-cl-std=CL1.2", (handle, ptr) => OnProgramBuilt(program, device),
+				IntPtr.Zero);
 
 			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
 			using var kernel = program.CreateKernel("sum");
 
-			var source = new byte[] { 1, 2, 3, 4, 5 };
+			var source = new byte[] {1, 2, 3, 4, 5};
 			var sourceHandle = GCHandle.Alloc(source, GCHandleType.Pinned);
 			var sourcePtr = sourceHandle.AddrOfPinnedObject();
 			using var sourceBuffer = new ComputeBuffer<byte>(
@@ -205,17 +208,26 @@ void kernel sum(
 				target.LongLength,
 				targetPtr);
 
-			kernel.SetMemoryArgument(0, sourceBuffer);
-			kernel.SetMemoryArgument(1, targetBuffer);
-
-			var events = new List<ComputeEventBase>();
-			queue.Execute(kernel, null, new long[] { source.Length }, null, events);
-
-			await events.WaitForEvents();
-
-			for (var i = 0; i < target.Length; i++)
+			try
 			{
-				Console.WriteLine($"{source[i]} * 2 = {target[i]}");
+				kernel.SetMemoryArgument(0, sourceBuffer);
+				kernel.SetMemoryArgument(1, targetBuffer);
+
+				var events = new List<ComputeEventBase>();
+				queue.Execute(kernel, null, new long[] {source.Length}, null, events);
+
+				await events.WaitForEvents();
+
+				for (var i = 0; i < target.Length; i++)
+				{
+					Console.WriteLine($"{source[i]} * 2 = {target[i]}");
+				}
+
+			}
+			finally
+			{
+				sourceHandle.Free();
+				targetHandle.Free();
 			}
 		}
 
