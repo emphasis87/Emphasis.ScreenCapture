@@ -44,12 +44,14 @@ namespace Emphasis.OpenCL.Helpers
 			if (notCompleted.Length == 0)
 				return;
 
+			var count = 0;
 			var tcs = new TaskCompletionSource<bool>();
 			foreach (var evt in notCompleted)
 			{
 				if (evt.Status == ComputeCommandExecutionStatus.Complete)
 					continue;
 
+				count++;
 				evt.Completed += delegate (object sender, ComputeCommandStatusArgs args)
 				{
 					if (notCompleted.All(x => x.Status == ComputeCommandExecutionStatus.Complete))
@@ -61,7 +63,8 @@ namespace Emphasis.OpenCL.Helpers
 				};
 			}
 
-			await tcs.Task;
+			if (count > 0)
+				await tcs.Task;
 		}
 	}
 }
