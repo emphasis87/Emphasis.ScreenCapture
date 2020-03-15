@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.Open
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.OpenCL", "Emphasis.OpenCL\Emphasis.OpenCL.csproj", "{06D0CBC7-CBC3-4631-B1E5-E21171103C03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.TextDetection", "Emphasis.TextDetection\Emphasis.TextDetection.csproj", "{DCD034C8-71EE-47E1-95FF-768D0CE01AF7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.TextDetection", "Emphasis.TextDetection\Emphasis.TextDetection.csproj", "{DCD034C8-71EE-47E1-95FF-768D0CE01AF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ComputerVision", "Emphasis.ComputerVision\Emphasis.ComputerVision.csproj", "{6280F841-FA98-4D0D-97E3-37F35F08EFBC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{DCD034C8-71EE-47E1-95FF-768D0CE01AF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCD034C8-71EE-47E1-95FF-768D0CE01AF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCD034C8-71EE-47E1-95FF-768D0CE01AF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6280F841-FA98-4D0D-97E3-37F35F08EFBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6280F841-FA98-4D0D-97E3-37F35F08EFBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6280F841-FA98-4D0D-97E3-37F35F08EFBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6280F841-FA98-4D0D-97E3-37F35F08EFBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
