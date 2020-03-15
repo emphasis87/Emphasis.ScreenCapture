@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Emphasis.ComputerVision
@@ -15,22 +16,28 @@ namespace Emphasis.ComputerVision
 
 		public static void Gauss(int width, int height, byte[] source, byte[] destination)
 		{
-			//var simd = Vector<byte>.Count;
-			//Span<byte> a = stackalloc byte[simd];
-			
-			//var v= new Vector<byte>(a);
-			//Vector<ushort> d1, d2;
-			//Vector.Widen(v, out d1, out d2);
-
 			for (var y = 0; y < height; y++)
 			{
 				var i = Clamp(y, height);
 				for (var x = 0; x < width; x++)
 				{
-					var d = y * width + x;
 					var j = Clamp(x, width);
+					for (var channel = 0; channel < 4; channel++)
+					{
+						var result =
+							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
+							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
+							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f +
+							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * 0.1250f +
+							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * 0.2500f +
+							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * 0.1250f +
+							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
+							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
+							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f;
 
-					
+						var d = y * (width * 4) + x * 4 + channel;
+						destination[d] = Convert.ToByte(result);
+					}
 				}
 			}
 		}
