@@ -15,11 +15,12 @@ namespace Emphasis.ComputerVision
 
 		public static void Gauss(int width, int height, byte[] source, byte[] destination)
 		{
-			var simd = Vector<byte>.Count;
-			Span<byte> a = stackalloc byte[simd];
+			//var simd = Vector<byte>.Count;
+			//Span<byte> a = stackalloc byte[simd];
 			
-			var v= new Vector<byte>(a);
-			Vector.Widen(v, out var d1, out var d2);
+			//var v= new Vector<byte>(a);
+			//Vector<ushort> d1, d2;
+			//Vector.Widen(v, out d1, out d2);
 
 			for (var y = 0; y < height; y++)
 			{
@@ -29,7 +30,7 @@ namespace Emphasis.ComputerVision
 					var d = y * width + x;
 					var j = Clamp(x, width);
 
-
+					
 				}
 			}
 		}
