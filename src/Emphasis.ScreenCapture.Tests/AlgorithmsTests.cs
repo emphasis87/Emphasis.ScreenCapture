@@ -13,7 +13,7 @@ namespace Emphasis.ScreenCapture.Tests
 	public class AlgorithmsTests
 	{
 		[Test]
-		public void GaussTest()
+		public void Gauss_Test()
 		{
 			var sourceBitmap = Samples.sample02;
 			var source = sourceBitmap.ToBytes();
@@ -31,6 +31,28 @@ namespace Emphasis.ScreenCapture.Tests
 			resultBitmap.Save(resultPath);
 
 			Run(resultPath);
+		}
+
+		[Test]
+		public void Sobel_Test()
+		{
+			var sourceBitmap = Samples.sample02;
+			var source = sourceBitmap.ToBytes();
+
+			var width = sourceBitmap.Width;
+			var height = sourceBitmap.Height;
+
+			var gradient = new byte[source.Length];
+			var direction = new byte[source.Length];
+			Algorithms.Sobel(width, height, source, gradient, direction);
+
+			Run(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sample02.png")));
+
+			var gradientBitmap = gradient.ToBitmap(width, height, 1);
+			var gradientPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sobel_gradient.png"));
+			gradientBitmap.Save(gradientPath);
+
+			Run(gradientPath);
 		}
 	}
 }

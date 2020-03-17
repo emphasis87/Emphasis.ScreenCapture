@@ -33,10 +33,10 @@ namespace Emphasis.ComputerVision
 							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * 0.1250f +
 							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
 							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f;
+			 				source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f;
 
 						var d = y * (width * 4) + x * 4 + channel;
-						destination[d] = Convert.ToByte(result);
+						destination[d] = Convert.ToByte(Math.Min(255, result));
 					}
 				}
 			}
@@ -59,26 +59,26 @@ namespace Emphasis.ComputerVision
 					for (var channel = 0; channel < 4; channel++)
 					{
 						var cdx =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * 0.1250f +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * 0.2500f +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * 0.1250f +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f;
+							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * -1.0f +
+							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
+							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * +1.0f +
+							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * -2.0f +
+							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
+							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * +2.0f +
+							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * -1.0f +
+							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
+							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * +1.0f;
 
 						var cdy =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * 0.1250f +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * 0.2500f +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * 0.1250f +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f;
+							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * -1.0f +
+							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * -2.0f +
+							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * -1.0f +
+							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * +0.0f +
+							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
+							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * +0.0f +
+							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * +1.0f +
+							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * +2.0f +
+							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * +1.0f;
 
 						var cdxAbs = Math.Abs(cdx);
 						if (cdxAbs > dxAbs)
@@ -99,7 +99,7 @@ namespace Emphasis.ComputerVision
 					var a = Math.Atan2(dy, dx) / Math.PI;
 
 					var d = y * width + x;
-					gradient[d] = Convert.ToByte(g);
+					gradient[d] = Convert.ToByte(Math.Min(255, g));
 
 					// Convert the angle into 8 distinct directions
 					var dir = Convert.ToByte((a + 1.125) * 4 - 1);
@@ -108,6 +108,52 @@ namespace Emphasis.ComputerVision
 						dir = 0;
 
 					direction[d] = dir;
+				}
+			}
+		}
+
+		/*
+		constant short4 edge_neighbours[] = 
+		{   
+			// x0, y0, x1, y1
+			{ -1,  0,  1,  0 }, // W/E
+			{ -1, -1,  1,  1 }, // SW/NE
+			{  0, -1,  0,  1 }, // S/N
+			{  1, -1, -1,  1 }, // SE/NW
+			{  1, -1, -1,  1 }, // E/W
+			{  1, -1, -1,  1 }, // NE/SW
+			{  1, -1, -1,  1 }, // N/S
+			{  1, -1, -1,  1 }, // NW/SE
+		};
+		*/
+
+		public void NonMaximumSuppression(int width, int height, byte[] source, byte[] destination)
+		{
+			for (var y = 0; y < height; y++)
+			{
+				var i = Clamp(y, height);
+				for (var x = 0; x < width; x++)
+				{
+					var j = Clamp(x, width);
+
+					var d = y * width + x;
+
+					//uchar gradient = in_gradient[d];
+
+					//uchar direction = in_direction[d];
+					//short4 n = edge_neighbours[direction];
+
+					//short2 n1 = n.s01;
+					//uchar g1 = in_gradient[x + n1.x + (y + n1.y) * w];
+
+					//short2 n2 = n.s23;
+					//uchar g2 = in_gradient[x + n2.x + (y + n2.y) * w];
+
+					//// Suppress the gradient if there is a larger neighbour
+					//if (g1 > gradient || g2 > gradient)
+					//	out_nms[d] = 0;
+					//else
+					//	out_nms[d] = gradient;
 				}
 			}
 		}
