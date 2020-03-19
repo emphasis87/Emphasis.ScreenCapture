@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Text;
 
@@ -42,11 +43,31 @@ namespace Emphasis.ScreenCapture.Helpers
 
 		public static void Run(string path)
 		{
+			if (!Path.IsPathRooted(path))
+				Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
+
 			var info = new ProcessStartInfo(path)
 			{
 				UseShellExecute = true
 			};
 			Process.Start(info);
+		}
+
+		public static void RunAs(this Bitmap image, string filename)
+		{
+			var path =
+				Path.GetFullPath(
+					Path.Combine(
+						Environment.CurrentDirectory,
+						filename));
+			image.Save(path);
+			Run(path);
+		}
+
+		public static void RunAs(this byte[] image, int width, int height, int bpp, string filename)
+		{
+			using var bitmap = image.ToBitmap(width, height, bpp);
+			RunAs(bitmap, filename);
 		}
 	}
 }

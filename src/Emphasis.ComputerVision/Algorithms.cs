@@ -112,29 +112,25 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		/*
-		constant short4 edge_neighbours[] = 
-		{   
-			// x0, y0, x1, y1
-			{ -1,  0,  1,  0 }, // W/E
-			{ -1, -1,  1,  1 }, // SW/NE
-			{  0, -1,  0,  1 }, // S/N
-			{  1, -1, -1,  1 }, // SE/NW
-			{  1, -1, -1,  1 }, // E/W
-			{  1, -1, -1,  1 }, // NE/SW
-			{  1, -1, -1,  1 }, // N/S
-			{  1, -1, -1,  1 }, // NW/SE
+		
+		private static readonly int[] neighbours = 
+		{
+			// W  = { -1,  0 };
+			// NW = { -1, -1 };
+			// N  = {  0, -1 };
+			// NE = {  1, -1 };
+			// E  = {  1,  0 };
+			// SE = {  1,  1 };
+			// S  = {  0,  1 };
+			// SW = {  1,  1 };
 		};
-		*/
 
-		public void NonMaximumSuppression(int width, int height, byte[] source, byte[] destination)
+		public static void NonMaximumSuppression(int width, int height, byte[] source, byte[] destination)
 		{
 			for (var y = 0; y < height; y++)
 			{
-				var i = Clamp(y, height);
 				for (var x = 0; x < width; x++)
 				{
-					var j = Clamp(x, width);
 
 					var d = y * width + x;
 

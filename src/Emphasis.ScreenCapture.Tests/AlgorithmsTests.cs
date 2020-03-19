@@ -24,13 +24,9 @@ namespace Emphasis.ScreenCapture.Tests
 			var result = new byte[source.Length];
 			Algorithms.Gauss(width, height, source, result);
 
-			Run(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sample02.png")));
+			Run("sample02.png");
 
-			var resultBitmap = result.ToBitmap(width, height, 4);
-			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "gauss.png"));
-			resultBitmap.Save(resultPath);
-
-			Run(resultPath);
+			result.RunAs(width, height, 4, "gauss.png");
 		}
 
 		[Test]
@@ -46,13 +42,31 @@ namespace Emphasis.ScreenCapture.Tests
 			var direction = new byte[source.Length];
 			Algorithms.Sobel(width, height, source, gradient, direction);
 
-			Run(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sample02.png")));
+			Run("sample02.png");
 
-			var gradientBitmap = gradient.ToBitmap(width, height, 1);
-			var gradientPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "sobel_gradient.png"));
-			gradientBitmap.Save(gradientPath);
+			gradient.RunAs(width, height, 1, "sobel_gradient.png");
+		}
 
-			Run(gradientPath);
+		[Test]
+		public void NonMaximumSuppression_Test()
+		{
+			var sourceBitmap = Samples.sample02;
+			var source = sourceBitmap.ToBytes();
+
+			var width = sourceBitmap.Width;
+			var height = sourceBitmap.Height;
+
+			var gradient = new byte[source.Length];
+			var direction = new byte[source.Length];
+			var gradientNms = new byte[source.Length];
+
+			Algorithms.Sobel(width, height, source, gradient, direction);
+			Algorithms.NonMaximumSuppression(width, height, gradient, gradientNms);
+
+			Run("sample02.png");
+
+			gradient.RunAs(width, height, 1, "sobel_gradient.png");
+			gradientNms.RunAs(width, height, 1, "sobel_gradient_nms.png");
 		}
 	}
 }
