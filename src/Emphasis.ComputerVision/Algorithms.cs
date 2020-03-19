@@ -112,27 +112,38 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		
-		private static readonly int[] neighbours = 
+		private static readonly int[,] Neighbors = 
 		{
-			// W  = { -1,  0 };
-			// NW = { -1, -1 };
-			// N  = {  0, -1 };
-			// NE = {  1, -1 };
-			// E  = {  1,  0 };
-			// SE = {  1,  1 };
-			// S  = {  0,  1 };
-			// SW = {  1,  1 };
+			// x   y
+			{ -1,  0 }, // W
+			{ -1, -1 }, // NW
+			{  0, -1 }, // N
+			{  1, -1 }, // NE
+			{  1,  0 }, // E
+			{  1,  1 }, // SE
+			{  0,  1 }, // S
+			{  1,  1 }, // SW
 		};
 
-		public static void NonMaximumSuppression(int width, int height, byte[] source, byte[] destination)
+		public static void NonMaximumSuppression(int width, int height, byte[] gradient, byte[] direction, byte[] destination)
 		{
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
 				{
-
 					var d = y * width + x;
+
+					var g = gradient[d];
+					var dir = direction[d];
+					var dx1 = Neighbors[dir, 0];
+					var dy1 = Neighbors[dir, 1];
+					var dx2 = -dx1;
+					var dy2 = -dy1;
+
+					var x1 = x;
+					var x2 = x;
+					var y1 = y;
+					var y2 = y;
 
 					//uchar gradient = in_gradient[d];
 
