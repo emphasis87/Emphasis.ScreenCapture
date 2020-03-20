@@ -7,13 +7,39 @@ namespace Emphasis.ComputerVision
 {
 	public partial class Algorithms
 	{
+		private static readonly float[] GrayscaleMask = 
+		{ 
+			0.2126f, // R
+			0.7152f, // G
+			0.0722f, // B
+			0
+		};
+
+		public static void Grayscale(int width, int height, byte[] source, byte[] grayscale)
+		{
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var g =
+						source[y * (width * 4) + x * 4 + 0] * GrayscaleMask[0] +
+						source[y * (width * 4) + x * 4 + 1] * GrayscaleMask[1] +
+						source[y * (width * 4) + x * 4 + 2] * GrayscaleMask[2] +
+						source[y * (width * 4) + x * 4 + 3] * GrayscaleMask[3];
+
+					var d = y * width + x;
+					grayscale[d] = Convert.ToByte(Math.Min(g, 255));
+				}
+			}
+		}
+
 		//constant float gauss[3][3] = 
 		//{   
 		//	{ 0.0625, 0.1250, 0.0625 },
 		//	{ 0.1250, 0.2500, 0.1250 },
 		//	{ 0.0625, 0.1250, 0.0625 },
 		//};
-
+		
 		public static void Gauss(int width, int height, byte[] source, byte[] destination)
 		{
 			for (var y = 0; y < height; y++)
@@ -42,7 +68,21 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void Sobel(int width, int height, byte[] source, byte[] gradient, byte[] direction)
+		private static readonly float[,] SobelDxMask = new float[,]
+		{
+			{ +1, +0, -1 },
+			{ +2, +0, -2 },
+			{ +1, +0, -1 },
+		};
+
+		private static readonly float[,] SobelDyMask = new float[,]
+		{
+			{ +1, +2, +1 },
+			{  0,  0,  0 },
+			{ -1, -2, -1 },
+		};
+
+		public static void Sobel(int width, int height, byte[] source, float[] gradient, byte[] direction)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -59,35 +99,35 @@ namespace Emphasis.ComputerVision
 					for (var channel = 0; channel < 4; channel++)
 					{
 						var cdx =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * -1.0f +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * +1.0f +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * -2.0f +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * +2.0f +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * -1.0f +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * +1.0f;
+							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDxMask[0, 0] +
+							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDxMask[0, 1] +
+							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDxMask[0, 2] +
+							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * SobelDxMask[1, 0] +
+							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * SobelDxMask[1, 1] +
+							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * SobelDxMask[1, 2] +
+							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDxMask[2, 0] +
+							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDxMask[2, 1] +
+							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDxMask[2, 2];
 
 						var cdy =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * -1.0f +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * -2.0f +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * -1.0f +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * +0.0f +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * +0.0f +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * +0.0f +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * +1.0f +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * +2.0f +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * +1.0f;
+							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDyMask[0, 0] +
+							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDyMask[0, 1] +
+							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDyMask[0, 2] +
+							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * SobelDyMask[1, 0] +
+							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * SobelDyMask[1, 1] +
+							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * SobelDyMask[1, 2] +
+							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDyMask[2, 0] +
+							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDyMask[2, 1] +
+							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDyMask[2, 2];
 
-						var cdxAbs = Math.Abs(cdx);
+						var cdxAbs = MathF.Abs(cdx);
 						if (cdxAbs > dxAbs)
 						{
 							dx = cdx;
 							dxAbs = cdxAbs;
 						}
 
-						var cdyAbs = Math.Abs(cdy);
+						var cdyAbs = MathF.Abs(cdy);
 						if (cdyAbs > dyAbs)
 						{
 							dy = cdy;
@@ -95,14 +135,16 @@ namespace Emphasis.ComputerVision
 						}
 					}
 
-					var g = Math.Sqrt(dx * dx + dy * dy);
-					var a = Math.Atan2(dy, dx) / Math.PI;
-
 					var d = y * width + x;
-					gradient[d] = Convert.ToByte(Math.Min(255, g));
 
+					// Up to sqrt(255*4 * 255*4 + 255*4 * 255*4) = 1442
+					var g = MathF.Sqrt(dx * dx + dy * dy);
+					gradient[d] = g;
+
+					var a = MathF.Atan2(dy, dx) / MathF.PI;
 					// Convert the angle into 8 distinct directions
-					var dir = Convert.ToByte((a + 1.125) * 4 - 1);
+					var dirf = (a + 1.125f) * 4 - 1;
+					var dir = Convert.ToByte(MathF.Round(dirf));
 					// Indexes 0,8,9 denote the same direction
 					if (dir > 7)
 						dir = 0;
@@ -112,7 +154,7 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		private static readonly int[,] Neighbors = 
+		private static readonly int[,] Neighbors =
 		{
 			// x   y
 			{ -1,  0 }, // W
@@ -125,15 +167,17 @@ namespace Emphasis.ComputerVision
 			{  1,  1 }, // SW
 		};
 
-		public static void NonMaximumSuppression(int width, int height, byte[] gradient, byte[] direction, byte[] destination)
+		public static void NonMaximumSuppression(int width, int height, float[] gradient, byte[] direction, float[] destination)
 		{
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
 				{
 					var d = y * width + x;
-
 					var g = gradient[d];
+					if (g < 30)
+						continue;
+
 					var dir = direction[d];
 					var dx1 = Neighbors[dir, 0];
 					var dy1 = Neighbors[dir, 1];
@@ -145,22 +189,47 @@ namespace Emphasis.ComputerVision
 					var y1 = y;
 					var y2 = y;
 
-					//uchar gradient = in_gradient[d];
+					var m1 = true;
+					var m2 = true;
 
-					//uchar direction = in_direction[d];
-					//short4 n = edge_neighbours[direction];
+					bool CompareGradient(ref bool m, ref int xn, ref int yn, int dx, int dy)
+					{
+						xn += dx;
+						yn += dy;
 
-					//short2 n1 = n.s01;
-					//uchar g1 = in_gradient[x + n1.x + (y + n1.y) * w];
+						if (xn < 0 || xn > width - 1 || yn < 0 || yn > height - 1)
+						{
+							m = false;
+							return false;
+						}
 
-					//short2 n2 = n.s23;
-					//uchar g2 = in_gradient[x + n2.x + (y + n2.y) * w];
+						var dn = yn * width + xn;
+						var gn = gradient[dn];
+						if (gn < 30)
+						{
+							m = false;
+							return false;
+						}
 
-					//// Suppress the gradient if there is a larger neighbour
-					//if (g1 > gradient || g2 > gradient)
-					//	out_nms[d] = 0;
-					//else
-					//	out_nms[d] = gradient;
+						if (gn <= g)
+							return false;
+
+						// Suppress this edge because a larger gradient found
+						g = 0;
+						return true;
+					}
+
+					// Move in parallel width the edge in both directions
+					while (m1 || m2)
+					{
+						if (m1 && CompareGradient(ref m1, ref x1, ref y1, dx1, dy1))
+							break;
+							
+						if (m2 && CompareGradient(ref m2, ref x2, ref y2, dx2, dy2))
+							break;
+					}
+
+					destination[d] = g;
 				}
 			}
 		}
