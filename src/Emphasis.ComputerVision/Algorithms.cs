@@ -83,7 +83,7 @@ namespace Emphasis.ComputerVision
 			{ -1, -2, -1 },
 		};
 
-		public static void Sobel(int width, int height, byte[] source, float[] gradient, byte[] direction)
+		public static void Sobel(int width, int height, byte[] source, float[] gradient, float[] angle)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -143,6 +143,8 @@ namespace Emphasis.ComputerVision
 					gradient[d] = g;
 
 					var a = MathF.Atan2(dy, dx) / MathF.PI;
+					angle[d] = a;
+					/*
 					// Convert the angle into 8 distinct directions
 					var dirf = (a + 1.125f) * 4 - 1;
 					var dir = Convert.ToByte(MathF.Round(dirf));
@@ -151,6 +153,7 @@ namespace Emphasis.ComputerVision
 						dir = 0;
 
 					direction[d] = dir;
+					*/
 				}
 			}
 		}
