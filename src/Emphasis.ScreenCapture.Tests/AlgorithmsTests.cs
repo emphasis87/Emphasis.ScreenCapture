@@ -39,15 +39,16 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = sourceBitmap.Height;
 
 			var gradient = new float[source.Length];
-			var direction = new byte[source.Length];
-			Algorithms.Sobel(width, height, source, gradient, direction);
+			var angle = new float[source.Length];
+			//var direction = new byte[source.Length];
+			Algorithms.Sobel(width, height, source, gradient, angle);
 
 			Run("sample00.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 
 			source.RunAsText(width, height, 4, "sample00.txt");
 			gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
-			direction.RunAsText(width, height, 1, "sobel_direction.txt");
+			//direction.RunAsText(width, height, 1, "sobel_direction.txt");
 		}
 
 		[Test]
@@ -60,19 +61,30 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = sourceBitmap.Height;
 
 			var gradient = new float[source.Length];
+			var angle = new float[source.Length];
 			var direction = new byte[source.Length];
 			var gradientNms = new float[source.Length];
 			
-			Algorithms.Sobel(width, height, source, gradient, direction);
-			Algorithms.NonMaximumSuppression(width, height, gradient, direction, gradientNms);
+			Algorithms.Sobel(width, height, source, gradient, angle);
+
+			for (var i = 0; i < angle.Length; i++)
+			{
+				var a = angle[i];
+				if (a < 0)
+					a += 2;
+				angle[i] = a * 180;
+			}
+
+			//Algorithms.NonMaximumSuppression(width, height, gradient, direction, gradientNms);
 
 			Run("sample00.png");
 
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
-			gradientNms.RunAs(width, height, 1, "sobel_gradient_nms.png");
+			//gradientNms.R unAs(width, height, 1, "sobel_gradient_nms.png");
 
 			source.RunAsText(width, height, 4, "sample00.txt");
-			direction.RunAsText(width, height, 1, "sobel_direction.txt");
+			//direction.RunAsText(width, height, 1, "sobel_direction.txt");
+			angle.RunAsText(width, height, 1, "sobel_angle.txt");
 			gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
 			gradientNms.RunAsText(width, height, 1, "sobel_gradient_nms.txt");
 		}

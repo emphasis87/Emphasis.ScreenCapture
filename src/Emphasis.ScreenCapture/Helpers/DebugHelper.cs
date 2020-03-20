@@ -33,7 +33,7 @@ namespace Emphasis.ScreenCapture.Helpers
 			}
 		}
 
-		public static IEnumerable<string> PrintFormatted(this float[] data, int width, int height, int channels = 1)
+		public static IEnumerable<string> PrintFormatted(this float[] data, int width, int height, int channels = 1, bool rounded = true)
 		{
 			var sb = new StringBuilder();
 			for (var y = 0; y < height; y++)
@@ -44,7 +44,9 @@ namespace Emphasis.ScreenCapture.Helpers
 					var pixel = line.Slice(x * channels, channels);
 					for (var i = 0; i < channels; i++)
 					{
-						var v = Math.Round(pixel[i]);
+						var v = pixel[i];
+						if (rounded)
+							v = (float)Math.Round(v);
 						sb.Append($"{v,4} ");
 					}
 
@@ -66,10 +68,10 @@ namespace Emphasis.ScreenCapture.Helpers
 			}
 		}
 
-		public static void SaveFormatted(this float[] data, string path, int width, int height, int channels = 1)
+		public static void SaveFormatted(this float[] data, string path, int width, int height, int channels = 1, bool rounded = true)
 		{
 			using var stream = new StreamWriter(path, false, Encoding.UTF8);
-			foreach (var line in PrintFormatted(data, width, height, channels))
+			foreach (var line in PrintFormatted(data, width, height, channels, rounded))
 			{
 				stream.WriteLine(line);
 			}
@@ -84,12 +86,12 @@ namespace Emphasis.ScreenCapture.Helpers
 			Run(path);
 		}
 
-		public static void RunAsText(this float[] data, int width, int height, int channels, string path)
+		public static void RunAsText(this float[] data, int width, int height, int channels, string path, bool rounded = true)
 		{
 			if (!Path.IsPathRooted(path))
 				path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
-			SaveFormatted(data, path, width, height, channels);
+			SaveFormatted(data, path, width, height, channels, rounded);
 			Run(path);
 		}
 
