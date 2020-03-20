@@ -43,6 +43,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.Sobel(width, height, source, gradient, direction);
 
 			Run("sample00.png");
+			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 
 			source.RunAsText(width, height, 4, "sample00.txt");
 			gradient.RunAsText(width, height, 1, "sobel_gradient.txt");

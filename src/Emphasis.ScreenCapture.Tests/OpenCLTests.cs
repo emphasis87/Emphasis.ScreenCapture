@@ -303,7 +303,7 @@ void kernel copy(
 
 			var source = sourceImage.ToBytes();
 
-			source.SaveFormatted("source.txt", w, h, bpp: 4);
+			source.SaveFormatted("source.txt", w, h, channels: 4);
 			using var sourceBuffer = context.CreateImage2D(source, w, h);
 
 			var target = new byte[h * w * 4];
@@ -315,7 +315,7 @@ void kernel copy(
 			queue.Execute(kernel, null, new long[] {w, h}, null, null);
 			queue.Finish();
 
-			target.SaveFormatted("target.txt", w, h, bpp: 4);
+			target.SaveFormatted("target.txt", w, h, channels: 4);
 
 			var result = target.ToBitmap(w, h, 4);
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "copy.png"));

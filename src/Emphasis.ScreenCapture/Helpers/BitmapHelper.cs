@@ -35,7 +35,7 @@ namespace Emphasis.ScreenCapture.Helpers
 			return result;
 		}
 
-		public static Bitmap ToBitmap(this byte[] data, int width, int height, int bpp = 1)
+		public static Bitmap ToBitmap(this byte[] data, int width, int height, int channels = 1)
 		{
 			var bitmap = new Bitmap(width, height);
 			var bounds = new System.Drawing.Rectangle(0, 0, width, height);
@@ -43,8 +43,8 @@ namespace Emphasis.ScreenCapture.Helpers
 			var bitmapData = bitmap.LockBits(bounds, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
 			var bitmapPointer = bitmapData.Scan0;
 
-			// grayscale
-			if (bpp == 1)
+			// Grayscale
+			if (channels == 1)
 			{
 				var p = 0;
 				var source = new byte[height * width * 4];

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Emphasis.ComputerVision
 {
-	public partial class Algorithms
+	public static partial class Algorithms
 	{
 		private static readonly float[] GrayscaleMask = 
 		{ 
@@ -230,6 +231,48 @@ namespace Emphasis.ComputerVision
 					}
 
 					destination[d] = g;
+				}
+			}
+		}
+
+		public static void Normalize(this float[] source, byte[] destination, int channels)
+		{
+			var min = new float[channels];
+			var max = new float[channels];
+
+			for (var c = 0; c < channels; c++)
+			{
+				min[c] = float.MaxValue;
+				max[c] = float.MinValue;
+			}
+
+			for (var i = 0; i < source.Length; i++)
+			{
+				for (var c = 0; c < channels; c++)
+				{
+					var v = source[i + c];
+					if (v < min[c])
+						min[c] = v;
+					if (v > max[c])
+						max[c] = v;
+				}
+			}
+
+			var len = new float[channels];
+			for (var c = 0; c < channels; c++)
+			{
+				len[c] = max[c] - min[c];
+			}
+
+			for (var i = 0; i < source.Length; i++)
+			{
+				for (var c = 0; c < channels; c++)
+				{
+					var a = min[c];
+					var l = len[c];
+					var v = source[i + c];
+					var r = ((v - a) / l) * 255;
+					destination[i + c] = Convert.ToByte(r);
 				}
 			}
 		}
