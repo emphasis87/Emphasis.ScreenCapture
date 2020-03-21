@@ -97,29 +97,29 @@ namespace Emphasis.ComputerVision
 					var dy = 0.0f;
 					var dyAbs = 0.0f;
 
-					for (var channel = 0; channel < 4; channel++)
+					for (var c = 0; c < 4; c++)
 					{
 						var cdx =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDxMask[0, 0] +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDxMask[0, 1] +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDxMask[0, 2] +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * SobelDxMask[1, 0] +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * SobelDxMask[1, 1] +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * SobelDxMask[1, 2] +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDxMask[2, 0] +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDxMask[2, 1] +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDxMask[2, 2];
+							source[(i - 1) * (width * 4) + (j - 1) * 4 + c] * SobelDxMask[0, 0] +
+							source[(i - 1) * (width * 4) + (j + 0) * 4 + c] * SobelDxMask[0, 1] +
+							source[(i - 1) * (width * 4) + (j + 1) * 4 + c] * SobelDxMask[0, 2] +
+							source[(i + 0) * (width * 4) + (j - 1) * 4 + c] * SobelDxMask[1, 0] +
+							source[(i + 0) * (width * 4) + (j + 0) * 4 + c] * SobelDxMask[1, 1] +
+							source[(i + 0) * (width * 4) + (j + 1) * 4 + c] * SobelDxMask[1, 2] +
+							source[(i + 1) * (width * 4) + (j - 1) * 4 + c] * SobelDxMask[2, 0] +
+							source[(i + 1) * (width * 4) + (j + 0) * 4 + c] * SobelDxMask[2, 1] +
+							source[(i + 1) * (width * 4) + (j + 1) * 4 + c] * SobelDxMask[2, 2];
 
 						var cdy =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDyMask[0, 0] +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDyMask[0, 1] +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDyMask[0, 2] +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * SobelDyMask[1, 0] +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * SobelDyMask[1, 1] +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * SobelDyMask[1, 2] +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * SobelDyMask[2, 0] +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * SobelDyMask[2, 1] +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * SobelDyMask[2, 2];
+							source[(i - 1) * (width * 4) + (j - 1) * 4 + c] * SobelDyMask[0, 0] +
+							source[(i - 1) * (width * 4) + (j + 0) * 4 + c] * SobelDyMask[0, 1] +
+							source[(i - 1) * (width * 4) + (j + 1) * 4 + c] * SobelDyMask[0, 2] +
+							source[(i + 0) * (width * 4) + (j - 1) * 4 + c] * SobelDyMask[1, 0] +
+							source[(i + 0) * (width * 4) + (j + 0) * 4 + c] * SobelDyMask[1, 1] +
+							source[(i + 0) * (width * 4) + (j + 1) * 4 + c] * SobelDyMask[1, 2] +
+							source[(i + 1) * (width * 4) + (j - 1) * 4 + c] * SobelDyMask[2, 0] +
+							source[(i + 1) * (width * 4) + (j + 0) * 4 + c] * SobelDyMask[2, 1] +
+							source[(i + 1) * (width * 4) + (j + 1) * 4 + c] * SobelDyMask[2, 2];
 
 						var cdxAbs = MathF.Abs(cdx);
 						if (cdxAbs > dxAbs)
@@ -142,18 +142,8 @@ namespace Emphasis.ComputerVision
 					var g = MathF.Sqrt(dx * dx + dy * dy);
 					gradient[d] = g;
 
-					var a = MathF.Atan2(dy, dx) / MathF.PI;
+					var a = MathF.Atan2(dy, -dx) / MathF.PI;
 					angle[d] = a;
-					/*
-					// Convert the angle into 8 distinct directions
-					var dirf = (a + 1.125f) * 4 - 1;
-					var dir = Convert.ToByte(MathF.Round(dirf));
-					// Indexes 0,8,9 denote the same direction
-					if (dir > 7)
-						dir = 0;
-
-					direction[d] = dir;
-					*/
 				}
 			}
 		}
@@ -161,14 +151,14 @@ namespace Emphasis.ComputerVision
 		private static readonly int[,] Neighbors =
 		{
 			// x   y
-			{ -1,  0 }, // W
-			{ -1, -1 }, // NW
+			{ +1,  0 }, // E
+			{ +1, -1 }, // NE
 			{  0, -1 }, // N
-			{  1, -1 }, // NE
-			{  1,  0 }, // E
-			{  1,  1 }, // SE
-			{  0,  1 }, // S
-			{  1,  1 }, // SW
+			{ -1, -1 }, // NW
+			{ -1,  0 }, // W
+			{ -1, +1 }, // SW
+			{  0, +1 }, // S
+			{  1, +1 }, // SE
 		};
 
 		public static void NonMaximumSuppression(int width, int height, float[] gradient, byte[] direction, float[] destination)
@@ -289,5 +279,10 @@ namespace Emphasis.ComputerVision
 			return value;
 		}
 
+		public static byte ConvertAtan2PiAngleTo8Way(float angle)
+		{
+			var d = (((angle + 2) % 2 + 0.125f) * 4 - 0.5f) % 7;
+			return Convert.ToByte(MathF.Round(d));
+		}
 	}
 }

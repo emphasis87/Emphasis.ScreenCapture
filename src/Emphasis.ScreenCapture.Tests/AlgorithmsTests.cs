@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Emphasis.ComputerVision;
 using Emphasis.ScreenCapture.Helpers;
 using NUnit.Framework;
@@ -52,7 +53,7 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
-		public void NonMaximumSuppression_Test()
+		public async Task NonMaximumSuppression_Test()
 		{
 			var sourceBitmap = Samples.sample00;
 			var source = sourceBitmap.ToBytes();
@@ -70,23 +71,49 @@ namespace Emphasis.ScreenCapture.Tests
 			for (var i = 0; i < angle.Length; i++)
 			{
 				var a = angle[i];
-				if (a < 0)
-					a += 2;
-				angle[i] = a * 180;
+				angle[i] = ((a + 2) % 2) * 180;
+
+				direction[i] = Algorithms.ConvertAtan2PiAngleTo8Way(a);
 			}
 
-			//Algorithms.NonMaximumSuppression(width, height, gradient, direction, gradientNms);
+			Algorithms.NonMaximumSuppression(width, height, gradient, direction, gradientNms);
 
 			Run("sample00.png");
 
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
-			//gradientNms.R unAs(width, height, 1, "sobel_gradient_nms.png");
+			gradientNms.RunAs(width, height, 1, "sobel_gradient_nms.png");
 
 			source.RunAsText(width, height, 4, "sample00.txt");
-			//direction.RunAsText(width, height, 1, "sobel_direction.txt");
+			await Task.Delay(100);
+			
 			angle.RunAsText(width, height, 1, "sobel_angle.txt");
+			await Task.Delay(100);
+
+			direction.RunAsText(width, height, 1, "sobel_direction.txt");
+			await Task.Delay(100);
+
 			gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
+			await Task.Delay(100);
+
 			gradientNms.RunAsText(width, height, 1, "sobel_gradient_nms.txt");
+			await Task.Delay(100);
+		}
+
+		[Test]
+		public void Atan2PiTo8way_Test()
+		{
+			for (var i = -180; i <= 180; i += 1)
+			{
+				var a = i / 180.0f;
+				var b = ((((a + 2) % 2) + 0.125f) * 4 - 0.5f) % 7;
+				Console.WriteLine($"{i,4} {Convert.ToByte(MathF.Round(b))} {a}");
+			}
+		}
+
+		[Test]
+		public void Atan2_Test()
+		{
+			Console.WriteLine(MathF.Atan2(-100, +50) / MathF.PI * 180);
 		}
 	}
 }
