@@ -21,7 +21,7 @@ namespace Emphasis.ScreenCapture.Helpers
 					var pixel = line.Slice(x * channels, channels);
 					for (var i = 0; i < channels; i++)
 					{
-						sb.Append($"{pixel[i],3} ");
+						sb.Append($"{pixel[i],4} ");
 					}
 
 					sb.Append("| ");
