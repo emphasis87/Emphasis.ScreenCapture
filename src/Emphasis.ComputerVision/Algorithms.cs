@@ -167,6 +167,9 @@ namespace Emphasis.ComputerVision
 			{
 				for (var x = 0; x < width; x++)
 				{
+					if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
+						continue;
+
 					var d = y * width + x;
 					var g = gradient[d];
 					if (g < 30)
@@ -178,52 +181,14 @@ namespace Emphasis.ComputerVision
 					var dx2 = -dx1;
 					var dy2 = -dy1;
 
-					var x1 = x;
-					var x2 = x;
-					var y1 = y;
-					var y2 = y;
+					var d1 = (y + dy1) * width + (x + dx1);
+					var d2 = (y + dy2) * width + (x + dx2);
 
-					var m1 = true;
-					var m2 = true;
+					var g1 = gradient[d1];
+					var g2 = gradient[d2];
 
-					bool CompareGradient(ref bool m, ref int xn, ref int yn, int dx, int dy)
-					{
-						xn += dx;
-						yn += dy;
-
-						if (xn < 0 || xn > width - 1 || yn < 0 || yn > height - 1)
-						{
-							m = false;
-							return false;
-						}
-
-						var dn = yn * width + xn;
-						var gn = gradient[dn];
-						if (gn < 30)
-						{
-							m = false;
-							return false;
-						}
-
-						if (gn <= g)
-							return false;
-
-						// Suppress this edge because a larger gradient found
-						g = 0;
-						return true;
-					}
-
-					// Move in parallel width the edge in both directions
-					while (m1 || m2)
-					{
-						if (m1 && CompareGradient(ref m1, ref x1, ref y1, dx1, dy1))
-							break;
-							
-						if (m2 && CompareGradient(ref m2, ref x2, ref y2, dx2, dy2))
-							break;
-					}
-
-					destination[d] = g;
+					if (g >= g1 && g >= g2)
+						destination[d] = g;
 				}
 			}
 		}
