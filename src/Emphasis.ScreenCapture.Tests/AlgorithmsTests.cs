@@ -65,7 +65,9 @@ namespace Emphasis.ScreenCapture.Tests
 			var angle = new float[source.Length];
 			var direction = new byte[source.Length];
 			var gradientNms = new float[source.Length];
-			
+			var cmp1 = new float[source.Length];
+			var cmp2 = new float[source.Length];
+
 			Algorithms.Sobel(width, height, source, gradient, angle);
 
 			for (var i = 0; i < angle.Length; i++)
@@ -76,7 +78,7 @@ namespace Emphasis.ScreenCapture.Tests
 				direction[i] = Algorithms.ConvertAtan2PiAngleTo8Way(a);
 			}
 
-			Algorithms.NonMaximumSuppression(width, height, gradient, direction, gradientNms);
+			Algorithms.NonMaximumSuppression(width, height, gradient, direction, gradientNms, cmp1, cmp2);
 
 			Run("sample00.png");
 
@@ -96,6 +98,12 @@ namespace Emphasis.ScreenCapture.Tests
 			await Task.Delay(100);
 
 			gradientNms.RunAsText(width, height, 1, "sobel_gradient_nms.txt");
+			await Task.Delay(100);
+
+			cmp1.RunAsText(width, height, 1, "cmp1.txt");
+			await Task.Delay(100);
+
+			cmp2.RunAsText(width, height, 1, "cmp2.txt");
 			await Task.Delay(100);
 		}
 
