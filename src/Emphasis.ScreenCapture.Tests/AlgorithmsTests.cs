@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
+using Emgu.CV;
+using Emgu.CV.Structure;
 using Emphasis.ComputerVision;
 using Emphasis.ScreenCapture.Helpers;
 using NUnit.Framework;
@@ -57,9 +56,12 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample00;
 			var source = sourceBitmap.ToBytes();
+			var gauss = new byte[source.Length];
 
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
+
+			var grayscale = new byte[height*width];
 
 			var gradient = new float[source.Length];
 			var angle = new float[source.Length];
@@ -68,7 +70,11 @@ namespace Emphasis.ScreenCapture.Tests
 			var cmp1 = new float[source.Length];
 			var cmp2 = new float[source.Length];
 
-			Algorithms.Sobel(width, height, source, gradient, angle);
+			Algorithms.Grayscale(width,height, source, grayscale);
+
+			Algorithms.Gauss(width, height, source, gauss);
+
+			Algorithms.Sobel(width, height, gauss, gradient, angle);
 
 			for (var i = 0; i < angle.Length; i++)
 			{
@@ -78,33 +84,65 @@ namespace Emphasis.ScreenCapture.Tests
 				direction[i] = Algorithms.ConvertAtan2PiAngleTo8Way(a);
 			}
 
-			Algorithms.NonMaximumSuppression(width, height, gradient, direction, gradientNms, cmp1, cmp2);
+			Algorithms.NonMaximumSuppression(width, height, gradient, angle, direction, gradientNms, cmp1, cmp2);
 
 			Run("sample00.png");
 
+			grayscale.RunAs(width, height, 1, "grayscale.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 			gradientNms.RunAs(width, height, 1, "sobel_gradient_nms.png");
 
-			source.RunAsText(width, height, 4, "sample00.txt");
+			//source.RunAsText(width, height, 4, "sample00.txt");
+			//await Task.Delay(100);
+
+			grayscale.RunAsText(width, height, 1, "grayscale.txt");
 			await Task.Delay(100);
-			
+
 			angle.RunAsText(width, height, 1, "sobel_angle.txt");
 			await Task.Delay(100);
 
-			direction.RunAsText(width, height, 1, "sobel_direction.txt");
-			await Task.Delay(100);
+			//direction.RunAsText(width, height, 1, "sobel_direction.txt");
+			//await Task.Delay(100);
 
 			gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
 			await Task.Delay(100);
 
-			gradientNms.RunAsText(width, height, 1, "sobel_gradient_nms.txt");
-			await Task.Delay(100);
+			//gradientNms.RunAsText(width, height, 1, "sobel_gradient_nms.txt");
+			//await Task.Delay(100);
 
-			cmp1.RunAsText(width, height, 1, "cmp1.txt");
-			await Task.Delay(100);
+			//cmp1.RunAsText(width, height, 1, "cmp1.txt");
+			//await Task.Delay(100);
 
-			cmp2.RunAsText(width, height, 1, "cmp2.txt");
-			await Task.Delay(100);
+			//cmp2.RunAsText(width, height, 1, "cmp2.txt");
+			//await Task.Delay(100);
+
+			var data = new byte[height, width, 4];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * (width * 4) + x * 4;
+					for (var c = 0; c < 4; c++)
+					{
+						data[y, x, c] = source[d + c];
+					}
+				}
+			}
+
+			var image = new Image<Bgra, byte>(data);
+			var canny = image.Canny(50, 20);
+
+			var result = new byte[height * width];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					result[d] = canny.Data[y, x, 0];
+				}
+			}
+
+			result.RunAs(width, height, 1, "canny.png");
 		}
 
 		[Test]

@@ -161,7 +161,15 @@ namespace Emphasis.ComputerVision
 			{  1, +1 }, // SE
 		};
 
-		public static void NonMaximumSuppression(int width, int height, float[] gradient, byte[] direction, float[] destination, float[] cmp1, float[] cmp2)
+		public static void NonMaximumSuppression(
+			int width, 
+			int height, 
+			float[] gradient,
+			float[] angle,
+			byte[] direction, 
+			float[] destination, 
+			float[] cmp1, 
+			float[] cmp2)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -171,6 +179,8 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var d = y * width + x;
+					destination[d] = 0;
+
 					var g = gradient[d];
 					if (g < 30)
 						continue;
