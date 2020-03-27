@@ -54,21 +54,22 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public async Task NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample00;
+			var sourceBitmap = Samples.sample02;
+
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
 
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
 
-			var grayscale = new byte[height*width];
+			var grayscale = new byte[height * width];
 
-			var gradient = new float[source.Length];
-			var angle = new float[source.Length];
-			var direction = new byte[source.Length];
-			var gradientNms = new float[source.Length];
-			var cmp1 = new float[source.Length];
-			var cmp2 = new float[source.Length];
+			var gradient = new float[height * width];
+			var angle = new float[height * width];
+			var neighbors = new byte[height * width * 4];
+			var gradientNms = new float[height * width];
+			var cmp1 = new float[height * width];
+			var cmp2 = new float[height * width];
 
 			Algorithms.Grayscale(width,height, source, grayscale);
 
@@ -76,17 +77,9 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.Sobel(width, height, gauss, gradient, angle);
 
-			for (var i = 0; i < angle.Length; i++)
-			{
-				var a = angle[i];
-				angle[i] = ((a + 2) % 2) * 180;
+			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, gradientNms, cmp1, cmp2);
 
-				direction[i] = Algorithms.ConvertAtan2PiAngleTo8Way(a);
-			}
-
-			Algorithms.NonMaximumSuppression(width, height, gradient, angle, direction, gradientNms, cmp1, cmp2);
-
-			Run("sample00.png");
+			Run("sample02.png");
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
@@ -116,33 +109,33 @@ namespace Emphasis.ScreenCapture.Tests
 			//cmp2.RunAsText(width, height, 1, "cmp2.txt");
 			//await Task.Delay(100);
 
-			var data = new byte[height, width, 4];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * (width * 4) + x * 4;
-					for (var c = 0; c < 4; c++)
-					{
-						data[y, x, c] = source[d + c];
-					}
-				}
-			}
+			//var data = new byte[height, width, 4];
+			//for (var y = 0; y < height; y++)
+			//{
+			//	for (var x = 0; x < width; x++)
+			//	{
+			//		var d = y * (width * 4) + x * 4;
+			//		for (var c = 0; c < 4; c++)
+			//		{
+			//			data[y, x, c] = source[d + c];
+			//		}
+			//	}
+			//}
 
-			var image = new Image<Bgra, byte>(data);
-			var canny = image.Canny(50, 20);
+			//var image = new Image<Bgra, byte>(data);
+			//var canny = image.Canny(50, 20);
 
-			var result = new byte[height * width];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * width + x;
-					result[d] = canny.Data[y, x, 0];
-				}
-			}
+			//var result = new byte[height * width];
+			//for (var y = 0; y < height; y++)
+			//{
+			//	for (var x = 0; x < width; x++)
+			//	{
+			//		var d = y * width + x;
+			//		result[d] = canny.Data[y, x, 0];
+			//	}
+			//}
 
-			result.RunAs(width, height, 1, "canny.png");
+			//result.RunAs(width, height, 1, "canny.png");
 		}
 
 		[Test]

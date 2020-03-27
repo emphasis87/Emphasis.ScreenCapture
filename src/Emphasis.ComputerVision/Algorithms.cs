@@ -83,7 +83,7 @@ namespace Emphasis.ComputerVision
 			{ -1, -2, -1 },
 		};
 
-		public static void Sobel(int width, int height, byte[] source, float[] gradient, float[] angle)
+		public static void Sobel(int width, int height, byte[] source, float[] gradient, float[] angle, byte[] neighbors)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -139,26 +139,52 @@ namespace Emphasis.ComputerVision
 					var d = y * width + x;
 
 					// Up to sqrt(255*4 * 255*4 + 255*4 * 255*4) = 1442
-					var g = MathF.Sqrt(dx * dx + dy * dy);
+					var g = Gradient(dx, dy);
 					gradient[d] = g;
 
-					var a = MathF.Atan2(dy, -dx) / MathF.PI;
+					var a = GradientAngle(dx, dy);
 					angle[d] = a;
+
+					
 				}
 			}
+		}
+
+		public static float GradientAngle(float dx, float dy)
+		{
+			var a = MathF.Atan2(dy, -dx) / MathF.PI + 2.0f;
+			if (a >= 2)
+				a -= 2;
+			a *= 180;
+			return a;
+		}
+
+		public static float Gradient(float dx, float dy)
+		{
+			return MathF.Sqrt(dx * dx + dy * dy);
+		}
+
+		public static byte GradientNeighbors(float angle)
+		{
+			// Shift the angle by half of a step
+			var a = angle + 11.25f; // 360/32
+			if (a >= 360)
+				a -= 360;
+
+
 		}
 
 		private static readonly int[,] Neighbors =
 		{
 			// x   y
-			{ +1,  0 }, // E
-			{ +1, -1 }, // NE
-			{  0, -1 }, // N
-			{ -1, -1 }, // NW
-			{ -1,  0 }, // W
-			{ -1, +1 }, // SW
-			{  0, +1 }, // S
-			{  1, +1 }, // SE
+			{ +1,  0 }, //   0° E
+			{ +1, -1 }, //  45° NE
+			{  0, -1 }, //  90° N
+			{ -1, -1 }, // 135° NW
+			{ -1,  0 }, // 180° W
+			{ -1, +1 }, // 225° SW
+			{  0, +1 }, // 270° S
+			{  1, +1 }, // 315° SE
 		};
 
 		public static void NonMaximumSuppression(
@@ -166,7 +192,7 @@ namespace Emphasis.ComputerVision
 			int height, 
 			float[] gradient,
 			float[] angle,
-			byte[] direction, 
+			byte[] neighbors, 
 			float[] destination, 
 			float[] cmp1, 
 			float[] cmp2)
@@ -185,7 +211,7 @@ namespace Emphasis.ComputerVision
 					if (g < 30)
 						continue;
 
-					var dir = direction[d];
+					var dir = neighbors[d];
 					var dx1 = Neighbors[dir, 0];
 					var dy1 = Neighbors[dir, 1];
 					var dx2 = -dx1;
@@ -197,6 +223,9 @@ namespace Emphasis.ComputerVision
 					var g1 = gradient[d1];
 					var g2 = gradient[d2];
 
+					// Interpolation
+
+
 					cmp1[d] = g1;
 					cmp2[d] = g2;
 
@@ -204,6 +233,16 @@ namespace Emphasis.ComputerVision
 						destination[d] = g;
 				}
 			}
+		}
+
+		public static void StrokeWidthTransform(
+			int width,
+			int height,
+			float[] edges,
+			float[] angle,
+			float[] swt)
+		{
+
 		}
 
 		public static void Normalize(this float[] source, byte[] destination, int channels)
