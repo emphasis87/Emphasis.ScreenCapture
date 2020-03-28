@@ -160,42 +160,75 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void GradientNeighbors_Test()
 		{
-			Algorithms.GradientNeighbors(0.0f).Should().Be((0, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(10.0f).Should().Be((0, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(15.0f).Should().Be((1, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(20.0f).Should().Be((1, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(25.0f).Should().Be((2, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(30.0f).Should().Be((2, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(35.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(40.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(45.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(50.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(55.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(60.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(65.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(70.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(75.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(80.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(85.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(90.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(0.0f).Should().Be((0, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(10.0f).Should().Be((0, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(15.0f).Should().Be((1, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(20.0f).Should().Be((1, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(25.0f).Should().Be((2, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(30.0f).Should().Be((2, 3, 25, 50, 25));
-			Algorithms.GradientNeighbors(35.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(40.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(45.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(50.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(55.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(60.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(65.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(70.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(75.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(80.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(85.0f).Should().Be((2, 2, 50, 50, 0));
-			Algorithms.GradientNeighbors(90.0f).Should().Be((2, 2, 50, 50, 0));
+			for (var i = 0.0f; i <= 360.0f; i++)
+			{
+				var n = Algorithms.GradientNeighbors(i);
+
+				if (i < 11.25f || i > 348.75f)
+				{
+					n.Should().Be((1, 3, 25, 50, 25));
+				}
+				else if (i > 11.25f && i < 33.75f)
+				{
+					n.Should().Be((1, 2, 50, 50, 0));
+				}
+				else if (i > 33.75f && i < 56.25f)
+				{
+					n.Should().Be((2, 3, 25, 50, 25));
+				}
+				else if (i > 56.25f && i < 78.75f)
+				{
+					n.Should().Be((2, 2, 50, 50, 0));
+				}
+				else if (i > 78.75f && i < 101.25f)
+				{
+					n.Should().Be((3, 3, 25, 50, 25));
+				}
+				else if (i > 101.25f && i < 123.75f)
+				{
+					n.Should().Be((3, 2, 50, 50, 0));
+				}
+				else if (i > 123.75f && i < 146.25f)
+				{
+					n.Should().Be((4, 3, 25, 50, 25));
+				}
+				else if (i > 146.25f && i < 168.75f)
+				{
+					n.Should().Be((4, 2, 50, 50, 0));
+				}
+				else if (i > 168.75f && i < 191.25f)
+				{
+					n.Should().Be((5, 3, 25, 50, 25));
+				}
+				else if (i > 191.25f && i < 213.75f)
+				{
+					n.Should().Be((5, 2, 50, 50, 0));
+				}
+				else if (i > 213.75f && i < 236.25f)
+				{
+					n.Should().Be((6, 3, 25, 50, 25));
+				}
+				else if (i > 236.25f && i < 258.75f)
+				{
+					n.Should().Be((6, 2, 50, 50, 0));
+				}
+				else if (i > 258.75f && i < 281.25f)
+				{
+					n.Should().Be((7, 3, 25, 50, 25));
+				}
+				else if (i > 281.25f && i < 303.75f)
+				{
+					n.Should().Be((7, 2, 50, 50, 0));
+				}
+				else if (i > 303.75f && i < 326.25f)
+				{
+					n.Should().Be((8, 3, 25, 50, 25));
+				}
+				else if (i > 326.25f && i < 348.75f)
+				{
+					n.Should().Be((8, 2, 50, 50, 0));
+				}
+			}
 		}
 	}
 }

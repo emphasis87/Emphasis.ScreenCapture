@@ -172,9 +172,14 @@ namespace Emphasis.ComputerVision
 				a -= 360;
 
 			var b = Convert.ToByte(MathF.Ceiling(a / 22.5f));
-			var count = (byte)(b % 2 + 2);
-			var direction = (byte)(b / 2);
-			return (count, direction, 0, 0, 0);
+			var c = b % 2;
+			var count = (byte)(c + 2);
+
+			var direction = Convert.ToByte(MathF.Ceiling(a / 45.0f));
+			if (c == 1)
+				return (direction, count, 25, 50, 25);
+
+			return (direction, count, 50, 50, 0);
 		}
 
 		private static readonly int[,] Neighbors =
@@ -213,6 +218,7 @@ namespace Emphasis.ComputerVision
 					var g = gradient[d];
 					if (g < 30)
 						continue;
+
 
 					var dir = neighbors[d];
 					var dx1 = Neighbors[dir, 0];
