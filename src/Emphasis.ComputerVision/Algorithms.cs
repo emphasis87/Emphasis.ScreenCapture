@@ -164,14 +164,17 @@ namespace Emphasis.ComputerVision
 			return MathF.Sqrt(dx * dx + dy * dy);
 		}
 
-		public static void GradientNeighbors(float angle, out byte count, out byte direction)
+		public static (byte direction, byte count, byte weight0, byte weight1, byte weight2) GradientNeighbors(float angle)
 		{
 			// Shift the angle by half of a step
 			var a = angle + 11.25f; // 360/32
 			if (a >= 360)
 				a -= 360;
 
-
+			var b = Convert.ToByte(MathF.Ceiling(a / 22.5f));
+			var count = (byte)(b % 2 + 2);
+			var direction = (byte)(b / 2);
+			return (count, direction, 0, 0, 0);
 		}
 
 		private static readonly int[,] Neighbors =

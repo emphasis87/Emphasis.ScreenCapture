@@ -4,6 +4,7 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using Emphasis.ComputerVision;
 using Emphasis.ScreenCapture.Helpers;
+using FluentAssertions;
 using NUnit.Framework;
 
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
@@ -38,10 +39,11 @@ namespace Emphasis.ScreenCapture.Tests
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
 
+			var neighbors = new byte[height * width * 2];
 			var gradient = new float[source.Length];
 			var angle = new float[source.Length];
 			//var direction = new byte[source.Length];
-			Algorithms.Sobel(width, height, source, gradient, angle);
+			Algorithms.Sobel(width, height, source, gradient, angle, neighbors);
 
 			Run("sample00.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
@@ -66,7 +68,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var gradient = new float[height * width];
 			var angle = new float[height * width];
-			var neighbors = new byte[height * width * 4];
+			var neighbors = new byte[height * width * 2];
 			var gradientNms = new float[height * width];
 			var cmp1 = new float[height * width];
 			var cmp2 = new float[height * width];
@@ -75,7 +77,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.Gauss(width, height, source, gauss);
 
-			Algorithms.Sobel(width, height, gauss, gradient, angle);
+			Algorithms.Sobel(width, height, gauss, gradient, angle, neighbors);
 
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, gradientNms, cmp1, cmp2);
 
@@ -153,6 +155,47 @@ namespace Emphasis.ScreenCapture.Tests
 		public void Atan2_Test()
 		{
 			Console.WriteLine(MathF.Atan2(-100, +50) / MathF.PI * 180);
+		}
+
+		[Test]
+		public void GradientNeighbors_Test()
+		{
+			Algorithms.GradientNeighbors(0.0f).Should().Be((0, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(10.0f).Should().Be((0, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(15.0f).Should().Be((1, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(20.0f).Should().Be((1, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(25.0f).Should().Be((2, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(30.0f).Should().Be((2, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(35.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(40.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(45.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(50.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(55.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(60.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(65.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(70.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(75.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(80.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(85.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(90.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(0.0f).Should().Be((0, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(10.0f).Should().Be((0, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(15.0f).Should().Be((1, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(20.0f).Should().Be((1, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(25.0f).Should().Be((2, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(30.0f).Should().Be((2, 3, 25, 50, 25));
+			Algorithms.GradientNeighbors(35.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(40.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(45.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(50.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(55.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(60.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(65.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(70.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(75.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(80.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(85.0f).Should().Be((2, 2, 50, 50, 0));
+			Algorithms.GradientNeighbors(90.0f).Should().Be((2, 2, 50, 50, 0));
 		}
 	}
 }
