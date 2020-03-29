@@ -68,7 +68,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var gradient = new float[height * width];
 			var angle = new float[height * width];
-			var neighbors = new byte[height * width * 2];
+			var neighbors = new byte[height * width * 5];
 			var gradientNms = new float[height * width];
 			var cmp1 = new float[height * width];
 			var cmp2 = new float[height * width];

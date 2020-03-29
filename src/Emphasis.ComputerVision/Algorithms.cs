@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -145,7 +146,13 @@ namespace Emphasis.ComputerVision
 					var a = GradientAngle(dx, dy);
 					angle[d] = a;
 
-					
+					var (direction, count, w0, w1, w2) = GradientNeighbors(a);
+					var dn = y * width * 5 + x * 5;
+					neighbors[dn] = direction;
+					neighbors[dn + 1] = count;
+					neighbors[dn + 2] = w0;
+					neighbors[dn + 3] = w1;
+					neighbors[dn + 4] = w2;
 				}
 			}
 		}
@@ -176,6 +183,9 @@ namespace Emphasis.ComputerVision
 			var count = (byte)(c + 2);
 
 			var direction = Convert.ToByte(MathF.Ceiling(a / 45.0f));
+			if (direction >= 8)
+				direction -= 8;
+
 			if (c == 1)
 				return (direction, count, 25, 50, 25);
 
@@ -219,21 +229,34 @@ namespace Emphasis.ComputerVision
 					if (g < 30)
 						continue;
 
+					var dn = y * width * 5 + x * 5;
+					var neighbor = neighbors[dn];
+					var count = neighbors[dn + 1];
 
-					var dir = neighbors[d];
-					var dx1 = Neighbors[dir, 0];
-					var dy1 = Neighbors[dir, 1];
-					var dx2 = -dx1;
-					var dy2 = -dy1;
+					var g1 = 0f;
+					var g2 = 0f;
 
-					var d1 = (y + dy1) * width + (x + dx1);
-					var d2 = (y + dy2) * width + (x + dx2);
+					for (var i = 0; i < count; i++)
+					{
+						var weight = neighbors[dn + 2 + i];
+						var n = neighbor - i;
+						if (n < 0)
+							n += 8;
 
-					var g1 = gradient[d1];
-					var g2 = gradient[d2];
+						var dx1 = Neighbors[n, 0];
+						var dy1 = Neighbors[n, 1];
+						var dx2 = -dx1;
+						var dy2 = -dy1;
 
-					// Interpolation
+						var d1 = (y + dy1) * width + (x + dx1);
+						var d2 = (y + dy2) * width + (x + dx2);
 
+						g1 += weight * gradient[d1];
+						g2 += weight * gradient[d2];
+					}
+
+					g1 *= 0.01f;
+					g2 *= 0.01f;
 
 					cmp1[d] = g1;
 					cmp2[d] = g2;
