@@ -274,7 +274,16 @@ namespace Emphasis.ComputerVision
 			float[] angle,
 			float[] swt)
 		{
+			// For each edge
+			// Cast ray in positive/negative direction (direction? bresenham?)
+			// Until other edge found
+			// Check edge is of opposite direction
+			// If yes, store
 
+			// For each stroke
+			// Compute mean
+			// For each stroke
+			// max(mean, stroke width)
 		}
 
 		public static void Normalize(this float[] source, byte[] destination, int channels)
