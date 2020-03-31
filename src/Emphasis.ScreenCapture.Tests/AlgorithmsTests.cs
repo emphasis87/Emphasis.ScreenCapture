@@ -141,6 +141,12 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public void Line_Test()
+		{
+
+		}
+
+		[Test]
 		public void Atan2PiTo8way_Test()
 		{
 			for (var i = -180; i <= 180; i += 1)

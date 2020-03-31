@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -274,6 +275,22 @@ namespace Emphasis.ComputerVision
 			float[] angle,
 			float[] swt)
 		{
+			var edgePositions = new List<int>();
+			var swtPositions = new List<int>();
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					var g = edges[d];
+					if (g <= 0)
+						continue;
+
+					edgePositions.Add(d);
+
+
+				}
+			}
 			// For each edge
 			// Cast ray in positive/negative direction (direction? bresenham?)
 			// Until other edge found
@@ -284,6 +301,11 @@ namespace Emphasis.ComputerVision
 			// Compute mean
 			// For each stroke
 			// max(mean, stroke width)
+		}
+
+		public static (int x, int y) Line(int x, int y, int ix, int iy, float dx, float dy, float err, bool staging)
+		{
+			return (0, 0);
 		}
 
 		public static void Normalize(this float[] source, byte[] destination, int channels)
