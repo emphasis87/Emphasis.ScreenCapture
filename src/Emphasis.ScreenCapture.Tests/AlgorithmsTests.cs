@@ -143,7 +143,13 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void Line_Test()
 		{
+			var width = 100;
+			var height = 100;
+			var data = new byte[height * width];
 
+
+
+			data.RunAs(width,height, 1, "line.png");
 		}
 
 		[Test]
