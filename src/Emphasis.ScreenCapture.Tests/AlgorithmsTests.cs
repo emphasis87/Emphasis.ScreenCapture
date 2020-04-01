@@ -147,7 +147,31 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = 100;
 			var data = new byte[height * width];
 
+			var x = 50;
+			var y = 50;
 
+			var dx = 5;
+			var dy = 0;
+
+			var errx = dx;
+			var erry = dy;
+
+			while (x >= 0 && x < width && y >= 0 && y < height)
+			{
+				var d = y * width + x;
+				data[d] = 255;
+
+				if (errx >= erry)
+				{
+					erry += dy;
+					x += 1;
+				}
+				else
+				{
+					errx += dx;
+					y -= 1;
+				}
+			}
 
 			data.RunAs(width,height, 1, "line.png");
 		}
