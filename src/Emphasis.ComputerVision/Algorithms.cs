@@ -85,7 +85,7 @@ namespace Emphasis.ComputerVision
 			{ -1, -2, -1 },
 		};
 
-		public static void Sobel(int width, int height, byte[] source, float[] gradient, float[] angle, byte[] neighbors)
+		public static void Sobel(int width, int height, byte[] source, float[] dx, float[] dy, float[] gradient, float[] angle, byte[] neighbors)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -94,10 +94,10 @@ namespace Emphasis.ComputerVision
 				{
 					var j = Clamp(x, width);
 
-					var dx = 0.0f;
-					var dxAbs = 0.0f;
-					var dy = 0.0f;
-					var dyAbs = 0.0f;
+					var idx = 0.0f;
+					var idxa = 0.0f;
+					var idy = 0.0f;
+					var idya = 0.0f;
 
 					for (var c = 0; c < 4; c++)
 					{
@@ -124,27 +124,30 @@ namespace Emphasis.ComputerVision
 							source[(i + 1) * (width * 4) + (j + 1) * 4 + c] * SobelDyMask[2, 2];
 
 						var cdxAbs = MathF.Abs(cdx);
-						if (cdxAbs > dxAbs)
+						if (cdxAbs > idxa)
 						{
-							dx = cdx;
-							dxAbs = cdxAbs;
+							idx = cdx;
+							idxa = cdxAbs;
 						}
 
 						var cdyAbs = MathF.Abs(cdy);
-						if (cdyAbs > dyAbs)
+						if (cdyAbs > idya)
 						{
-							dy = cdy;
-							dyAbs = cdyAbs;
+							idy = cdy;
+							idya = cdyAbs;
 						}
 					}
 
 					var d = y * width + x;
 
+					dx[d] = idx;
+					dy[d] = idy;
+
 					// Up to sqrt(255*4 * 255*4 + 255*4 * 255*4) = 1442
-					var g = Gradient(dx, dy);
+					var g = Gradient(idx, idy);
 					gradient[d] = g;
 
-					var a = GradientAngle(dx, dy);
+					var a = GradientAngle(idx, idy);
 					angle[d] = a;
 
 					var (direction, count, w0, w1, w2) = GradientNeighbors(a);
@@ -272,11 +275,13 @@ namespace Emphasis.ComputerVision
 			int width,
 			int height,
 			float[] edges,
-			float[] angle,
+			float[] angles,
+			float[] dx,
+			float[] dy,
 			float[] swt)
 		{
-			var edgePositions = new List<int>();
-			var swtPositions = new List<int>();
+			var edgp = new List<int>();
+			var swtp = new List<int>();
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
@@ -286,9 +291,64 @@ namespace Emphasis.ComputerVision
 					if (g <= 0)
 						continue;
 
-					edgePositions.Add(d);
+					var a = angles[d];
 
+					var idx = dx[d];
+					var idy = dy[d];
 
+					var ix = MathF.Sign(idx);
+					var iy = MathF.Sign(idy);
+
+					var idxa = MathF.Abs(idx);
+					var idya = MathF.Abs(idy);
+
+					var ex = idxa;
+					var ey = idya;
+
+					var mx = ix > 0 ? width : -1;
+					var my = iy > 0 ? height : -1;
+
+					var cx = x;
+					var cy = y;
+
+					// Move by 1
+					//if (ex >= ey)
+					//{
+					//	ey += idya;
+					//	cx += ix;
+					//}
+					//else
+					//{
+					//	ex += idxa;
+					//	cy += iy;
+					//}
+
+					swt[d] = 50;
+
+					var i = 0;
+					while (cx != mx && cy != my)
+					{
+						// Move by 1
+						if (ex >= ey)
+						{
+							ey += idya;
+							cx += ix;
+						}
+						else
+						{
+							ex += idxa;
+							cy += iy;
+						}
+
+						if (i++ > 20)
+							break;
+
+						if (i % 2 == 0)
+						{
+							if (cy < 0 || cy >= height || cx < 0 || cx >= width)
+								swt[cy * width + cx] = 255;
+						}
+					}
 				}
 			}
 			// For each edge

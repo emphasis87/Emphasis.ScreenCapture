@@ -39,18 +39,19 @@ namespace Emphasis.ScreenCapture.Tests
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
 
-			var neighbors = new byte[height * width * 2];
-			var gradient = new float[source.Length];
-			var angle = new float[source.Length];
-			//var direction = new byte[source.Length];
-			Algorithms.Sobel(width, height, source, gradient, angle, neighbors);
+			var neighbors = new byte[height * width * 5];
+			var gradient = new float[height * width];
+			var angle = new float[height * width];
+			var dx = new float[height * width];
+			var dy = new float[height * width];
+
+			Algorithms.Sobel(width, height, source, dx, dy, gradient, angle, neighbors);
 
 			Run("sample00.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 
-			source.RunAsText(width, height, 4, "sample00.txt");
-			gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
-			//direction.RunAsText(width, height, 1, "sobel_direction.txt");
+			//source.RunAsText(width, height, 4, "sample00.txt");
+			//gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
 		}
 
 		[Test]
@@ -67,25 +68,31 @@ namespace Emphasis.ScreenCapture.Tests
 			var grayscale = new byte[height * width];
 
 			var gradient = new float[height * width];
+			var dx = new float[height * width];
+			var dy = new float[height * width];
 			var angle = new float[height * width];
 			var neighbors = new byte[height * width * 5];
 			var gradientNms = new float[height * width];
 			var cmp1 = new float[height * width];
 			var cmp2 = new float[height * width];
+			var swt = new float[height * width];
 
 			Algorithms.Grayscale(width,height, source, grayscale);
 
 			Algorithms.Gauss(width, height, source, gauss);
 
-			Algorithms.Sobel(width, height, gauss, gradient, angle, neighbors);
+			Algorithms.Sobel(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, gradientNms, cmp1, cmp2);
+
+			Algorithms.StrokeWidthTransform(width, height, gradient, angle, dx, dy, swt);
 
 			Run("sample02.png");
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 			gradientNms.RunAs(width, height, 1, "sobel_gradient_nms.png");
+			swt.RunAs(width, height, 1, "swt.png");
 
 			//source.RunAsText(width, height, 4, "sample00.txt");
 			//await Task.Delay(100);
