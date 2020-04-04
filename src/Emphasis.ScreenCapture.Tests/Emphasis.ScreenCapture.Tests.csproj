@@ -157,6 +157,9 @@
     <None Update="C:\Users\emphasis\.nuget\packages\emgu.cv.runtime.windows\4.2.0.3662\build\x86\vcruntime140.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="sample03.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
