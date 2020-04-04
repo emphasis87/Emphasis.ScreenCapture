@@ -97,17 +97,17 @@ namespace Emphasis.ScreenCapture.Tests
 			//source.RunAsText(width, height, 4, "sample00.txt");
 			//await Task.Delay(100);
 
-			grayscale.RunAsText(width, height, 1, "grayscale.txt");
-			await Task.Delay(100);
+			//grayscale.RunAsText(width, height, 1, "grayscale.txt");
+			//await Task.Delay(100);
 
-			angle.RunAsText(width, height, 1, "sobel_angle.txt");
-			await Task.Delay(100);
+			//angle.RunAsText(width, height, 1, "sobel_angle.txt");
+			//await Task.Delay(100);
 
 			//direction.RunAsText(width, height, 1, "sobel_direction.txt");
 			//await Task.Delay(100);
 
-			gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
-			await Task.Delay(100);
+			//gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
+			//await Task.Delay(100);
 
 			//gradientNms.RunAsText(width, height, 1, "sobel_gradient_nms.txt");
 			//await Task.Delay(100);

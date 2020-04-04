@@ -296,8 +296,8 @@ namespace Emphasis.ComputerVision
 					var idx = dx[d];
 					var idy = dy[d];
 
-					var ix = MathF.Sign(idx);
-					var iy = MathF.Sign(idy);
+					var ix = -MathF.Sign(idx);
+					var iy = -MathF.Sign(idy);
 
 					var idxa = MathF.Abs(idx);
 					var idya = MathF.Abs(idy);
@@ -311,22 +311,28 @@ namespace Emphasis.ComputerVision
 					var cx = x;
 					var cy = y;
 
-					// Move by 1
-					//if (ex >= ey)
-					//{
-					//	ey += idya;
-					//	cx += ix;
-					//}
-					//else
-					//{
-					//	ex += idxa;
-					//	cy += iy;
-					//}
+					//swt[d] = 50;
 
-					swt[d] = 50;
+					// Move by 1
+					if (ex >= ey)
+					{
+						ey += idya;
+						cx += ix;
+					}
+					else
+					{
+						ex += idxa;
+						cy += iy;
+					}
+
+					if (cx == mx || cy == my)
+						continue;
+
+					//if (x % 5 != 0 || y % 5 != 0)
+					//	continue;
 
 					var i = 0;
-					while (cx != mx && cy != my)
+					while (true)
 					{
 						// Move by 1
 						if (ex >= ey)
@@ -340,13 +346,36 @@ namespace Emphasis.ComputerVision
 							cy += iy;
 						}
 
-						if (i++ > 20)
+						if (cx == mx || cy == my)
 							break;
 
-						if (i % 2 == 0)
+						var cd = cy * width + cx;
+						var cg = edges[cd];
+						if (cg > 0)
+						{
+							var ca = angles[cd];
+							var cad = MathF.Abs(a - ca - 180);
+							if (cad < 45)
+							{
+								swt[d] = 255;
+								swt[cy * width + cx] = 255;
+							}
+							break;
+						}
+
+						if (i++ > 6)
+							break;
+
+						if (i % 3 == 0)
 						{
 							if (cy < 0 || cy >= height || cx < 0 || cx >= width)
-								swt[cy * width + cx] = 255;
+							{
+
+							}
+							else
+							{
+								//swt[cy * width + cx] = 255;
+							}
 						}
 					}
 				}
