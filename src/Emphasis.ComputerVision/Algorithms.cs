@@ -278,7 +278,8 @@ namespace Emphasis.ComputerVision
 			float[] angles,
 			float[] dx,
 			float[] dy,
-			float[] swt)
+			float[] swt,
+			int rayLength = 30)
 		{
 			// Prefix scan edges
 			var edgeList = new List<int>();
@@ -290,55 +291,91 @@ namespace Emphasis.ComputerVision
 					var d = y * width + x;
 					var g = edges[d];
 					if (g > 0)
-						edgeList[n] = d;
-					n++;
+					{
+						edgeList.Add(x);
+						edgeList.Add(y);
+					}
+
+					n += 2;
 				}
 			}
 
 			// Find the stroke width in positive direction
-			for (var i = 0; i < n; i++)
-			{
-				
-			}
+			var swtList0 = new List<int>();
+			StrokeWidthTransform(width, height, edges, angles, dx, dy, rayLength, true, edgeList, swtList0);
 
-			// Find the stroke width in negative direction
-			for (var i = 0; i < n; i++)
-			{
+			// Find the stroke width in positive direction
+			var swtList1 = new List<int>();
+			StrokeWidthTransform(width, height, edges, angles, dx, dy, rayLength, true, edgeList, swtList1);
 
-			}
+			// For each stroke
+			// Compute mean
+			// For each stroke
+			// max(mean, stroke width)
+		}
 
-			var swtp = new List<int>();
-			for (var y = 0; y < height; y++)
+		public static void StrokeWidthTransform(
+			int width,
+			int height,
+			float[] edges,
+			float[] angles,
+			float[] dx,
+			float[] dy,
+			int rayLength,
+			bool direction,
+			List<int> edgeList,
+			List<int> swtList)
+		{
+			var n = edgeList.Count / 2;
+			for (var i = 0; i < n; i += 2)
 			{
-				for (var x = 0; x < width; x++)
+				var x = edgeList[i];
+				var y = edgeList[i + 1];
+				var d = y * width + x;
+				var a = angles[d];
+
+				// Differential on x and y-axis
+				var idx = dx[d];
+				var idy = dy[d];
+
+				// Sign of the differential in the direction (black on white or white on black)
+				var dir = direction ? 1 : -1;
+				var ix = dir * MathF.Sign(idx);
+				var iy = dir * MathF.Sign(idy);
+
+				// The size of the differential
+				var idxa = MathF.Abs(idx);
+				var idya = MathF.Abs(idy);
+
+				// The current error
+				var ex = idxa;
+				var ey = idya;
+
+				// The indexing limits
+				var mx = ix > 0 ? width : -1;
+				var my = iy > 0 ? height : -1;
+
+				// The current position
+				var cx = x;
+				var cy = y;
+
+				// Move by 1 (direct neighbor is likely an edge in the same direction)
+				if (ex >= ey)
 				{
-					var d = y * width + x;
-					var g = edges[d];
-					if (g <= 0)
-						continue;
+					ey += idya;
+					cx += ix;
+				}
+				else
+				{
+					ex += idxa;
+					cy += iy;
+				}
 
-					var a = angles[d];
+				if (cx == mx || cy == my)
+					continue;
 
-					var idx = dx[d];
-					var idy = dy[d];
-
-					var ix = -MathF.Sign(idx);
-					var iy = -MathF.Sign(idy);
-
-					var idxa = MathF.Abs(idx);
-					var idya = MathF.Abs(idy);
-
-					var ex = idxa;
-					var ey = idya;
-
-					var mx = ix > 0 ? width : -1;
-					var my = iy > 0 ? height : -1;
-
-					var cx = x;
-					var cy = y;
-
-					//swt[d] = 50;
-
+				for (var ci = 0; ci < rayLength; ci++)
+				{
 					// Move by 1
 					if (ex >= ey)
 					{
@@ -352,70 +389,25 @@ namespace Emphasis.ComputerVision
 					}
 
 					if (cx == mx || cy == my)
-						continue;
+						break;
 
-					//if (x % 5 != 0 || y % 5 != 0)
-					//	continue;
-
-					var i = 0;
-					while (true)
+					// The current distance
+					var cd = cy * width + cx;
+					var cg = edges[cd];
+					if (cg > 0)
 					{
-						// Move by 1
-						if (ex >= ey)
+						// Check that the found edge is roughly opposite
+						var ca = angles[cd];
+						var cad = MathF.Abs(a - ca - 180);
+						if (cad < 45)
 						{
-							ey += idya;
-							cx += ix;
+							swtList.Add(x);
+							swtList.Add(y);
 						}
-						else
-						{
-							ex += idxa;
-							cy += iy;
-						}
-
-						if (cx == mx || cy == my)
-							break;
-
-						var cd = cy * width + cx;
-						var cg = edges[cd];
-						if (cg > 0)
-						{
-							var ca = angles[cd];
-							var cad = MathF.Abs(a - ca - 180);
-							if (cad < 45)
-							{
-								swt[d] = 255;
-								swt[cy * width + cx] = 255;
-							}
-							break;
-						}
-
-						if (i++ > 6)
-							break;
-
-						if (i % 3 == 0)
-						{
-							if (cy < 0 || cy >= height || cx < 0 || cx >= width)
-							{
-
-							}
-							else
-							{
-								//swt[cy * width + cx] = 255;
-							}
-						}
+						break;
 					}
 				}
 			}
-			// For each edge
-			// Cast ray in positive/negative direction (direction? bresenham?)
-			// Until other edge found
-			// Check edge is of opposite direction
-			// If yes, store
-
-			// For each stroke
-			// Compute mean
-			// For each stroke
-			// max(mean, stroke width)
 		}
 
 		public static (int x, int y) Line(int x, int y, int ix, int iy, float dx, float dy, float err, bool staging)
