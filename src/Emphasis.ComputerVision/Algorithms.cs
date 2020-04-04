@@ -280,7 +280,33 @@ namespace Emphasis.ComputerVision
 			float[] dy,
 			float[] swt)
 		{
-			var edgp = new List<int>();
+			// Prefix scan edges
+			var edgeList = new List<int>();
+			var n = 0;
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					var g = edges[d];
+					if (g > 0)
+						edgeList[n] = d;
+					n++;
+				}
+			}
+
+			// Find the stroke width in positive direction
+			for (var i = 0; i < n; i++)
+			{
+				
+			}
+
+			// Find the stroke width in negative direction
+			for (var i = 0; i < n; i++)
+			{
+
+			}
+
 			var swtp = new List<int>();
 			for (var y = 0; y < height; y++)
 			{
