@@ -393,8 +393,8 @@ namespace Emphasis.ComputerVision
 					{
 						// Check that the found edge is roughly opposite
 						var ca = angles[cd];
-						var cad = MathF.Abs(a - ca - 180);
-						if (cad < 90)
+						var cad = MathF.Abs(180 - MathF.Abs(a - ca));
+						if (cad < 45)
 						{
 							swtList.Add(x);
 							swtList.Add(y);
