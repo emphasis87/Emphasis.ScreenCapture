@@ -394,7 +394,7 @@ namespace Emphasis.ComputerVision
 						// Check that the found edge is roughly opposite
 						var ca = angles[cd];
 						var cad = MathF.Abs(a - ca - 180);
-						if (cad < 45)
+						if (cad < 90)
 						{
 							swtList.Add(x);
 							swtList.Add(y);
@@ -405,16 +405,18 @@ namespace Emphasis.ComputerVision
 				}
 			}
 
-			//var sn = swtList.Count;
-			//for (var i = 0; i < sn; i += 3)
-			//{
-			//	var x = swtList[i];
-			//	var y = swtList[i + 1];
-			//	var len = swtList[i + 2];
-			//	var d = y * width + x;
+			/*
+			var sn = swtList.Count;
+			for (var i = 0; i < sn; i += 3)
+			{
+				var x = swtList[i];
+				var y = swtList[i + 1];
+				var len = swtList[i + 2];
+				var d = y * width + x;
 
-			//	swt[d] = 255;
-			//}
+				swt[d] = 255;
+			}
+			*/
 
 			// Fill in the strokes
 			var sn = swtList.Count;

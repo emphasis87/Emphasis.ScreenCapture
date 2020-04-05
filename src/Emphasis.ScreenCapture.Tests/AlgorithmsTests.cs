@@ -57,7 +57,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public async Task NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample02;
+			var sourceBitmap = Samples.sample03;
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -99,7 +99,7 @@ namespace Emphasis.ScreenCapture.Tests
 			//		swt1[i] = 0;
 			//}
 
-			Run("sample02.png");
+			Run("sample03.png");
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
