@@ -278,12 +278,12 @@ namespace Emphasis.ComputerVision
 			float[] angles,
 			float[] dx,
 			float[] dy,
-			float[] swt,
-			int rayLength = 30)
+			float[] swt0,
+			float[] swt1,
+			int rayLength = 20)
 		{
 			// Prefix scan edges
 			var edgeList = new List<int>();
-			var n = 0;
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
@@ -295,18 +295,16 @@ namespace Emphasis.ComputerVision
 						edgeList.Add(x);
 						edgeList.Add(y);
 					}
-
-					n += 2;
 				}
 			}
 
 			// Find the stroke width in positive direction
 			var swtList0 = new List<int>();
-			StrokeWidthTransform(width, height, edges, angles, dx, dy, rayLength, true, edgeList, swtList0);
+			StrokeWidthTransform(width, height, edges, angles, dx, dy, swt0, rayLength, true, edgeList, swtList0);
 
 			// Find the stroke width in positive direction
 			var swtList1 = new List<int>();
-			StrokeWidthTransform(width, height, edges, angles, dx, dy, rayLength, true, edgeList, swtList1);
+			StrokeWidthTransform(width, height, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1);
 
 			// For each stroke
 			// Compute mean
@@ -321,13 +319,16 @@ namespace Emphasis.ComputerVision
 			float[] angles,
 			float[] dx,
 			float[] dy,
+			float[] swt,
 			int rayLength,
 			bool direction,
 			List<int> edgeList,
 			List<int> swtList)
 		{
-			var n = edgeList.Count / 2;
-			for (var i = 0; i < n; i += 2)
+			var dir = direction ? 1 : -1;
+
+			var en = edgeList.Count;
+			for (var i = 0; i < en; i += 2)
 			{
 				var x = edgeList[i];
 				var y = edgeList[i + 1];
@@ -339,7 +340,6 @@ namespace Emphasis.ComputerVision
 				var idy = dy[d];
 
 				// Sign of the differential in the direction (black on white or white on black)
-				var dir = direction ? 1 : -1;
 				var ix = dir * MathF.Sign(idx);
 				var iy = dir * MathF.Sign(idy);
 
@@ -374,7 +374,7 @@ namespace Emphasis.ComputerVision
 				if (cx == mx || cy == my)
 					continue;
 
-				for (var ci = 0; ci < rayLength; ci++)
+				for (var ci = 2; ci < rayLength; ci++)
 				{
 					// Move by 1
 					if (ex >= ey)
@@ -403,11 +403,185 @@ namespace Emphasis.ComputerVision
 						{
 							swtList.Add(x);
 							swtList.Add(y);
+							swtList.Add(ci);
 						}
 						break;
 					}
 				}
 			}
+
+			var sn = swtList.Count;
+			for (var i = 0; i < sn; i += 3)
+			{
+				var x = swtList[i];
+				var y = swtList[i + 1];
+				var len = swtList[i + 2];
+				var d = y * width + x;
+
+				swt[d] = 255;
+			}
+
+			//var n = edgeList.Count;
+			//for (var i = 0; i < en; i += 2)
+			//{
+			//	var x = edgeList[i];
+			//	var y = edgeList[i + 1];
+			//	var d = y * width + x;
+			//	var a = angles[d];
+
+			//	if (swt[d] != 255)
+			//		swt[d] = 90;
+			//}
+
+
+
+			/*
+			// Fill in the strokes
+			var sn = swtList.Count / 3;
+			for (var i = 0; i < sn; i += 3)
+			{
+				var x = swtList[i];
+				var y = swtList[i + 1];
+				var len = swtList[i + 2];
+				var d = y * width + x;
+
+				// Differential on x and y-axis
+				var idx = dx[d];
+				var idy = dy[d];
+
+				// Sign of the differential in the direction (black on white or white on black)
+				var ix = dir * MathF.Sign(idx);
+				var iy = dir * MathF.Sign(idy);
+
+				// The size of the differential
+				var idxa = MathF.Abs(idx);
+				var idya = MathF.Abs(idy);
+
+				// The current error
+				var ex = idxa;
+				var ey = idya;
+
+				// The current position
+				var cx = x;
+				var cy = y;
+
+				for (var ci = 0; ci <= len; ci++)
+				{
+					// The current distance
+					var cd = cy * width + cx;
+					var cs = swt[cd];
+					// Set the stroke width to the lowest found
+					if (cs > len)
+						swt[cd] = len;
+
+					// Move by 1
+					if (ex >= ey)
+					{
+						ey += idya;
+						cx += ix;
+					}
+					else
+					{
+						ex += idxa;
+						cy += iy;
+					}
+				}
+			}
+
+			for (int i = 0, j = 0; i < sn; j++, i += 3)
+			{
+				var x = swtList[i];
+				var y = swtList[i + 1];
+				var len = swtList[i + 2];
+				var d = y * width + x;
+
+				// Differential on x and y-axis
+				var idx = dx[d];
+				var idy = dy[d];
+
+				// Sign of the differential in the direction (black on white or white on black)
+				var ix = dir * MathF.Sign(idx);
+				var iy = dir * MathF.Sign(idy);
+
+				// The size of the differential
+				var idxa = MathF.Abs(idx);
+				var idya = MathF.Abs(idy);
+
+				// The current error
+				var ex = idxa;
+				var ey = idya;
+
+				// The current position
+				var cx = x;
+				var cy = y;
+
+				// Find the median stroke width for the ray
+				var sm = new List<float>();
+				for (var ci = 0; ci <= len; ci++)
+				{
+					// The current distance
+					var cd = cy * width + cx;
+					if (cy < 0 || cy >= height || cx < 0 || cx >= width)
+						throw new ArgumentOutOfRangeException();
+					var cs = swt[cd];
+					sm.Add(cs);
+
+					if (ex >= ey)
+					{
+						ey += idya;
+						cx += ix;
+					}
+					else
+					{
+						ex += idxa;
+						cy += iy;
+					}
+				}
+
+				var median = Median(sm);
+
+				cx = x;
+				cy = y;
+
+				ex = idxa;
+				ey = idya;
+
+				// Cap the stroke width to the ray's median
+				for (var ci = 0; ci <= len; ci++)
+				{
+					// The current distance
+					var cd = cy * width + cx;
+					if (cy < 0 || cy >= height || cx < 0 || cx >= width)
+						throw new ArgumentOutOfRangeException();
+					var cs = swt[cd];
+					if (cs > median)
+						swt[cd] = median;
+
+					if (ex >= ey)
+					{
+						ey += idya;
+						cx += ix;
+					}
+					else
+					{
+						ex += idxa;
+						cy += iy;
+					}
+				}
+			}
+			*/
+			}
+
+			public static float Median(List<float> values, bool sort = true)
+		{
+			if (sort)
+				values.Sort();
+
+			var n = values.Count;
+			var mid = n % 2 == 1 ? n / 2 : n / 2 - 1;
+			if (mid < 0 ||mid >= values.Count)
+				throw new ArgumentOutOfRangeException();
+			return values[mid];
 		}
 
 		public static (int x, int y) Line(int x, int y, int ix, int iy, float dx, float dy, float err, bool staging)

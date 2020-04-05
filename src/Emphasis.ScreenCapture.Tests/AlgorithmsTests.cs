@@ -72,10 +72,14 @@ namespace Emphasis.ScreenCapture.Tests
 			var dy = new float[height * width];
 			var angle = new float[height * width];
 			var neighbors = new byte[height * width * 5];
-			var gradientNms = new float[height * width];
+			var nms = new float[height * width];
 			var cmp1 = new float[height * width];
 			var cmp2 = new float[height * width];
-			var swt = new float[height * width];
+			var swt0 = new float[height * width];
+			var swt1 = new float[height * width];
+
+			Array.Fill(swt0, float.MaxValue);
+			Array.Fill(swt1, float.MaxValue);
 
 			Algorithms.Grayscale(width,height, source, grayscale);
 
@@ -83,16 +87,25 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.Sobel(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 
-			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, gradientNms, cmp1, cmp2);
+			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 
-			Algorithms.StrokeWidthTransform(width, height, gradient, angle, dx, dy, swt);
+			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
+
+			//for (var i = 0; i < swt0.Length; i++)
+			//{
+			//	if (swt0[i] == float.MaxValue)
+			//		swt0[i] = 0;
+			//	if (swt1[i] == float.MaxValue)
+			//		swt1[i] = 0;
+			//}
 
 			Run("sample02.png");
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
-			gradientNms.RunAs(width, height, 1, "sobel_gradient_nms.png");
-			swt.RunAs(width, height, 1, "swt.png");
+			nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
+			swt0.RunAs(width, height, 1, "swt0.png");
+			swt1.RunAs(width, height, 1, "swt1.png");
 
 			//source.RunAsText(width, height, 4, "sample00.txt");
 			//await Task.Delay(100);
