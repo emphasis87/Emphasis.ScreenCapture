@@ -305,11 +305,6 @@ namespace Emphasis.ComputerVision
 			// Find the stroke width in positive direction
 			var swtList1 = new List<int>();
 			StrokeWidthTransform(width, height, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1);
-
-			// For each stroke
-			// Compute mean
-			// For each stroke
-			// max(mean, stroke width)
 		}
 
 		public static void StrokeWidthTransform(
@@ -410,34 +405,19 @@ namespace Emphasis.ComputerVision
 				}
 			}
 
-			var sn = swtList.Count;
-			for (var i = 0; i < sn; i += 3)
-			{
-				var x = swtList[i];
-				var y = swtList[i + 1];
-				var len = swtList[i + 2];
-				var d = y * width + x;
-
-				swt[d] = 255;
-			}
-
-			//var n = edgeList.Count;
-			//for (var i = 0; i < en; i += 2)
+			//var sn = swtList.Count;
+			//for (var i = 0; i < sn; i += 3)
 			//{
-			//	var x = edgeList[i];
-			//	var y = edgeList[i + 1];
+			//	var x = swtList[i];
+			//	var y = swtList[i + 1];
+			//	var len = swtList[i + 2];
 			//	var d = y * width + x;
-			//	var a = angles[d];
 
-			//	if (swt[d] != 255)
-			//		swt[d] = 90;
+			//	swt[d] = 255;
 			//}
 
-
-
-			/*
 			// Fill in the strokes
-			var sn = swtList.Count / 3;
+			var sn = swtList.Count;
 			for (var i = 0; i < sn; i += 3)
 			{
 				var x = swtList[i];
@@ -569,10 +549,9 @@ namespace Emphasis.ComputerVision
 					}
 				}
 			}
-			*/
-			}
+		}
 
-			public static float Median(List<float> values, bool sort = true)
+		public static float Median(List<float> values, bool sort = true)
 		{
 			if (sort)
 				values.Sort();
