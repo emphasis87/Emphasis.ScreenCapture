@@ -43,7 +43,7 @@ namespace Emphasis.ComputerVision
 		//	{ 0.0625, 0.1250, 0.0625 },
 		//};
 		
-		public static void Gauss(int width, int height, byte[] source, byte[] destination)
+		public static void Gauss(int width, int height, byte[] source, byte[] destination, int channels = 4)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -51,20 +51,20 @@ namespace Emphasis.ComputerVision
 				for (var x = 0; x < width; x++)
 				{
 					var j = Clamp(x, width);
-					for (var channel = 0; channel < 4; channel++)
+					for (var c = 0; c < channels; c++)
 					{
 						var result =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + channel] * 0.1250f +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + channel] * 0.2500f +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + channel] * 0.1250f +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + channel] * 0.0625f +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + channel] * 0.1250f +
-			 				source[(i + 1) * (width * 4) + (j + 1) * 4 + channel] * 0.0625f;
+							source[(i - 1) * (width * channels) + (j - 1) * channels + c] * 0.0625f +
+							source[(i - 1) * (width * channels) + (j + 0) * channels + c] * 0.1250f +
+							source[(i - 1) * (width * channels) + (j + 1) * channels + c] * 0.0625f +
+							source[(i + 0) * (width * channels) + (j - 1) * channels + c] * 0.1250f +
+							source[(i + 0) * (width * channels) + (j + 0) * channels + c] * 0.2500f +
+							source[(i + 0) * (width * channels) + (j + 1) * channels + c] * 0.1250f +
+							source[(i + 1) * (width * channels) + (j - 1) * channels + c] * 0.0625f +
+							source[(i + 1) * (width * channels) + (j + 0) * channels + c] * 0.1250f +
+			 				source[(i + 1) * (width * channels) + (j + 1) * channels + c] * 0.0625f;
 
-						var d = y * (width * 4) + x * 4 + channel;
+						var d = y * (width * channels) + x * channels + c;
 						destination[d] = Convert.ToByte(Math.Min(255, result));
 					}
 				}
@@ -85,7 +85,7 @@ namespace Emphasis.ComputerVision
 			{ -1, -2, -1 },
 		};
 
-		public static void Sobel(int width, int height, byte[] source, float[] dx, float[] dy, float[] gradient, float[] angle, byte[] neighbors)
+		public static void Sobel(int width, int height, byte[] source, float[] dx, float[] dy, float[] gradient, float[] angle, byte[] neighbors, int channels = 4)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -99,29 +99,29 @@ namespace Emphasis.ComputerVision
 					var idy = 0.0f;
 					var idya = 0.0f;
 
-					for (var c = 0; c < 4; c++)
+					for (var c = 0; c < channels; c++)
 					{
 						var cdx =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + c] * SobelDxMask[0, 0] +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + c] * SobelDxMask[0, 1] +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + c] * SobelDxMask[0, 2] +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + c] * SobelDxMask[1, 0] +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + c] * SobelDxMask[1, 1] +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + c] * SobelDxMask[1, 2] +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + c] * SobelDxMask[2, 0] +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + c] * SobelDxMask[2, 1] +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + c] * SobelDxMask[2, 2];
+							source[(i - 1) * (width * channels) + (j - 1) * channels + c] * SobelDxMask[0, 0] +
+							source[(i - 1) * (width * channels) + (j + 0) * channels + c] * SobelDxMask[0, 1] +
+							source[(i - 1) * (width * channels) + (j + 1) * channels + c] * SobelDxMask[0, 2] +
+							source[(i + 0) * (width * channels) + (j - 1) * channels + c] * SobelDxMask[1, 0] +
+							source[(i + 0) * (width * channels) + (j + 0) * channels + c] * SobelDxMask[1, 1] +
+							source[(i + 0) * (width * channels) + (j + 1) * channels + c] * SobelDxMask[1, 2] +
+							source[(i + 1) * (width * channels) + (j - 1) * channels + c] * SobelDxMask[2, 0] +
+							source[(i + 1) * (width * channels) + (j + 0) * channels + c] * SobelDxMask[2, 1] +
+							source[(i + 1) * (width * channels) + (j + 1) * channels + c] * SobelDxMask[2, 2];
 
 						var cdy =
-							source[(i - 1) * (width * 4) + (j - 1) * 4 + c] * SobelDyMask[0, 0] +
-							source[(i - 1) * (width * 4) + (j + 0) * 4 + c] * SobelDyMask[0, 1] +
-							source[(i - 1) * (width * 4) + (j + 1) * 4 + c] * SobelDyMask[0, 2] +
-							source[(i + 0) * (width * 4) + (j - 1) * 4 + c] * SobelDyMask[1, 0] +
-							source[(i + 0) * (width * 4) + (j + 0) * 4 + c] * SobelDyMask[1, 1] +
-							source[(i + 0) * (width * 4) + (j + 1) * 4 + c] * SobelDyMask[1, 2] +
-							source[(i + 1) * (width * 4) + (j - 1) * 4 + c] * SobelDyMask[2, 0] +
-							source[(i + 1) * (width * 4) + (j + 0) * 4 + c] * SobelDyMask[2, 1] +
-							source[(i + 1) * (width * 4) + (j + 1) * 4 + c] * SobelDyMask[2, 2];
+							source[(i - 1) * (width * channels) + (j - 1) * channels + c] * SobelDyMask[0, 0] +
+							source[(i - 1) * (width * channels) + (j + 0) * channels + c] * SobelDyMask[0, 1] +
+							source[(i - 1) * (width * channels) + (j + 1) * channels + c] * SobelDyMask[0, 2] +
+							source[(i + 0) * (width * channels) + (j - 1) * channels + c] * SobelDyMask[1, 0] +
+							source[(i + 0) * (width * channels) + (j + 0) * channels + c] * SobelDyMask[1, 1] +
+							source[(i + 0) * (width * channels) + (j + 1) * channels + c] * SobelDyMask[1, 2] +
+							source[(i + 1) * (width * channels) + (j - 1) * channels + c] * SobelDyMask[2, 0] +
+							source[(i + 1) * (width * channels) + (j + 0) * channels + c] * SobelDyMask[2, 1] +
+							source[(i + 1) * (width * channels) + (j + 1) * channels + c] * SobelDyMask[2, 2];
 
 						var cdxAbs = MathF.Abs(cdx);
 						if (cdxAbs > idxa)
@@ -322,38 +322,11 @@ namespace Emphasis.ComputerVision
 		{
 			var dir = direction ? 1 : -1;
 
-			var en = edgeList.Count;
-			for (var i = 0; i < en; i += 2)
+			int x, y, d, len, cx, cy, mx, my, ix, iy;
+			float a, idx, idy, idxa, idya, ex, ey;
+
+			void Advance()
 			{
-				var x = edgeList[i];
-				var y = edgeList[i + 1];
-				var d = y * width + x;
-				var a = angles[d];
-
-				// Differential on x and y-axis
-				var idx = dx[d];
-				var idy = dy[d];
-
-				// Sign of the differential in the direction (black on white or white on black)
-				var ix = dir * MathF.Sign(idx);
-				var iy = dir * MathF.Sign(idy);
-
-				// The size of the differential
-				var idxa = MathF.Abs(idx);
-				var idya = MathF.Abs(idy);
-
-				// The current error
-				var ex = idxa;
-				var ey = idya;
-
-				// The indexing limits
-				var mx = ix > 0 ? width : -1;
-				var my = iy > 0 ? height : -1;
-
-				// The current position
-				var cx = x;
-				var cy = y;
-
 				// Move by 1 (direct neighbor is likely an edge in the same direction)
 				if (ex >= ey)
 				{
@@ -365,23 +338,48 @@ namespace Emphasis.ComputerVision
 					ex += idxa;
 					cy += iy;
 				}
+			}
+
+			var en = edgeList.Count;
+			for (var i = 0; i < en; i += 2)
+			{
+				x = edgeList[i];
+				y = edgeList[i + 1];
+				d = y * width + x;
+				a = angles[d];
+
+				// Differential on x and y-axis
+				idx = dx[d];
+				idy = dy[d];
+
+				// Sign of the differential in the direction (black on white or white on black)
+				ix = dir * MathF.Sign(idx);
+				iy = dir * MathF.Sign(idy);
+
+				// The size of the differential
+				idxa = MathF.Abs(idx);
+				idya = MathF.Abs(idy);
+
+				// The current error
+				ex = idxa;
+				ey = idya;
+
+				// The indexing limits
+				mx = ix > 0 ? width : -1;
+				my = iy > 0 ? height : -1;
+
+				// The current position
+				cx = x;
+				cy = y;
+
+				Advance();
 
 				if (cx == mx || cy == my)
 					continue;
 
 				for (var ci = 2; ci < rayLength; ci++)
 				{
-					// Move by 1
-					if (ex >= ey)
-					{
-						ey += idya;
-						cx += ix;
-					}
-					else
-					{
-						ex += idxa;
-						cy += iy;
-					}
+					Advance();
 
 					if (cx == mx || cy == my)
 						break;
@@ -422,32 +420,34 @@ namespace Emphasis.ComputerVision
 			var sn = swtList.Count;
 			for (var i = 0; i < sn; i += 3)
 			{
-				var x = swtList[i];
-				var y = swtList[i + 1];
-				var len = swtList[i + 2];
-				var d = y * width + x;
+				x = swtList[i];
+				y = swtList[i + 1];
+				len = swtList[i + 2];
+				d = y * width + x;
 
 				// Differential on x and y-axis
-				var idx = dx[d];
-				var idy = dy[d];
+				idx = dx[d];
+				idy = dy[d];
 
 				// Sign of the differential in the direction (black on white or white on black)
-				var ix = dir * MathF.Sign(idx);
-				var iy = dir * MathF.Sign(idy);
+				ix = dir * MathF.Sign(idx);
+				iy = dir * MathF.Sign(idy);
 
 				// The size of the differential
-				var idxa = MathF.Abs(idx);
-				var idya = MathF.Abs(idy);
+				idxa = MathF.Abs(idx);
+				idya = MathF.Abs(idy);
 
 				// The current error
-				var ex = idxa;
-				var ey = idya;
+				ex = idxa;
+				ey = idya;
 
 				// The current position
-				var cx = x;
-				var cy = y;
+				cx = x;
+				cy = y;
 
-				for (var ci = 0; ci <= len; ci++)
+				Advance();
+
+				for (var ci = 1; ci < len; ci++)
 				{
 					// The current distance
 					var cd = cy * width + cx;
@@ -472,34 +472,36 @@ namespace Emphasis.ComputerVision
 
 			for (int i = 0, j = 0; i < sn; j++, i += 3)
 			{
-				var x = swtList[i];
-				var y = swtList[i + 1];
-				var len = swtList[i + 2];
-				var d = y * width + x;
+				x = swtList[i];
+				y = swtList[i + 1];
+				len = swtList[i + 2];
+				d = y * width + x;
 
 				// Differential on x and y-axis
-				var idx = dx[d];
-				var idy = dy[d];
+				idx = dx[d];
+				idy = dy[d];
 
 				// Sign of the differential in the direction (black on white or white on black)
-				var ix = dir * MathF.Sign(idx);
-				var iy = dir * MathF.Sign(idy);
+				ix = dir * MathF.Sign(idx);
+				iy = dir * MathF.Sign(idy);
 
 				// The size of the differential
-				var idxa = MathF.Abs(idx);
-				var idya = MathF.Abs(idy);
+				idxa = MathF.Abs(idx);
+				idya = MathF.Abs(idy);
 
 				// The current error
-				var ex = idxa;
-				var ey = idya;
+				ex = idxa;
+				ey = idya;
 
 				// The current position
-				var cx = x;
-				var cy = y;
+				cx = x;
+				cy = y;
+
+				Advance();
 
 				// Find the median stroke width for the ray
 				var sm = new List<float>();
-				for (var ci = 0; ci <= len; ci++)
+				for (var ci = 1; ci < len; ci++)
 				{
 					// The current distance
 					var cd = cy * width + cx;
@@ -508,16 +510,7 @@ namespace Emphasis.ComputerVision
 					var cs = swt[cd];
 					sm.Add(cs);
 
-					if (ex >= ey)
-					{
-						ey += idya;
-						cx += ix;
-					}
-					else
-					{
-						ex += idxa;
-						cy += iy;
-					}
+					Advance();
 				}
 
 				var median = Median(sm);
@@ -528,8 +521,10 @@ namespace Emphasis.ComputerVision
 				ex = idxa;
 				ey = idya;
 
+				Advance();
+
 				// Cap the stroke width to the ray's median
-				for (var ci = 0; ci <= len; ci++)
+				for (var ci = 1; ci < len; ci++)
 				{
 					// The current distance
 					var cd = cy * width + cx;
@@ -539,16 +534,7 @@ namespace Emphasis.ComputerVision
 					if (cs > median)
 						swt[cd] = median;
 
-					if (ex >= ey)
-					{
-						ey += idya;
-						cx += ix;
-					}
-					else
-					{
-						ex += idxa;
-						cy += iy;
-					}
+					Advance();
 				}
 			}
 		}
