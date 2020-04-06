@@ -449,17 +449,7 @@ namespace Emphasis.ComputerVision
 					if (cs > len)
 						swt[cd] = len;
 
-					// Move by 1
-					if (ex >= ey)
-					{
-						ey += idya;
-						cx += ix;
-					}
-					else
-					{
-						ex += idxa;
-						cy += iy;
-					}
+					Advance();
 				}
 			}
 
