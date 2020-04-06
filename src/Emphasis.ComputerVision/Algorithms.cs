@@ -509,6 +509,15 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public static void ConnectedComponentsAnalysis(
+			int width,
+			int height,
+			float[] swt
+			)
+		{
+
+		}
+
 		public static float Median(List<float> values, bool sort = true)
 		{
 			if (sort)
