@@ -325,6 +325,36 @@ namespace Emphasis.ComputerVision
 			int x, y, d, len, cx, cy, mx, my, ix, iy;
 			float a, idx, idy, idxa, idya, ex, ey;
 
+			void InitializeLine()
+			{
+				d = y * width + x;
+
+				// Differential on x and y-axis
+				idx = dx[d];
+				idy = dy[d];
+
+				// Sign of the differential in the direction (black on white or white on black)
+				ix = dir * MathF.Sign(idx);
+				iy = dir * MathF.Sign(idy);
+
+				// The size of the differential
+				idxa = MathF.Abs(idx);
+				idya = MathF.Abs(idy);
+
+				ResetLine();
+			}
+
+			void ResetLine()
+			{
+				// The current error
+				ex = idxa;
+				ey = idya;
+
+				// The current position
+				cx = x;
+				cy = y;
+			}
+
 			void Advance()
 			{
 				// Move by 1 (direct neighbor is likely an edge in the same direction)
@@ -345,32 +375,14 @@ namespace Emphasis.ComputerVision
 			{
 				x = edgeList[i];
 				y = edgeList[i + 1];
-				d = y * width + x;
+				
+				InitializeLine();
+
 				a = angles[d];
-
-				// Differential on x and y-axis
-				idx = dx[d];
-				idy = dy[d];
-
-				// Sign of the differential in the direction (black on white or white on black)
-				ix = dir * MathF.Sign(idx);
-				iy = dir * MathF.Sign(idy);
-
-				// The size of the differential
-				idxa = MathF.Abs(idx);
-				idya = MathF.Abs(idy);
-
-				// The current error
-				ex = idxa;
-				ey = idya;
 
 				// The indexing limits
 				mx = ix > 0 ? width : -1;
 				my = iy > 0 ? height : -1;
-
-				// The current position
-				cx = x;
-				cy = y;
 
 				Advance();
 
@@ -423,27 +435,8 @@ namespace Emphasis.ComputerVision
 				x = swtList[i];
 				y = swtList[i + 1];
 				len = swtList[i + 2];
-				d = y * width + x;
 
-				// Differential on x and y-axis
-				idx = dx[d];
-				idy = dy[d];
-
-				// Sign of the differential in the direction (black on white or white on black)
-				ix = dir * MathF.Sign(idx);
-				iy = dir * MathF.Sign(idy);
-
-				// The size of the differential
-				idxa = MathF.Abs(idx);
-				idya = MathF.Abs(idy);
-
-				// The current error
-				ex = idxa;
-				ey = idya;
-
-				// The current position
-				cx = x;
-				cy = y;
+				InitializeLine();
 
 				Advance();
 
@@ -475,27 +468,8 @@ namespace Emphasis.ComputerVision
 				x = swtList[i];
 				y = swtList[i + 1];
 				len = swtList[i + 2];
-				d = y * width + x;
-
-				// Differential on x and y-axis
-				idx = dx[d];
-				idy = dy[d];
-
-				// Sign of the differential in the direction (black on white or white on black)
-				ix = dir * MathF.Sign(idx);
-				iy = dir * MathF.Sign(idy);
-
-				// The size of the differential
-				idxa = MathF.Abs(idx);
-				idya = MathF.Abs(idy);
-
-				// The current error
-				ex = idxa;
-				ey = idya;
-
-				// The current position
-				cx = x;
-				cy = y;
+				
+				InitializeLine();
 
 				Advance();
 
@@ -515,11 +489,7 @@ namespace Emphasis.ComputerVision
 
 				var median = Median(sm);
 
-				cx = x;
-				cy = y;
-
-				ex = idxa;
-				ey = idya;
+				ResetLine();
 
 				Advance();
 

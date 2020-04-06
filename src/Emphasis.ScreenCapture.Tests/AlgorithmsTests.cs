@@ -57,7 +57,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public async Task NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample02;
+			var sourceBitmap = Samples.sample03;
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -77,7 +77,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var cmp2 = new float[height * width];
 			var swt0 = new float[height * width];
 			var swt1 = new float[height * width];
-
+			
 			Array.Fill(swt0, float.MaxValue);
 			Array.Fill(swt1, float.MaxValue);
 
@@ -85,16 +85,32 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.Gauss(width, height, source, gauss);
 
-			Algorithms.Sobel(width, height, gauss,  dx, dy, gradient, angle, neighbors);
+			Algorithms.Sobel(width, height, source,  dx, dy, gradient, angle, neighbors);
 
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
-			Run("sample02.png");
+			Run("sample03.png");
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
+
+			var dxa = new float[height * width];
+			var dya = new float[height * width];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < height; x++)
+				{
+					var d = y * width + x;
+					dxa[d] = MathF.Abs(dx[d]);
+					dya[d] = MathF.Abs(dy[d]);
+				}
+			}
+
+			dxa.RunAs(width, height, 1, "dxa.png");
+			dya.RunAs(width, height, 1, "dya.png");
+
 			nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
 			swt0.RunAs(width, height, 1, "swt0.png");
 			swt1.RunAs(width, height, 1, "swt1.png");
