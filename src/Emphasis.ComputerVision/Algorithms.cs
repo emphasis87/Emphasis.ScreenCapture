@@ -515,26 +515,45 @@ namespace Emphasis.ComputerVision
 				}
 			}
 
+			const float strokeAssociationRule = 3.0f;
+
 			int cx, cy, dn;
-			for (var y = 0; y < height; y++)
+			var isColored = false;
+			while (!isColored)
 			{
-				for (var x = 0; x < width; x++)
+				isColored = true;
+				for (var y = 0; y < height; y++)
 				{
-					var d = y * width + x;
-					var s = swt[d];
-					if (s == float.MaxValue)
-						continue;
-
-					var color = int.MaxValue;
-					for (var a = -1; a <= 1; a++)
+					for (var x = 0; x < width; x++)
 					{
-						cy = Clamp(y + a, height);
-						for (var b = -1; b <= 1; b++)
-						{
-							cx = Clamp(x + b, width);
-							dn = cy * width + cx;
-							var sn = swt[dn];
+						var d = y * width + x;
+						var s = swt[d];
+						if (s == float.MaxValue)
+							continue;
 
+						var c = components[d];
+						var color = int.MaxValue;
+						for (var a = -1; a <= 1; a++)
+						{
+							cy = Clamp(y + a, height);
+							for (var b = -1; b <= 1; b++)
+							{
+								cx = Clamp(x + b, width);
+								dn = cy * width + cx;
+								var sn = swt[dn];
+								if (MathF.Min(s, sn) * strokeAssociationRule < MathF.Max(s, sn))
+									continue;
+								var cn = components[dn];
+								if (cn < color)
+									color = cn;
+							}
+						}
+
+						if (color < c)
+						{
+							color = components[components[components[components[color]]]];
+							components[d] = color;
+							isColored = false;
 						}
 					}
 				}
