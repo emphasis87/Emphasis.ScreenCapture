@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -502,10 +503,42 @@ namespace Emphasis.ComputerVision
 		public static void ConnectedComponentsAnalysis(
 			int width,
 			int height,
-			float[] swt
-			)
+			float[] swt,
+			int[] components)
 		{
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					components[d] = d;
+				}
+			}
 
+			int cx, cy, dn;
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					var s = swt[d];
+					if (s == float.MaxValue)
+						continue;
+
+					var color = int.MaxValue;
+					for (var a = -1; a <= 1; a++)
+					{
+						cy = Clamp(y + a, height);
+						for (var b = -1; b <= 1; b++)
+						{
+							cx = Clamp(x + b, width);
+							dn = cy * width + cx;
+							var sn = swt[dn];
+
+						}
+					}
+				}
+			}
 		}
 
 		public static float Median(List<float> values, bool sort = true)
