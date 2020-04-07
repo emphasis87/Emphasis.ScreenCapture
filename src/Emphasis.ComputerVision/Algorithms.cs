@@ -532,7 +532,7 @@ namespace Emphasis.ComputerVision
 							continue;
 
 						var c = components[d];
-						var color = int.MaxValue;
+						var cm = int.MaxValue;
 						for (var a = -1; a <= 1; a++)
 						{
 							cy = Clamp(y + a, height);
@@ -544,15 +544,15 @@ namespace Emphasis.ComputerVision
 								if (MathF.Min(s, sn) * strokeAssociationRule < MathF.Max(s, sn))
 									continue;
 								var cn = components[dn];
-								if (cn < color)
-									color = cn;
+								if (cn < cm)
+									cm = cn;
 							}
 						}
 
-						if (color < c)
+						if (cm < c)
 						{
-							color = components[components[components[components[color]]]];
-							components[d] = color;
+							cm = components[components[components[components[cm]]]];
+							components[d] = cm;
 							isColored = false;
 						}
 					}
