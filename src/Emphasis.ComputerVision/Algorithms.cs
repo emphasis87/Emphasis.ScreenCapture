@@ -514,17 +514,8 @@ namespace Emphasis.ComputerVision
 			int height,
 			float[] swt,
 			int[] components,
-			float limit = 255)
+			float limit = 255.0f)
 		{
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * width + x;
-					components[d] = d;
-				}
-			}
-
 			const float strokeAssociationRule = 3.0f;
 
 			int cx, cy, dn;
@@ -538,21 +529,22 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var s = swt[d];
-						if (s == float.MaxValue)
+						if (s >= limit)
 							continue;
 
 						var c = components[d];
 						var cm = int.MaxValue;
 						for (var a = -1; a <= 1; a++)
 						{
-							cy = Clamp(y + a, height);
+							cy = Math.Min(Math.Max(0, y + a), height - 1);
 							for (var b = -1; b <= 1; b++)
 							{
-								cx = Clamp(x + b, width);
+								cx = Math.Min(Math.Max(0, x + b), width - 1);
 								dn = cy * width + cx;
 								var sn = swt[dn];
 								if (MathF.Max(s, sn)/MathF.Min(s, sn) > strokeAssociationRule)
 									continue;
+
 								var cn = components[dn];
 								if (cn < cm)
 									cm = cn;

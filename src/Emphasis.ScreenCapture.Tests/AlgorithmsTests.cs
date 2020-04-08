@@ -169,7 +169,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var components = new int [height * width];
 			Algorithms.InitializeComponents(components);
-			Algorithms.ConnectedComponentsAnalysis(width, height, values, components);
+			Algorithms.ConnectedComponentsAnalysis(width, height, values, components, limit: 128);
 
 			var result = new int[]
 			{
