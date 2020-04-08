@@ -566,6 +566,31 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public static int ColorComponent(int width, int height, float[] swt, int[] components, int x0, int y0)
+		{
+			var d = y0 * width + x0;
+			var c = components[d];
+
+			for (var y= -1; y <= 1; y++)
+			{
+				if (y + y0 < 0 || y + y0 >= height) 
+					continue;
+
+				for (var x = -1; x <= 1; x++)
+				{
+					if (x + x0 < 0 || x + x0 >= width)
+						continue;
+
+					var dn = (y + y0) * width + x + x0;
+					var cn = components[dn];
+					if (cn != -1 && cn < c)
+						c = cn;
+				}
+			}
+
+			return c;
+		}
+
 		public static float Median(List<float> values, bool sort = true)
 		{
 			if (sort)
