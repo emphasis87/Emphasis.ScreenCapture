@@ -91,6 +91,11 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
+			var cc0 = new int[height * width];
+			var cc1 = new int[height * width];
+			Algorithms.ConnectedComponentsAnalysis(width, height, swt0, cc0);
+			Algorithms.ConnectedComponentsAnalysis(width, height, swt1, cc1);
+
 			Run("sample03.png");
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
@@ -114,6 +119,9 @@ namespace Emphasis.ScreenCapture.Tests
 			nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
 			swt0.RunAs(width, height, 1, "swt0.png");
 			swt1.RunAs(width, height, 1, "swt1.png");
+
+			cc0.RunAs(width, height, 1, "cc0.png");
+			cc1.RunAs(width, height, 1, "cc1.png");
 
 			//source.RunAsText(width, height, 4, "sample00.txt");
 			//await Task.Delay(100);

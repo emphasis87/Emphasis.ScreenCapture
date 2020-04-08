@@ -131,5 +131,13 @@ namespace Emphasis.ScreenCapture.Helpers
 			using var bitmap = normalized.ToBitmap(width, height, channels);
 			RunAs(bitmap, filename);
 		}
+
+		public static void RunAs(this int[] image, int width, int height, int channels, string filename)
+		{
+			var normalized = new byte[image.Length];
+			image.Normalize(normalized, channels);
+			using var bitmap = normalized.ToBitmap(width, height, channels);
+			RunAs(bitmap, filename);
+		}
 	}
 }

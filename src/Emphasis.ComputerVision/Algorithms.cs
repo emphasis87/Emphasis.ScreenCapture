@@ -541,7 +541,7 @@ namespace Emphasis.ComputerVision
 								cx = Clamp(x + b, width);
 								dn = cy * width + cx;
 								var sn = swt[dn];
-								if (MathF.Min(s, sn) * strokeAssociationRule < MathF.Max(s, sn))
+								if (MathF.Max(s, sn)/MathF.Min(s, sn) > strokeAssociationRule)
 									continue;
 								var cn = components[dn];
 								if (cn < cm)
@@ -601,6 +601,48 @@ namespace Emphasis.ComputerVision
 			}
 
 			var len = new float[channels];
+			for (var c = 0; c < channels; c++)
+			{
+				len[c] = max[c] - min[c];
+			}
+
+			for (var i = 0; i < source.Length; i++)
+			{
+				for (var c = 0; c < channels; c++)
+				{
+					var a = min[c];
+					var l = len[c];
+					var v = source[i + c];
+					var r = ((v - a) / l) * 255;
+					destination[i + c] = Convert.ToByte(r);
+				}
+			}
+		}
+
+		public static void Normalize(this int[] source, byte[] destination, int channels)
+		{
+			var min = new int[channels];
+			var max = new int[channels];
+
+			for (var c = 0; c < channels; c++)
+			{
+				min[c] = int.MaxValue;
+				max[c] = int.MinValue;
+			}
+
+			for (var i = 0; i < source.Length; i++)
+			{
+				for (var c = 0; c < channels; c++)
+				{
+					var v = source[i + c];
+					if (v < min[c])
+						min[c] = v;
+					if (v > max[c])
+						max[c] = v;
+				}
+			}
+
+			var len = new int[channels];
 			for (var c = 0; c < channels; c++)
 			{
 				len[c] = max[c] - min[c];
