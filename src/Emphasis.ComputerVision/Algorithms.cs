@@ -551,7 +551,11 @@ namespace Emphasis.ComputerVision
 							}
 						}
 
-						if (cm < c)
+						if (cm == int.MaxValue)
+						{
+							components[d] = -1;
+						}
+						else if (cm < c)
 						{
 							cm = components[components[components[components[cm]]]];
 							components[d] = cm;
