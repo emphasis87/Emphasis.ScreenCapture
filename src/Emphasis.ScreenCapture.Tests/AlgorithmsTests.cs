@@ -149,6 +149,45 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public void ConnectedComponentsAnalysis_Test()
+		{
+			var width = 6;
+			var height = 9;
+			var values = new float[]
+			{
+				255, 255, 255,   3, 255, 255,
+				255, 255,   2,   2,   1, 255,
+				255, 255, 255, 255,   4, 255,
+				255, 255, 255, 255, 255,   2,
+				  1, 255, 255, 255, 255, 255,
+				 10,   3, 255, 255, 255, 255,
+				255,   2,   5, 255, 255, 255,
+				  4, 255,   7,   3, 255, 255,
+				255, 255, 255,   1,   1,   1,
+			};
+			values.Length.Should().Be(width * height);
+
+			var components = new int [height * width];
+			Algorithms.InitializeComponents(components);
+			Algorithms.ConnectedComponentsAnalysis(width, height, values, components);
+
+			var result = new int[]
+			{
+				 -1,  -1,  -1,   3,  -1,  -1,
+				 -1,  -1,   3,   3,   3,  -1,
+				 -1,  -1,  -1,  -1,   3,  -1,
+				 -1,  -1,  -1,  -1,  -1,   3,
+				 29,  -1,  -1,  -1,  -1,  -1,
+				 35,  29,  -1,  -1,  -1,  -1,
+				 -1,  29,  29,  -1,  -1,  -1,
+				 29,  -1,  29,  29,  -1,  -1,
+				 -1,  -1,  -1,  29,  29,  29,
+			};
+
+			components.Should().Equal(result);
+		}
+
+		[Test]
 		public void Canny()
 		{
 			var sourceBitmap = Samples.sample01;

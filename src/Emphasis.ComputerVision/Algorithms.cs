@@ -500,11 +500,21 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public static void InitializeComponents(int[] components)
+		{
+			var n = components.Length;
+			for (var i = 0; i < n; i++)
+			{
+				components[i] = i;
+			}
+		}
+
 		public static void ConnectedComponentsAnalysis(
 			int width,
 			int height,
 			float[] swt,
-			int[] components)
+			int[] components,
+			float limit = 255)
 		{
 			for (var y = 0; y < height; y++)
 			{
