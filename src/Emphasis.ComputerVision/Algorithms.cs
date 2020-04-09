@@ -540,7 +540,7 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void ColorComponents(
+		public static void ColorComponentsFixedPoint(
 			int width,
 			int height,
 			float[] swt,
@@ -567,7 +567,9 @@ namespace Emphasis.ComputerVision
 						}
 						else if (cn  < c)
 						{
-							cn = components[components[components[components[cn]]]];
+							for (var i = 0; i < 4; i++)
+								cn = components[cn];
+
 							components[d] = cn;
 							isColored = false;
 						}

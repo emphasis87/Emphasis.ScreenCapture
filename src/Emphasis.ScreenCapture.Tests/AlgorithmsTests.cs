@@ -93,8 +93,8 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var cc0 = new int[height * width];
 			var cc1 = new int[height * width];
-			Algorithms.ColorComponents(width, height, swt0, cc0);
-			Algorithms.ColorComponents(width, height, swt1, cc1);
+			Algorithms.ColorComponentsFixedPoint(width, height, swt0, cc0);
+			Algorithms.ColorComponentsFixedPoint(width, height, swt1, cc1);
 
 			Run("sample03.png");
 
@@ -169,7 +169,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var components = new int [height * width];
 			Algorithms.IndexComponents(components);
-			Algorithms.ColorComponentsWatershed(width, height, values, components, limit: 128);
+			Algorithms.ColorComponentsFixedPoint(width, height, values, components, limit: 128);
 
 			var max = int.MaxValue;
 			var result = new int[]
