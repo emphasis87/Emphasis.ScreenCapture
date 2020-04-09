@@ -93,8 +93,8 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var cc0 = new int[height * width];
 			var cc1 = new int[height * width];
-			Algorithms.ConnectedComponentsAnalysis(width, height, swt0, cc0);
-			Algorithms.ConnectedComponentsAnalysis(width, height, swt1, cc1);
+			Algorithms.ColorComponents(width, height, swt0, cc0);
+			Algorithms.ColorComponents(width, height, swt1, cc1);
 
 			Run("sample03.png");
 
@@ -168,20 +168,21 @@ namespace Emphasis.ScreenCapture.Tests
 			values.Length.Should().Be(width * height);
 
 			var components = new int [height * width];
-			Algorithms.InitializeComponents(components);
-			Algorithms.ConnectedComponentsAnalysis(width, height, values, components, limit: 128);
+			Algorithms.IndexComponents(components);
+			Algorithms.ColorComponentsWatershed(width, height, values, components, limit: 128);
 
+			var max = int.MaxValue;
 			var result = new int[]
 			{
-				 -1,  -1,  -1,   3,  -1,  -1,
-				 -1,  -1,   3,   3,   3,  -1,
-				 -1,  -1,  -1,  -1,   3,  -1,
-				 -1,  -1,  -1,  -1,  -1,   3,
-				 29,  -1,  -1,  -1,  -1,  -1,
-				 35,  29,  -1,  -1,  -1,  -1,
-				 -1,  29,  29,  -1,  -1,  -1,
-				 29,  -1,  29,  29,  -1,  -1,
-				 -1,  -1,  -1,  29,  29,  29,
+				max, max, max,   3, max, max,
+				max, max,   3,   3,   3, max,
+				max, max, max, max,   3, max,
+				max, max, max, max, max,   3,
+				 24, max, max, max, max, max,
+				max,  24, max, max, max, max,
+				max,  24,  24, max, max, max,
+				 24, max,  24,  24, max, max,
+				max, max, max,  24,  24,  24,
 			};
 
 			components.Should().Equal(result);

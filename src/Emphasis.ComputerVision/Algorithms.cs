@@ -500,7 +500,38 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void InitializeComponents(int[] components)
+		public static void ColorComponentsWatershed(
+			int width,
+			int height,
+			float[] swt,
+			int[] components,
+			float limit = 200)
+		{
+			var isComplete = false;
+			while (!isComplete)
+			{
+				isComplete = true;
+				for (var y = 0; y < height; y++)
+				{
+					for (var x = 0; x < width; x++)
+					{
+						var d = y * width + x;
+						var c = components[d];
+						if (c == int.MaxValue)
+							continue;
+
+						var cn = ColorComponent(width, height, swt, components, x, y, limit);
+						if (cn != components[d])
+						{
+							components[d] = cn;
+							isComplete = false;
+						}
+					}
+				}
+			}
+		}
+
+		public static void IndexComponents(int[] components)
 		{
 			var n = components.Length;
 			for (var i = 0; i < n; i++)
@@ -509,16 +540,13 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void ConnectedComponentsAnalysis(
+		public static void ColorComponents(
 			int width,
 			int height,
 			float[] swt,
 			int[] components,
-			float limit = 255.0f)
+			float limit = 200)
 		{
-			const float strokeAssociationRule = 3.0f;
-
-			int cx, cy, dn;
 			var isColored = false;
 			while (!isColored)
 			{
@@ -528,37 +556,19 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var s = swt[d];
-						if (s >= limit)
+						var c = components[d];
+						if (c == int.MaxValue)
 							continue;
 
-						var c = components[d];
-						var cm = int.MaxValue;
-						for (var a = -1; a <= 1; a++)
+						var cn = ColorComponent(width, height, swt, components, x, y, limit);
+						if (cn == int.MaxValue)
 						{
-							cy = Math.Min(Math.Max(0, y + a), height - 1);
-							for (var b = -1; b <= 1; b++)
-							{
-								cx = Math.Min(Math.Max(0, x + b), width - 1);
-								dn = cy * width + cx;
-								var sn = swt[dn];
-								if (MathF.Max(s, sn)/MathF.Min(s, sn) > strokeAssociationRule)
-									continue;
-
-								var cn = components[dn];
-								if (cn < cm)
-									cm = cn;
-							}
+							components[d] = int.MaxValue;
 						}
-
-						if (cm == int.MaxValue)
+						else if (cn  < c)
 						{
-							components[d] = -1;
-						}
-						else if (cm < c)
-						{
-							cm = components[components[components[components[cm]]]];
-							components[d] = cm;
+							cn = components[components[components[components[cn]]]];
+							components[d] = cn;
 							isColored = false;
 						}
 					}
@@ -566,10 +576,11 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static int ColorComponent(int width, int height, float[] swt, int[] components, int x0, int y0)
+		public static int ColorComponent(int width, int height, float[] swt, int[] components, int x0, int y0, float limit)
 		{
 			var d = y0 * width + x0;
-			var c = components[d];
+			var c = int.MaxValue;
+			var s0 = swt[d];
 
 			for (var y= -1; y <= 1; y++)
 			{
@@ -580,15 +591,26 @@ namespace Emphasis.ComputerVision
 				{
 					if (x + x0 < 0 || x + x0 >= width)
 						continue;
+					if (x == 0 && y == 0)
+						continue;
 
 					var dn = (y + y0) * width + x + x0;
+					var sn = swt[dn];
+					if (sn > limit)
+						continue;
+
+					var smin = Math.Min(s0, sn);
+					var smax = Math.Max(s0, sn);
+					if (smax > smin * 3)
+						continue;
+
 					var cn = components[dn];
-					if (cn != -1 && cn < c)
+					if (cn < c)
 						c = cn;
 				}
 			}
 
-			return c;
+			return c == int.MaxValue ? int.MaxValue : Math.Min(c, components[d]);
 		}
 
 		public static float Median(List<float> values, bool sort = true)
