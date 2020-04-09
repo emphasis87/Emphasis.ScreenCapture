@@ -149,43 +149,44 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
-		public void ConnectedComponentsAnalysis_Test()
+		public void ConnectedComponentsAnalysis_multiple_components_Test()
 		{
-			var width = 6;
+			var width = 14;
 			var height = 9;
 			var values = new float[]
 			{
-				255, 255, 255,   3, 255, 255,
-				255, 255,   2,   2,   1, 255,
-				255, 255, 255, 255,   4, 255,
-				255, 255, 255, 255, 255,   2,
-				  1, 255, 255, 255, 255, 255,
-				 10,   3, 255, 255, 255, 255,
-				255,   2,   5, 255, 255, 255,
-				  4, 255,   7,   3, 255, 255,
-				255, 255, 255,   1,   1,   1,
+				255, 255, 255,   3, 255, 255,   1, 255, 255, 255, 255,   1,   1,   1,
+				255, 255,   2,   2,   1, 255,   1, 255, 255, 255, 255,   1,   1,   1,
+				255, 255, 255, 255,   4, 255, 255,   1, 255, 255, 255,   1,   1,   1, 
+				255, 255, 255, 255, 255,   2, 255, 255,   1, 255, 255, 255,   1, 255,
+				  1, 255, 255, 255, 255, 255, 255,   1, 255,   1, 255,   1, 255, 255,
+				 10,   3, 255, 255, 255, 255,   1, 255, 255, 255,   1, 255, 255, 255,
+				255,   2,   5, 255, 255, 255,   1, 255, 255, 255, 255, 255, 255, 255,
+				  4, 255,   7,   3, 255, 255, 255,   1, 255, 255,   1,   1,   1,   1,
+				255, 255, 255,   1,   1,   1, 255, 255,   1,   1, 255, 255, 255, 255,
 			};
 			values.Length.Should().Be(width * height);
 
 			var components = new int [height * width];
 			Algorithms.IndexComponents(components);
-			Algorithms.ColorComponentsFixedPoint(width, height, values, components, limit: 128);
+			var rounds = Algorithms.ColorComponentsFixedPoint(width, height, values, components, limit: 128);
 
 			var max = int.MaxValue;
 			var result = new int[]
 			{
-				max, max, max,   3, max, max,
-				max, max,   3,   3,   3, max,
-				max, max, max, max,   3, max,
-				max, max, max, max, max,   3,
-				 24, max, max, max, max, max,
-				max,  24, max, max, max, max,
-				max,  24,  24, max, max, max,
-				 24, max,  24,  24, max, max,
-				max, max, max,  24,  24,  24,
+				max, max, max,   3, max, max,   6, max, max, max, max,   6,   6,   6,
+				max, max,   3,   3,   3, max,   6, max, max, max, max,   6,   6,   6,
+				max, max, max, max,   3, max, max,   6, max, max, max,   6,   6,   6,
+				max, max, max, max, max,   3, max, max,   6, max, max, max,   6, max,
+				 56, max, max, max, max, max, max,   6, max,   6, max,   6, max, max,
+				max,  56, max, max, max, max,   6, max, max, max,   6, max, max, max,
+				max,  56,  56, max, max, max,   6, max, max, max, max, max, max, max,
+				 56, max,  56,  56, max, max, max,   6, max, max,   6,   6,   6,   6,
+				max, max, max,  56,  56,  56, max, max,   6,   6, max, max, max, max,
 			};
 
 			components.Should().Equal(result);
+			Console.WriteLine($"Rounds: {rounds}");
 		}
 
 		[Test]

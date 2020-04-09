@@ -500,16 +500,20 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void ColorComponentsWatershed(
+		public static int ColorComponentsWatershed(
 			int width,
 			int height,
 			float[] swt,
 			int[] components,
 			float limit = 200)
 		{
+			var rounds = 0;
 			var isComplete = false;
 			while (!isComplete)
 			{
+				components.Dump(width, height);
+
+				rounds++;
 				isComplete = true;
 				for (var y = 0; y < height; y++)
 				{
@@ -529,6 +533,8 @@ namespace Emphasis.ComputerVision
 					}
 				}
 			}
+
+			return rounds;
 		}
 
 		public static void IndexComponents(int[] components)
@@ -540,16 +546,20 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void ColorComponentsFixedPoint(
+		public static int ColorComponentsFixedPoint(
 			int width,
 			int height,
 			float[] swt,
 			int[] components,
 			float limit = 200)
 		{
+			var rounds = 0;
 			var isColored = false;
 			while (!isColored)
 			{
+				components.Dump(width, height);
+
+				rounds++;
 				isColored = true;
 				for (var y = 0; y < height; y++)
 				{
@@ -568,7 +578,10 @@ namespace Emphasis.ComputerVision
 						else if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
-								cn = components[cn];
+							{
+								var cq = components[cn];
+								cn = cq;
+							}
 
 							components[d] = cn;
 							isColored = false;
@@ -576,6 +589,8 @@ namespace Emphasis.ComputerVision
 					}
 				}
 			}
+
+			return rounds;
 		}
 
 		public static int ColorComponent(int width, int height, float[] swt, int[] components, int x0, int y0, float limit)
@@ -729,6 +744,22 @@ namespace Emphasis.ComputerVision
 		{
 			var d = (((angle + 2) % 2 + 0.125f) * 4 - 0.5f) % 7;
 			return Convert.ToByte(MathF.Round(d));
+		}
+
+		public static void Dump(this int[] data, int width, int height)
+		{
+			Console.WriteLine("{");
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					var v = data[d];
+					Console.Write($"{(v == int.MaxValue ? -1 : v), 3}, ");
+				}
+				Console.WriteLine();
+			}
+			Console.WriteLine("}");
 		}
 	}
 }

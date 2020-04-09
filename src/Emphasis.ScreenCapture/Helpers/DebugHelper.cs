@@ -139,5 +139,20 @@ namespace Emphasis.ScreenCapture.Helpers
 			using var bitmap = normalized.ToBitmap(width, height, channels);
 			RunAs(bitmap, filename);
 		}
+
+		public static void Dump(this int[] data, int width, int height)
+		{
+			Console.WriteLine("{");
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					Console.Write($"{data[d]}, ");
+				}
+				Console.WriteLine();
+			}
+			Console.WriteLine("}");
+		}
 	}
 }
