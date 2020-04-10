@@ -187,6 +187,12 @@ namespace Emphasis.ScreenCapture.Tests
 
 			components.Should().Equal(result);
 			Console.WriteLine($"Rounds: {rounds}");
+
+			var componentLimit = 1024;
+			var componentSizeLimit = 50;
+			var regionIndex = new int[height * width];
+			var regions = new int[componentLimit * (1 + componentSizeLimit)];
+			Algorithms.ComponentAnalysis(components, regionIndex, regions, componentLimit, componentSizeLimit);
 		}
 
 		[Test]

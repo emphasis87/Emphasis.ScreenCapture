@@ -630,6 +630,39 @@ namespace Emphasis.ComputerVision
 			return c == int.MaxValue ? int.MaxValue : Math.Min(c, components[d]);
 		}
 
+		public static void ComponentAnalysis(int[] components, int[] regionIndex, int[] regions, int componentLimit, int componentSizeLimit)
+		{
+			Array.Fill(regionIndex, -1);
+			Array.Fill(regions, -1);
+
+			var count = -1;
+			var n = components.Length;
+			for (var i = 0; i < n; i++)
+			{
+				var color = components[i];
+				if (color == int.MaxValue)
+					continue;
+
+				var index = regionIndex[color];
+				if (index == -1)
+				{
+					index = Interlocked.Increment(ref count);
+					if (index >= componentLimit)
+						return;
+
+					regionIndex[color] = index;
+				}
+
+				// Every region has count and a list of indexes
+				var componentIndex = index * (1 + componentSizeLimit);
+				var componentSize = Interlocked.Increment(ref regions[componentIndex]);
+				if (componentSize >= componentSizeLimit)
+					continue;
+
+				regions[componentIndex + componentSize + 1] = i;
+			}
+		}
+
 		public static float Median(List<float> values, bool sort = true)
 		{
 			if (sort)
