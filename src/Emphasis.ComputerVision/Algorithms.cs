@@ -279,8 +279,8 @@ namespace Emphasis.ComputerVision
 			float[] angles,
 			float[] dx,
 			float[] dy,
-			float[] swt0,
-			float[] swt1,
+			int[] swt0,
+			int[] swt1,
 			int rayLength = 20)
 		{
 			// Prefix scan edges
@@ -315,7 +315,7 @@ namespace Emphasis.ComputerVision
 			float[] angles,
 			float[] dx,
 			float[] dy,
-			float[] swt,
+			int[] swt,
 			int rayLength,
 			bool direction,
 			List<int> edgeList,
@@ -465,7 +465,7 @@ namespace Emphasis.ComputerVision
 				Advance();
 
 				// Find the median stroke width for the ray
-				var sm = new List<float>();
+				var sm = new List<int>();
 				for (var ci = 1; ci < len; ci++)
 				{
 					// The current distance
@@ -630,40 +630,96 @@ namespace Emphasis.ComputerVision
 			return c == int.MaxValue ? int.MaxValue : Math.Min(c, components[d]);
 		}
 
-		public static void ComponentAnalysis(int[] components, int[] regionIndex, int[] regions, int componentLimit, int componentSizeLimit)
+		private const int ComponentCountOffset = 0;
+		private const int ComponentSumOffset = 1;
+		private const int ComponentMinXOffset = 2;
+		private const int ComponentMaxXOffset = 3;
+		private const int ComponentMinYOffset = 4;
+		private const int ComponentMaxYOffset = 5;
+		private const int ComponentItemsOffset = 6;
+
+		public static void ComponentAnalysis(
+			int width, 
+			int height,
+			int[] swt, 
+			int[] components, 
+			int[] regionIndex, 
+			int[] regions, 
+			int componentLimit, 
+			int componentSizeLimit)
 		{
 			Array.Fill(regionIndex, -1);
 			Array.Fill(regions, -1);
 
 			var count = -1;
-			var n = components.Length;
-			for (var i = 0; i < n; i++)
+			var i = 0;
+			for (var y = 0; y < height; y++)
 			{
-				var color = components[i];
-				if (color == int.MaxValue)
-					continue;
-
-				var index = regionIndex[color];
-				if (index == -1)
+				for (var x = 0; x < width; x++, i++)
 				{
-					index = Interlocked.Increment(ref count);
-					if (index >= componentLimit)
-						return;
+					var color = components[i];
+					if (color == int.MaxValue)
+						continue;
 
-					regionIndex[color] = index;
+					var index = regionIndex[color];
+					if (index == -1)
+					{
+						index = Interlocked.Increment(ref count);
+						if (index >= componentLimit)
+							return;
+
+						regionIndex[color] = index;
+					}
+
+					// Every region has count and a list of indexes
+					var componentIndex = index * (ComponentItemsOffset + componentSizeLimit);
+					var componentSize = Interlocked.Increment(ref regions[componentIndex + ComponentCountOffset]);
+					if (componentSize >= componentSizeLimit)
+						continue;
+
+					var s = swt[i];
+					Interlocked.Add(ref regions[componentIndex + ComponentSumOffset], s);
+					AtomicMin(ref regions[componentIndex + ComponentMinXOffset], x);
+					AtomicMax(ref regions[componentIndex + ComponentMaxXOffset], x);
+					AtomicMin(ref regions[componentIndex + ComponentMinYOffset], y);
+					AtomicMax(ref regions[componentIndex + ComponentMaxYOffset], y);
+
+					regions[componentIndex + componentSize + ComponentItemsOffset] = i;
 				}
-
-				// Every region has count and a list of indexes
-				var componentIndex = index * (1 + componentSizeLimit);
-				var componentSize = Interlocked.Increment(ref regions[componentIndex]);
-				if (componentSize >= componentSizeLimit)
-					continue;
-
-				regions[componentIndex + componentSize + 1] = i;
 			}
 		}
 
-		public static float Median(List<float> values, bool sort = true)
+		public static void AtomicMin(ref int location, int next)
+		{
+			while (true)
+			{
+				var current = location;
+				next = Math.Min(current, next);
+				if (current == next)
+					return;
+
+				var result = Interlocked.CompareExchange(ref location, next, current);
+				if (result == next)
+					return;
+			}
+		}
+
+		public static void AtomicMax(ref int location, int next)
+		{
+			while (true)
+			{
+				var current = location;
+				next = Math.Max(current, next);
+				if (current == next)
+					return;
+
+				var result = Interlocked.CompareExchange(ref location, next, current);
+				if (result == next)
+					return;
+			}
+		}
+
+		public static int Median(List<int> values, bool sort = true)
 		{
 			if (sort)
 				values.Sort();
@@ -673,11 +729,6 @@ namespace Emphasis.ComputerVision
 			if (mid < 0 ||mid >= values.Count)
 				throw new ArgumentOutOfRangeException();
 			return values[mid];
-		}
-
-		public static (int x, int y) Line(int x, int y, int ix, int iy, float dx, float dy, float err, bool staging)
-		{
-			return (0, 0);
 		}
 
 		public static void Normalize(this float[] source, byte[] destination, int channels)
