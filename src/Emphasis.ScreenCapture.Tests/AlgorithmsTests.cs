@@ -164,7 +164,7 @@ namespace Emphasis.ScreenCapture.Tests
 				  1, max, max, max, max, max, max,   1, max,   1, max,   1, max, max,
 				 10,   3, max, max, max, max,   1, max, max, max,   1, max, max, max,
 				max,   2,   5, max, max, max,   1, max, max, max, max, max, max, max,
-				  4, max,   7,   3, max, max, max,   1, max, max,   1,   1,   1,   1,
+				  4, max,   7,   3, max, max, max,   1, max, max,   1,   1,   1,   2,
 				max, max, max,   1,   1,   1, max, max,   1,   1, max, max, max, max,
 			};
 			values.Length.Should().Be(width * height);
@@ -190,7 +190,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Console.WriteLine($"Rounds: {rounds}");
 
 			var componentLimit = 1024;
-			var componentSizeLimit = 50;
+			var componentSizeLimit = 6;
 			var regionIndex = new int[height * width];
 			var regions = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 			Algorithms.ComponentAnalysis(width, height, values, components, regionIndex, regions, componentLimit, componentSizeLimit);
@@ -199,13 +199,22 @@ namespace Emphasis.ScreenCapture.Tests
 			regionIndex[6].Should().Be(1);
 			regionIndex[56].Should().Be(2);
 
-			regions[0].Should().Be(5);
-			regions[1].Should().Be(14);
-			regions[2].Should().Be(2);
-			regions[3].Should().Be(5);
-			regions[4].Should().Be(0);
-			regions[5].Should().Be(3);
-			regions.AsSpan(6, 6).ToArray().Should().Equal(3, 2, 2, 1, 4, 2);
+			regions[0].Should().Be(5); // count -1
+			regions[1].Should().Be(14); // sum
+			regions[2].Should().Be(2); // min x
+			regions[3].Should().Be(5); // max x
+			regions[4].Should().Be(0); // min y
+			regions[5].Should().Be(3); // max y
+			regions.AsSpan(6, componentSizeLimit).ToArray().Should().Equal(3, 2, 2, 1, 4, 2);
+
+			var n = componentSizeLimit + Algorithms.ComponentItemsOffset;
+			regions[n].Should().Be(26);
+			regions[n + 1].Should().Be(6);
+			regions[n + 2].Should().Be(6);
+			regions[n + 3].Should().Be(13);
+			regions[n + 4].Should().Be(0);
+			regions[n + 5].Should().Be(1);
+			regions.AsSpan(n + 6, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
 		}
 
 		[Test]
