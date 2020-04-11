@@ -503,9 +503,9 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentsWatershed(
 			int width,
 			int height,
-			float[] swt,
+			int[] swt,
 			int[] components,
-			float limit = 200)
+			int limit = 200)
 		{
 			var rounds = 0;
 			var isComplete = false;
@@ -524,7 +524,7 @@ namespace Emphasis.ComputerVision
 						if (c == int.MaxValue)
 							continue;
 
-						var cn = ColorComponent(width, height, swt, components, x, y, limit);
+						var cn = ColorComponent(width, height, swt, components, x, y);
 						if (cn != components[d])
 						{
 							components[d] = cn;
@@ -549,9 +549,8 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentsFixedPoint(
 			int width,
 			int height,
-			float[] swt,
-			int[] components,
-			float limit = 200)
+			int[] swt,
+			int[] components)
 		{
 			var rounds = 0;
 			var isColored = false;
@@ -570,7 +569,7 @@ namespace Emphasis.ComputerVision
 						if (c == int.MaxValue)
 							continue;
 
-						var cn = ColorComponent(width, height, swt, components, x, y, limit);
+						var cn = ColorComponent(width, height, swt, components, x, y);
 						if (cn == int.MaxValue)
 						{
 							components[d] = int.MaxValue;
@@ -593,7 +592,13 @@ namespace Emphasis.ComputerVision
 			return rounds;
 		}
 
-		public static int ColorComponent(int width, int height, float[] swt, int[] components, int x0, int y0, float limit)
+		public static int ColorComponent(
+			int width, 
+			int height, 
+			int[] swt, 
+			int[] components, 
+			int x0, 
+			int y0)
 		{
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
@@ -613,7 +618,7 @@ namespace Emphasis.ComputerVision
 
 					var dn = (y + y0) * width + x + x0;
 					var sn = swt[dn];
-					if (sn > limit)
+					if (sn == int.MaxValue)
 						continue;
 
 					var smin = Math.Min(s0, sn);
@@ -630,13 +635,13 @@ namespace Emphasis.ComputerVision
 			return c == int.MaxValue ? int.MaxValue : Math.Min(c, components[d]);
 		}
 
-		private const int ComponentCountOffset = 0;
-		private const int ComponentSumOffset = 1;
-		private const int ComponentMinXOffset = 2;
-		private const int ComponentMaxXOffset = 3;
-		private const int ComponentMinYOffset = 4;
-		private const int ComponentMaxYOffset = 5;
-		private const int ComponentItemsOffset = 6;
+		public const int ComponentCountOffset = 0;
+		public const int ComponentSumOffset = 1;
+		public const int ComponentMinXOffset = 2;
+		public const int ComponentMaxXOffset = 3;
+		public const int ComponentMinYOffset = 4;
+		public const int ComponentMaxYOffset = 5;
+		public const int ComponentItemsOffset = 6;
 
 		public static void ComponentAnalysis(
 			int width, 
@@ -684,7 +689,7 @@ namespace Emphasis.ComputerVision
 					AtomicMin(ref regions[componentIndex + ComponentMinYOffset], y);
 					AtomicMax(ref regions[componentIndex + ComponentMaxYOffset], y);
 
-					regions[componentIndex + componentSize + ComponentItemsOffset] = i;
+					regions[componentIndex + componentSize + ComponentItemsOffset] = s;
 				}
 			}
 		}

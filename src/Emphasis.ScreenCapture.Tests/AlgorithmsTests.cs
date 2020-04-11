@@ -75,11 +75,11 @@ namespace Emphasis.ScreenCapture.Tests
 			var nms = new float[height * width];
 			var cmp1 = new float[height * width];
 			var cmp2 = new float[height * width];
-			var swt0 = new float[height * width];
-			var swt1 = new float[height * width];
+			var swt0 = new int[height * width];
+			var swt1 = new int[height * width];
 			
-			Array.Fill(swt0, float.MaxValue);
-			Array.Fill(swt1, float.MaxValue);
+			Array.Fill(swt0, int.MaxValue);
+			Array.Fill(swt1, int.MaxValue);
 
 			Algorithms.Grayscale(width,height, source, grayscale);
 
@@ -151,27 +151,28 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void ConnectedComponentsAnalysis_multiple_components_Test()
 		{
+			var max = int.MaxValue;
+
 			var width = 14;
 			var height = 9;
-			var values = new float[]
+			var values = new int[]
 			{
-				255, 255, 255,   3, 255, 255,   1, 255, 255, 255, 255,   1,   1,   1,
-				255, 255,   2,   2,   1, 255,   1, 255, 255, 255, 255,   1,   1,   1,
-				255, 255, 255, 255,   4, 255, 255,   1, 255, 255, 255,   1,   1,   1, 
-				255, 255, 255, 255, 255,   2, 255, 255,   1, 255, 255, 255,   1, 255,
-				  1, 255, 255, 255, 255, 255, 255,   1, 255,   1, 255,   1, 255, 255,
-				 10,   3, 255, 255, 255, 255,   1, 255, 255, 255,   1, 255, 255, 255,
-				255,   2,   5, 255, 255, 255,   1, 255, 255, 255, 255, 255, 255, 255,
-				  4, 255,   7,   3, 255, 255, 255,   1, 255, 255,   1,   1,   1,   1,
-				255, 255, 255,   1,   1,   1, 255, 255,   1,   1, 255, 255, 255, 255,
+				max, max, max,   3, max, max,   1, max, max, max, max,   1,   1,   1,
+				max, max,   2,   2,   1, max,   1, max, max, max, max,   1,   1,   1,
+				max, max, max, max,   4, max, max,   1, max, max, max,   1,   1,   1, 
+				max, max, max, max, max,   2, max, max,   1, max, max, max,   1, max,
+				  1, max, max, max, max, max, max,   1, max,   1, max,   1, max, max,
+				 10,   3, max, max, max, max,   1, max, max, max,   1, max, max, max,
+				max,   2,   5, max, max, max,   1, max, max, max, max, max, max, max,
+				  4, max,   7,   3, max, max, max,   1, max, max,   1,   1,   1,   1,
+				max, max, max,   1,   1,   1, max, max,   1,   1, max, max, max, max,
 			};
 			values.Length.Should().Be(width * height);
 
 			var components = new int [height * width];
 			Algorithms.IndexComponents(components);
-			var rounds = Algorithms.ColorComponentsFixedPoint(width, height, values, components, limit: 128);
+			var rounds = Algorithms.ColorComponentsFixedPoint(width, height, values, components);
 
-			var max = int.MaxValue;
 			var result = new int[]
 			{
 				max, max, max,   3, max, max,   6, max, max, max, max,   6,   6,   6,
@@ -191,8 +192,10 @@ namespace Emphasis.ScreenCapture.Tests
 			var componentLimit = 1024;
 			var componentSizeLimit = 50;
 			var regionIndex = new int[height * width];
-			var regions = new int[componentLimit * (1 + componentSizeLimit)];
-			Algorithms.ComponentAnalysis(components, regionIndex, regions, componentLimit, componentSizeLimit);
+			var regions = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
+			Algorithms.ComponentAnalysis(width, height, values, components, regionIndex, regions, componentLimit, componentSizeLimit);
+
+
 		}
 
 		[Test]
