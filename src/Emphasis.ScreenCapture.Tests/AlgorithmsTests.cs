@@ -218,6 +218,64 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public void ConnectedComponentsAnalysis()
+		{
+			var max = int.MaxValue;
+			var width = 10;
+			var height = 10;
+			var values = new int[]
+			{
+				max, max, max, max, max, max, max, max, max, max,
+				max,   1, max, max, max,   1, max, max,   1, max,
+				max,   1, max, max, max,   1, max, max,   1, max,
+				max,   1, max, max,   1,   1, max, max,   1, max,
+				max,   1, max,   1,   1,   1, max, max,   1, max,
+				max,   1, max,   1, max,   1, max,   1,   1, max,
+				max,   1,   1,   1, max,   1,   1,   1, max, max,
+				max,   1,   1, max, max,   1,   1, max, max, max,
+				max,   1, max, max, max,   1, max, max, max, max,
+				max, max, max, max, max, max, max, max, max, max,
+			};
+
+			var components0 = new int[height * width];
+			var components1 = new int[height * width];
+			var components2 = new int[height * width];
+
+			Algorithms.IndexComponents(components0);
+			Algorithms.IndexComponents(components1);
+			Algorithms.IndexComponents(components2);
+
+			var roundsWatershed = Algorithms.ColorComponentsWatershed(width, height, values, components0);
+			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(width, height, values, components1);
+			var roundsBackPropagation = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, values, components2);
+
+			var result = new int[]
+			{
+				max, max, max, max, max, max, max, max, max, max,
+				max,  11, max, max, max,  11, max, max,  11, max,
+				max,  11, max, max, max,  11, max, max,  11, max,
+				max,  11, max, max,  11,  11, max, max,  11, max,
+				max,  11, max,  11,  11,  11, max, max,  11, max,
+				max,  11, max,  11, max,  11, max,  11,  11, max,
+				max,  11,  11,  11, max,  11,  11,  11, max, max,
+				max,  11,  11, max, max,  11,  11, max, max, max,
+				max,  11, max, max, max,  11, max, max, max, max,
+				max, max, max, max, max, max, max, max, max, max,
+			};
+
+			components0.Should().Equal(result);
+			components1.Should().Equal(result);
+			components2.Should().Equal(result);
+
+			Console.WriteLine($"Rounds Watershed:       {roundsWatershed}");
+			Console.WriteLine($"Rounds FixedPoint:      {roundsFixedPoint}");
+			Console.WriteLine($"Rounds BackPropagation: {roundsBackPropagation}");
+
+			roundsFixedPoint.Should().BeLessThan(roundsWatershed);
+			roundsBackPropagation.Should().BeLessThan(roundsFixedPoint);
+		}
+
+		[Test]
 		public void Canny()
 		{
 			var sourceBitmap = Samples.sample01;

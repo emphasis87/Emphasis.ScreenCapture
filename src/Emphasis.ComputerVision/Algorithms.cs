@@ -511,7 +511,7 @@ namespace Emphasis.ComputerVision
 			var isComplete = false;
 			while (!isComplete)
 			{
-				components.Dump(width, height);
+				//components.Dump(width, height);
 
 				rounds++;
 				isComplete = true;
@@ -556,7 +556,7 @@ namespace Emphasis.ComputerVision
 			var isColored = false;
 			while (!isColored)
 			{
-				components.Dump(width, height);
+				//components.Dump(width, height);
 
 				rounds++;
 				isColored = true;
@@ -581,6 +581,55 @@ namespace Emphasis.ComputerVision
 								var cq = components[cn];
 								cn = cq;
 							}
+
+							components[d] = cn;
+							isColored = false;
+						}
+					}
+				}
+			}
+
+			return rounds;
+		}
+
+		public static int ColorComponentsFixedPointBackPropagation(
+			int width,
+			int height,
+			int[] swt,
+			int[] components)
+		{
+			var rounds = 0;
+			var isColored = false;
+			while (!isColored)
+			{
+				components.Dump(width, height);
+
+				rounds++;
+				isColored = true;
+				for (var y = 0; y < height; y++)
+				{
+					for (var x = 0; x < width; x++)
+					{
+						var d = y * width + x;
+						var c = components[d];
+						if (c == int.MaxValue)
+							continue;
+
+						var cn = ColorComponent(width, height, swt, components, x, y);
+						if (cn == int.MaxValue)
+						{
+							components[d] = int.MaxValue;
+						}
+						else if (cn < c)
+						{
+							for (var i = 0; i < 4; i++)
+							{
+								var cq = components[cn];
+								cn = cq;
+							}
+
+							AtomicMin(ref components[c], cn);
+							AtomicMin(ref components[d], cn);
 
 							components[d] = cn;
 							isColored = false;
