@@ -195,7 +195,17 @@ namespace Emphasis.ScreenCapture.Tests
 			var regions = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 			Algorithms.ComponentAnalysis(width, height, values, components, regionIndex, regions, componentLimit, componentSizeLimit);
 
+			regionIndex[3].Should().Be(0);
+			regionIndex[6].Should().Be(1);
+			regionIndex[56].Should().Be(2);
 
+			regions[0].Should().Be(5);
+			regions[1].Should().Be(14);
+			regions[2].Should().Be(2);
+			regions[3].Should().Be(5);
+			regions[4].Should().Be(0);
+			regions[5].Should().Be(3);
+			regions.AsSpan(6, 6).ToArray().Should().Equal(3, 2, 2, 1, 4, 2);
 		}
 
 		[Test]

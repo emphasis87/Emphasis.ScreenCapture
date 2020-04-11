@@ -654,7 +654,15 @@ namespace Emphasis.ComputerVision
 			int componentSizeLimit)
 		{
 			Array.Fill(regionIndex, -1);
-			Array.Fill(regions, -1);
+			for (var c = 0; c < componentLimit; c++)
+			{
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentCountOffset] = -1;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentSumOffset] = 0;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMinXOffset] = int.MaxValue;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxXOffset] = int.MinValue;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMinYOffset] = int.MaxValue;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxYOffset] = int.MinValue;
+			}
 
 			var count = -1;
 			var i = 0;
@@ -704,7 +712,7 @@ namespace Emphasis.ComputerVision
 					return;
 
 				var result = Interlocked.CompareExchange(ref location, next, current);
-				if (result == next)
+				if (result == current)
 					return;
 			}
 		}
@@ -719,7 +727,7 @@ namespace Emphasis.ComputerVision
 					return;
 
 				var result = Interlocked.CompareExchange(ref location, next, current);
-				if (result == next)
+				if (result == current)
 					return;
 			}
 		}
