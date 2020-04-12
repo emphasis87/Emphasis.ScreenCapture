@@ -91,15 +91,28 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
-			var cc0 = new int[height * width];
-			var cc1 = new int[height * width];
-			Algorithms.ColorComponentsFixedPoint(width, height, swt0, cc0);
-			Algorithms.ColorComponentsFixedPoint(width, height, swt1, cc1);
+			var components0 = new int[height * width];
+			var components1 = new int[height * width];
+
+			Algorithms.IndexComponents(components0);
+			Algorithms.IndexComponents(components1);
+
+			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, swt0, components0);
+			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, swt1, components1);
+
+			var regionIndex0 = new int[height * width];
+			var regionIndex1 = new int[height * width];
+			var componentLimit = 4096;
+			var componentSizeLimit = 1024;
+			var regions0 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
+			var regions1 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
+			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
+			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
 			Run("sample03.png");
 
-			grayscale.RunAs(width, height, 1, "grayscale.png");
-			gradient.RunAs(width, height, 1, "sobel_gradient.png");
+			//grayscale.RunAs(width, height, 1, "grayscale.png");
+			//gradient.RunAs(width, height, 1, "sobel_gradient.png");
 
 			var dxa = new float[height * width];
 			var dya = new float[height * width];
@@ -113,39 +126,18 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 			}
 
-			dxa.RunAs(width, height, 1, "dxa.png");
-			dya.RunAs(width, height, 1, "dya.png");
+			//dxa.RunAs(width, height, 1, "dxa.png");
+			//dya.RunAs(width, height, 1, "dya.png");
 
-			nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
-			swt0.RunAs(width, height, 1, "swt0.png");
-			swt1.RunAs(width, height, 1, "swt1.png");
+			//nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
+			//swt0.RunAs(width, height, 1, "swt0.png");
+			//swt1.RunAs(width, height, 1, "swt1.png");
 
-			cc0.RunAs(width, height, 1, "cc0.png");
-			cc1.RunAs(width, height, 1, "cc1.png");
+			components0.RunAs(width, height, 1, "cc0.png");
+			components1.RunAs(width, height, 1, "cc1.png");
 
-			//source.RunAsText(width, height, 4, "sample00.txt");
-			//await Task.Delay(100);
-
-			//grayscale.RunAsText(width, height, 1, "grayscale.txt");
-			//await Task.Delay(100);
-
-			//angle.RunAsText(width, height, 1, "sobel_angle.txt");
-			//await Task.Delay(100);
-
-			//direction.RunAsText(width, height, 1, "sobel_direction.txt");
-			//await Task.Delay(100);
-
-			//gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
-			//await Task.Delay(100);
-
-			//gradientNms.RunAsText(width, height, 1, "sobel_gradient_nms.txt");
-			//await Task.Delay(100);
-
-			//cmp1.RunAsText(width, height, 1, "cmp1.txt");
-			//await Task.Delay(100);
-
-			//cmp2.RunAsText(width, height, 1, "cmp2.txt");
-			//await Task.Delay(100);
+			//swt0.RunAsText(width, height, 1, "swt0.txt");
+			//swt1.RunAsText(width, height, 1, "swt1.txt");
 		}
 
 		[Test]
@@ -205,7 +197,9 @@ namespace Emphasis.ScreenCapture.Tests
 			regions[3].Should().Be(5); // max x
 			regions[4].Should().Be(0); // min y
 			regions[5].Should().Be(3); // max y
-			regions.AsSpan(6, componentSizeLimit).ToArray().Should().Equal(3, 2, 2, 1, 4, 2);
+
+			regions.AsSpan(6, componentSizeLimit).ToArray().Should().Equal(3, 16, 17, 18, 32, 47);
+			//regions.AsSpan(6, componentSizeLimit).ToArray().Should().Equal(3, 2, 2, 1, 4, 2);
 
 			var n = componentSizeLimit + Algorithms.ComponentItemsOffset;
 			regions[n].Should().Be(26);
@@ -214,7 +208,9 @@ namespace Emphasis.ScreenCapture.Tests
 			regions[n + 3].Should().Be(13);
 			regions[n + 4].Should().Be(0);
 			regions[n + 5].Should().Be(1);
-			regions.AsSpan(n + 6, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
+
+			regions.AsSpan(n + 6, componentSizeLimit).ToArray().Should().Equal(6, 11, 12, 13, 20, 25);
+			//regions.AsSpan(n + 6, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
 		}
 
 		[Test]

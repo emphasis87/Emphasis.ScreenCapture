@@ -602,7 +602,7 @@ namespace Emphasis.ComputerVision
 			var isColored = false;
 			while (!isColored)
 			{
-				components.Dump(width, height);
+				//components.Dump(width, height);
 
 				rounds++;
 				isColored = true;
@@ -692,7 +692,7 @@ namespace Emphasis.ComputerVision
 		public const int ComponentMaxYOffset = 5;
 		public const int ComponentItemsOffset = 6;
 
-		public static void ComponentAnalysis(
+		public static int ComponentAnalysis(
 			int width, 
 			int height,
 			int[] swt, 
@@ -728,7 +728,7 @@ namespace Emphasis.ComputerVision
 					{
 						index = Interlocked.Increment(ref count);
 						if (index >= componentLimit)
-							return;
+							return count;
 
 						regionIndex[color] = index;
 					}
@@ -746,9 +746,11 @@ namespace Emphasis.ComputerVision
 					AtomicMin(ref regions[componentIndex + ComponentMinYOffset], y);
 					AtomicMax(ref regions[componentIndex + ComponentMaxYOffset], y);
 
-					regions[componentIndex + componentSize + ComponentItemsOffset] = s;
+					regions[componentIndex + componentSize + ComponentItemsOffset] = i;
 				}
 			}
+
+			return count;
 		}
 
 		public static void AtomicMin(ref int location, int next)
@@ -884,12 +886,6 @@ namespace Emphasis.ComputerVision
 			if (value == max - 1)
 				return max - 2;
 			return value;
-		}
-
-		public static byte ConvertAtan2PiAngleTo8Way(float angle)
-		{
-			var d = (((angle + 2) % 2 + 0.125f) * 4 - 0.5f) % 7;
-			return Convert.ToByte(MathF.Round(d));
 		}
 
 		public static void Dump(this int[] data, int width, int height)
