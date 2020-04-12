@@ -235,26 +235,26 @@ namespace Emphasis.ScreenCapture.Tests
 			regionIndex[6].Should().Be(1);
 			regionIndex[56].Should().Be(2);
 
-			regions[0].Should().Be(5); // count -1
-			regions[1].Should().Be(14); // sum
-			regions[2].Should().Be(2); // min x
-			regions[3].Should().Be(5); // max x
-			regions[4].Should().Be(0); // min y
-			regions[5].Should().Be(3); // max y
+			regions[Algorithms.ComponentCountOffset].Should().Be(5); // count -1
+			regions[Algorithms.ComponentSumOffset].Should().Be(14); // sum
+			regions[Algorithms.ComponentMinXOffset].Should().Be(2); // min x
+			regions[Algorithms.ComponentMaxXOffset].Should().Be(5); // max x
+			regions[Algorithms.ComponentMinYOffset].Should().Be(0); // min y
+			regions[Algorithms.ComponentMaxYOffset].Should().Be(3); // max y
 
-			regions.AsSpan(6, componentSizeLimit).ToArray().Should().Equal(3, 16, 17, 18, 32, 47);
-			//regions.AsSpan(6, componentSizeLimit).ToArray().Should().Equal(3, 2, 2, 1, 4, 2);
+			//regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(3, 16, 17, 18, 32, 47);
+			regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(3, 2, 2, 1, 4, 2);
 
 			var n = componentSizeLimit + Algorithms.ComponentItemsOffset;
-			regions[n].Should().Be(26);
-			regions[n + 1].Should().Be(6);
-			regions[n + 2].Should().Be(6);
-			regions[n + 3].Should().Be(13);
-			regions[n + 4].Should().Be(0);
-			regions[n + 5].Should().Be(1);
+			regions[n + Algorithms.ComponentCountOffset].Should().Be(26);
+			regions[n + Algorithms.ComponentSumOffset].Should().Be(6);
+			regions[n + Algorithms.ComponentMinXOffset].Should().Be(6);
+			regions[n + Algorithms.ComponentMaxXOffset].Should().Be(13);
+			regions[n + Algorithms.ComponentMinYOffset].Should().Be(0);
+			regions[n + Algorithms.ComponentMaxYOffset].Should().Be(1);
 
-			regions.AsSpan(n + 6, componentSizeLimit).ToArray().Should().Equal(6, 11, 12, 13, 20, 25);
-			//regions.AsSpan(n + 6, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
+			//regions.AsSpan(n + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(6, 11, 12, 13, 20, 25);
+			regions.AsSpan(n + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
 		}
 
 		[Test]

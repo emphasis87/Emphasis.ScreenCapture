@@ -685,12 +685,13 @@ namespace Emphasis.ComputerVision
 		}
 
 		public const int ComponentCountOffset = 0;
-		public const int ComponentSumOffset = 1;
-		public const int ComponentMinXOffset = 2;
-		public const int ComponentMaxXOffset = 3;
-		public const int ComponentMinYOffset = 4;
-		public const int ComponentMaxYOffset = 5;
-		public const int ComponentItemsOffset = 6;
+		public const int ComponentColorOffset = 1;
+		public const int ComponentSumOffset = 2;
+		public const int ComponentMinXOffset = 3;
+		public const int ComponentMaxXOffset = 4;
+		public const int ComponentMinYOffset = 5;
+		public const int ComponentMaxYOffset = 6;
+		public const int ComponentItemsOffset = 7;
 
 		public static int ComponentAnalysis(
 			int width, 
@@ -731,6 +732,7 @@ namespace Emphasis.ComputerVision
 							return count;
 
 						regionIndex[color] = index;
+						regions[index * (ComponentItemsOffset + componentSizeLimit) + ComponentColorOffset] = color;
 					}
 
 					// Every region has count and a list of indexes
