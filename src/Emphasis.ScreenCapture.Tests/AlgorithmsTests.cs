@@ -55,7 +55,7 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
-		public async Task NonMaximumSuppression_Test()
+		public void NonMaximumSuppression_Test()
 		{
 			var sourceBitmap = Samples.sample03;
 
@@ -106,13 +106,28 @@ namespace Emphasis.ScreenCapture.Tests
 			var componentSizeLimit = 1024;
 			var regions0 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 			var regions1 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
+
 			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
 			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
-			for (var i = 0; i < regionCount0; i++)
+			for (var c = 0; c < regionCount0; c++)
 			{
-				var n = regions0[i * (Algorithms.ComponentItemsOffset + componentSizeLimit)] + 1;
-				// TODO sort + find mean
+				var offset = c * (Algorithms.ComponentItemsOffset + componentSizeLimit);
+				var n = regions0[offset + Algorithms.ComponentCountOffset] + 1;
+				Array.Sort(regions0, offset + Algorithms.ComponentItemsOffset, n);
+
+				var median = regions0[offset + Algorithms.ComponentItemsOffset + (n >> 1)];
+				var avg = regions0[offset + Algorithms.ComponentSumOffset] / (float)n;
+
+				var items = regions0.AsSpan(offset + Algorithms.ComponentItemsOffset, n);
+				var variance = 0.0f;
+				for (var i = 0; i < n; i++)
+				{
+					var ei = (items[i] - avg);
+					variance += ei * ei;
+				}
+				variance /= n;
+
 				if (n > 0)
 				{
 

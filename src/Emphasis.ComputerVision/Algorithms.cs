@@ -746,7 +746,7 @@ namespace Emphasis.ComputerVision
 					AtomicMin(ref regions[componentIndex + ComponentMinYOffset], y);
 					AtomicMax(ref regions[componentIndex + ComponentMaxYOffset], y);
 
-					regions[componentIndex + componentSize + ComponentItemsOffset] = i;
+					regions[componentIndex + componentSize + ComponentItemsOffset] = s;
 				}
 			}
 
