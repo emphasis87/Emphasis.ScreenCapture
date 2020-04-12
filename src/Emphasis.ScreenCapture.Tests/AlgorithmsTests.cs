@@ -109,6 +109,16 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
 			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
+			for (var i = 0; i < regionCount0; i++)
+			{
+				var n = regions0[i * (Algorithms.ComponentItemsOffset + componentSizeLimit)] + 1;
+				// TODO sort + find mean
+				if (n > 0)
+				{
+
+				}
+			}
+
 			Run("sample03.png");
 
 			//grayscale.RunAs(width, height, 1, "grayscale.png");
