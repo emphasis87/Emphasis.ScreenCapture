@@ -110,6 +110,8 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
 			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
+			var valid = 0;
+			var invalid = 0;
 			for (var c = 0; c < regionCount0; c++)
 			{
 				var offset = c * (Algorithms.ComponentItemsOffset + componentSizeLimit);
@@ -128,9 +130,26 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 				variance /= n;
 
-				if (n > 0)
-				{
+				var x0 = regions0[offset + Algorithms.ComponentMinXOffset];
+				var x1 = regions0[offset + Algorithms.ComponentMaxXOffset];
+				var y0 = regions0[offset + Algorithms.ComponentMinYOffset];
+				var y1 = regions0[offset + Algorithms.ComponentMaxYOffset];
+				var w = x1 - x0;
+				var h = y1 - y0;
+				var sizeRatio = w / (float) h;
 
+				var diameter = Math.Sqrt(w * w + h * h);
+				var diameterRatio = diameter / median;
+
+				if (variance < 0.5 * avg &&
+				    sizeRatio > 0.1 && sizeRatio < 10 &&
+				    diameterRatio < 10)
+				{
+					valid++;
+				}
+				else
+				{
+					invalid++;
 				}
 			}
 
