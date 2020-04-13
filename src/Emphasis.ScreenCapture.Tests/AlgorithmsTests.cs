@@ -57,7 +57,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample04;
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -82,13 +82,9 @@ namespace Emphasis.ScreenCapture.Tests
 			Array.Fill(swt1, int.MaxValue);
 
 			Algorithms.Grayscale(width,height, source, grayscale);
-
 			Algorithms.Gauss(width, height, source, gauss);
-
-			Algorithms.Sobel(width, height, source,  dx, dy, gradient, angle, neighbors);
-
+			Algorithms.Sobel(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
-
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
 			var components0 = new int[height * width];
@@ -110,6 +106,16 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
 			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
+			var text = new int[height * width];
+			Array.Fill(text, 255);
+
+			void Swap<T>(ref T a, ref T b)
+			{
+				var c = a;
+				a = b;
+				b = c;
+			}
+
 			var valid = 0;
 			var invalid = 0;
 			for (var c = 0; c < regionCount0; c++)
@@ -130,6 +136,7 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 				variance /= n;
 
+				var color = regions0[offset + Algorithms.ComponentColorOffset];
 				var x0 = regions0[offset + Algorithms.ComponentMinXOffset];
 				var x1 = regions0[offset + Algorithms.ComponentMaxXOffset];
 				var y0 = regions0[offset + Algorithms.ComponentMinYOffset];
@@ -146,42 +153,172 @@ namespace Emphasis.ScreenCapture.Tests
 				    diameterRatio < 10)
 				{
 					valid++;
+
+					//for (var x = x0; x < x1; x++)
+					//{
+					//	text[y0 * width + x] = 0;
+					//	text[y1 * width + x] = 0;
+					//}
+
+					//for (var y = y0 + 1; y < y1 - 1; y++)
+					//{
+					//	text[y * width + x0] = 0;
+					//	text[y * width + x1] = 0;
+					//}
 				}
 				else
 				{
 					invalid++;
+
+					regionIndex0[color] = -1;
 				}
 			}
 
-			Run("sample03.png");
+			Run("sample04.png");
 
 			//grayscale.RunAs(width, height, 1, "grayscale.png");
-			//gradient.RunAs(width, height, 1, "sobel_gradient.png");
+			gradient.RunAs(width, height, 1, "sobel_gradient.png");
+			gradient.RunAsText(width, height, 1, "gradient.txt");
 
-			var dxa = new float[height * width];
-			var dya = new float[height * width];
-			for (var y = 0; y < height; y++)
+			var ga = new float[height * width];
+			var gb = new float[height * width];
+			for (var y = 1; y < height - 1; y++)
 			{
-				for (var x = 0; x < height; x++)
+				for (var x = 1; x < width - 1; x++)
 				{
 					var d = y * width + x;
-					dxa[d] = MathF.Abs(dx[d]);
-					dya[d] = MathF.Abs(dy[d]);
+
+					var v = gradient[d];
+					var vm = 0f;
+					for (var yi = -1; yi <= 1; yi++)
+					{
+						for (var xi = -1; xi <= 1; xi++)
+						{
+							var di = (y + yi) * width + x + xi;
+							var vi = gradient[di];
+							vm = Math.Max(vi, vm);
+						}
+					}
+
+					if (v >= vm)
+						ga[d] = v;
 				}
 			}
+
+			ga.RunAs(width, height, 1, "g0.png");
+			ga.RunAsText(width, height, 1, "g0.txt");
+
+			var isComplete = false;
+			while (!isComplete)
+			{
+				isComplete = true;
+				for (var y = 1; y < height - 1; y++)
+				{
+					for (var x = 1; x < width - 1; x++)
+					{
+						var d = y * width + x;
+
+						var gv = ga[d];
+						if (gv <= 0)
+							continue;
+
+						var m1 = 0f;
+						var d1 = 0;
+						var m2 = 0f;
+						var gc = 0;
+						var d2 = 0;
+						for (var yi = -1; yi <= 1; yi++)
+						{
+							for (var xi = -1; xi <= 1; xi++)
+							{
+								if (Math.Abs(xi) + Math.Abs(yi) != 1)
+									continue;
+
+								var di = (y + yi) * width + x + xi;
+								var gi = ga[di];
+								if (gi > 0)
+									gc++;
+
+								var vi = gradient[di];
+								if (vi > m1)
+								{
+									m2 = m1;
+									d2 = d1;
+									m1 = vi;
+									d1 = di;
+								}
+								else if (vi > m2)
+								{
+									m2 = vi;
+									d2 = di;
+								}
+							}
+						}
+
+						if (gc >= 2)
+							continue;
+
+						if (2 * m1 > gv)
+						{
+							gb[d1] = m1;
+							isComplete = false;
+						}
+						if (2 * m2 > gv)
+						{
+							gb[d2] = m2;
+							isComplete = false;
+						}
+					}
+				}
+
+				Swap(ref ga, ref gb);
+			}
+
+			ga.RunAs(width, height, 1, "g.png");
+			ga.RunAsText(width, height, 1, "g.txt");
+
+			//var dxa = new float[height * width];
+			//var dya = new float[height * width];
+			//for (var y = 0; y < height; y++)
+			//{
+			//	for (var x = 0; x < height; x++)
+			//	{
+			//		var d = y * width + x;
+			//		dxa[d] = MathF.Abs(dx[d]);
+			//		dya[d] = MathF.Abs(dy[d]);
+			//	}
+			//}
 
 			//dxa.RunAs(width, height, 1, "dxa.png");
 			//dya.RunAs(width, height, 1, "dya.png");
 
-			//nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
+			nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
+			nms.RunAsText(width, height, 1, "nms.txt");
+
 			//swt0.RunAs(width, height, 1, "swt0.png");
 			//swt1.RunAs(width, height, 1, "swt1.png");
 
-			components0.RunAs(width, height, 1, "cc0.png");
-			components1.RunAs(width, height, 1, "cc1.png");
+			//components0.RunAs(width, height, 1, "cc0.png");
+			//components1.RunAs(width, height, 1, "cc1.png");
 
 			//swt0.RunAsText(width, height, 1, "swt0.txt");
 			//swt1.RunAsText(width, height, 1, "swt1.txt");
+
+			//text.RunAs(width, height, 1, "text.png");
+
+			var text2 = new int[height * width];
+			Array.Copy(components0, text2, height * width);
+
+			for (var i = 0; i < text2.Length; i++)
+			{
+				var color = text2[i];
+				if (color == int.MaxValue)
+					continue;
+				if (regionIndex0[color] == -1)
+					text2[i] = int.MaxValue;
+			}
+
+			text2.RunAs(width, height, 1, "text2.png");
 		}
 
 		[Test]
@@ -318,7 +455,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void Canny()
 		{
-			var sourceBitmap = Samples.sample01;
+			var sourceBitmap = Samples.sample03;
 
 			var source = sourceBitmap.ToBytes();
 
@@ -353,7 +490,7 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 			}
 
-			Run("sample01.png");
+			Run("sample03.png");
 			result.RunAs(width, height, 1, "canny.png");
 		}
 

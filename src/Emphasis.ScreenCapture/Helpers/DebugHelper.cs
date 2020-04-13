@@ -112,7 +112,7 @@ namespace Emphasis.ScreenCapture.Helpers
 
 		public static void RunAsText(this byte[] data, int width, int height, int channels, string path)
 		{
-			if (!Path.IsPathRooted(path))
+			if (!Path.IsPathRooted(path) && Path.HasExtension(path))
 				path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
 			SaveFormatted(data, path, width, height, channels);
@@ -121,31 +121,34 @@ namespace Emphasis.ScreenCapture.Helpers
 
 		public static void RunAsText(this float[] data, int width, int height, int channels, string path, bool rounded = true)
 		{
-			if (!Path.IsPathRooted(path))
+			if (!Path.IsPathRooted(path) && Path.HasExtension(path))
 				path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
 			SaveFormatted(data, path, width, height, channels, rounded);
-			Run(path);
+			Run("code", path);
 		}
 
 		public static void RunAsText(this int[] data, int width, int height, int channels, string path)
 		{
-			if (!Path.IsPathRooted(path))
+			if (!Path.IsPathRooted(path) && Path.HasExtension(path))
 				path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
 			SaveFormatted(data, path, width, height, channels);
-			Run(path);
+			Run("code", path);
 		}
 
-		public static void Run(string path)
+		public static void Run(string path, string arguments = null)
 		{
-			if (!Path.IsPathRooted(path))
+			if (!Path.IsPathRooted(path) && Path.HasExtension(path))
 				path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
 			var info = new ProcessStartInfo(path)
 			{
 				UseShellExecute = true
 			};
+			if (arguments != null)
+				info.Arguments = arguments;
+
 			Process.Start(info);
 		}
 

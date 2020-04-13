@@ -86,6 +86,20 @@ namespace Emphasis.ComputerVision
 			{ -1, -2, -1 },
 		};
 
+		//private static readonly float[,] SobelDxMask = new float[,]
+		//{
+		//	{  +3, +0,  -3 },
+		//	{ +10, +0, -10 },
+		//	{  +3, +0,  -3 },
+		//};
+
+		//private static readonly float[,] SobelDyMask = new float[,]
+		//{
+		//	{ +3, +10, +3 },
+		//	{  0,  0,  0 },
+		//	{ -3, -10, -10 },
+		//};
+
 		public static void Sobel(int width, int height, byte[] source, float[] dx, float[] dy, float[] gradient, float[] angle, byte[] neighbors, int channels = 4)
 		{
 			for (var y = 0; y < height; y++)
