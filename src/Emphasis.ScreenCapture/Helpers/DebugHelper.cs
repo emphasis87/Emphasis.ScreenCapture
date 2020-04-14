@@ -116,7 +116,7 @@ namespace Emphasis.ScreenCapture.Helpers
 				path = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, path));
 
 			SaveFormatted(data, path, width, height, channels);
-			Run(path);
+			Run("code", path);
 		}
 
 		public static void RunAsText(this float[] data, int width, int height, int channels, string path, bool rounded = true)
@@ -147,7 +147,9 @@ namespace Emphasis.ScreenCapture.Helpers
 				UseShellExecute = true
 			};
 			if (arguments != null)
+			{
 				info.Arguments = arguments;
+			}
 
 			Process.Start(info);
 		}

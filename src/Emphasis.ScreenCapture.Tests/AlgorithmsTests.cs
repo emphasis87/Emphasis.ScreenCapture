@@ -176,12 +176,16 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Run("sample04.png");
 
+			grayscale.RunAsText(width, height, 1, "gray.txt");
+			angle.RunAsText(width, height, 1, "angle.txt");
+
 			//grayscale.RunAs(width, height, 1, "grayscale.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 			gradient.RunAsText(width, height, 1, "gradient.txt");
 
-			var ga = new float[height * width];
-			var gb = new float[height * width];
+			var round = new int[height * width];
+			var g = new float[height * width];
+			//var gb = new float[height * width];
 			for (var y = 1; y < height - 1; y++)
 			{
 				for (var x = 1; x < width - 1; x++)
@@ -201,25 +205,28 @@ namespace Emphasis.ScreenCapture.Tests
 					}
 
 					if (v >= vm)
-						ga[d] = v;
+						g[d] = v;
 				}
 			}
 
-			ga.RunAs(width, height, 1, "g0.png");
-			ga.RunAsText(width, height, 1, "g0.txt");
+			g.RunAs(width, height, 1, "g0.png");
+			g.RunAsText(width, height, 1, "g0.txt");
 
 			var isComplete = false;
-			while (!isComplete)
+			for(var r = 1; r <= 2; r++)
 			{
-				isComplete = true;
 				for (var y = 1; y < height - 1; y++)
 				{
 					for (var x = 1; x < width - 1; x++)
 					{
 						var d = y * width + x;
 
-						var gv = ga[d];
+						var gv = g[d];
 						if (gv <= 0)
+							continue;
+
+						var ri = round[d];
+						if (ri == r)
 							continue;
 
 						var m1 = 0f;
@@ -235,7 +242,7 @@ namespace Emphasis.ScreenCapture.Tests
 									continue;
 
 								var di = (y + yi) * width + x + xi;
-								var gi = ga[di];
+								var gi = g[di];
 								if (gi > 0)
 									gc++;
 
@@ -260,22 +267,24 @@ namespace Emphasis.ScreenCapture.Tests
 
 						if (2 * m1 > gv)
 						{
-							gb[d1] = m1;
+							g[d1] = m1;
+							round[d1] = r;
 							isComplete = false;
 						}
 						if (2 * m2 > gv)
 						{
-							gb[d2] = m2;
+							g[d2] = m2;
+							round[d2] = r;
 							isComplete = false;
 						}
 					}
 				}
 
-				Swap(ref ga, ref gb);
+				//Swap(ref ga, ref gb);
 			}
 
-			ga.RunAs(width, height, 1, "g.png");
-			ga.RunAsText(width, height, 1, "g.txt");
+			g.RunAs(width, height, 1, "g.png");
+			g.RunAsText(width, height, 1, "g.txt");
 
 			//var dxa = new float[height * width];
 			//var dya = new float[height * width];
