@@ -371,7 +371,7 @@ namespace Emphasis.ScreenCapture.Tests
 			angle.RunAsText(width, height, 1, "angle.txt");
 
 			//grayscale.RunAs(width, height, 1, "grayscale.png");
-			gradient.RunAs(width, height, 1, "sobel_gradient.png");
+			gradient.RunAs(width, height, 1, "gradient.png");
 			gradient.RunAsText(width, height, 1, "gradient.txt");
 
 			var round = new int[height * width];
@@ -404,7 +404,7 @@ namespace Emphasis.ScreenCapture.Tests
 			g.RunAsText(width, height, 1, "g0.txt");
 
 			var isComplete = false;
-			for (var r = 1; r <= 2; r++)
+			for (var r = 1; r <= 3; r++)
 			{
 				for (var y = 1; y < height - 1; y++)
 				{
@@ -471,11 +471,9 @@ namespace Emphasis.ScreenCapture.Tests
 					}
 				}
 
-				//Swap(ref ga, ref gb);
+				g.RunAs(width, height, 1, $"g{r}.png");
+				g.RunAsText(width, height, 1, $"g{r}.txt");
 			}
-
-			g.RunAs(width, height, 1, "g.png");
-			g.RunAsText(width, height, 1, "g.txt");
 		}
 
 		[Test]
