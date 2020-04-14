@@ -331,6 +331,154 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public void EdgeDetection_Test()
+		{
+			var sourceBitmap = Samples.sample04;
+
+			var source = sourceBitmap.ToBytes();
+			var gauss = new byte[source.Length];
+
+			var width = sourceBitmap.Width;
+			var height = sourceBitmap.Height;
+
+			var grayscale = new byte[height * width];
+
+			var gradient = new float[height * width];
+			var dx = new float[height * width];
+			var dy = new float[height * width];
+			var angle = new float[height * width];
+			var neighbors = new byte[height * width * 5];
+			var nms = new float[height * width];
+			var cmp1 = new float[height * width];
+			var cmp2 = new float[height * width];
+			var swt0 = new int[height * width];
+			var swt1 = new int[height * width];
+
+			Array.Fill(swt0, int.MaxValue);
+			Array.Fill(swt1, int.MaxValue);
+
+			Algorithms.Grayscale(width, height, source, grayscale);
+			Algorithms.Gauss(width, height, source, gauss);
+			Algorithms.Sobel(width, height, gauss, dx, dy, gradient, angle, neighbors);
+			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
+
+			Run("sample04.png");
+
+			nms.RunAs(width, height, 1, "nms.png");
+			nms.RunAsText(width, height, 1, "nms.txt");
+
+			grayscale.RunAsText(width, height, 1, "gray.txt");
+			angle.RunAsText(width, height, 1, "angle.txt");
+
+			//grayscale.RunAs(width, height, 1, "grayscale.png");
+			gradient.RunAs(width, height, 1, "sobel_gradient.png");
+			gradient.RunAsText(width, height, 1, "gradient.txt");
+
+			var round = new int[height * width];
+			var g = new float[height * width];
+			//var gb = new float[height * width];
+			for (var y = 1; y < height - 1; y++)
+			{
+				for (var x = 1; x < width - 1; x++)
+				{
+					var d = y * width + x;
+
+					var v = gradient[d];
+					var vm = 0f;
+					for (var yi = -1; yi <= 1; yi++)
+					{
+						for (var xi = -1; xi <= 1; xi++)
+						{
+							var di = (y + yi) * width + x + xi;
+							var vi = gradient[di];
+							vm = Math.Max(vi, vm);
+						}
+					}
+
+					if (v >= vm)
+						g[d] = v;
+				}
+			}
+
+			g.RunAs(width, height, 1, "g0.png");
+			g.RunAsText(width, height, 1, "g0.txt");
+
+			var isComplete = false;
+			for (var r = 1; r <= 2; r++)
+			{
+				for (var y = 1; y < height - 1; y++)
+				{
+					for (var x = 1; x < width - 1; x++)
+					{
+						var d = y * width + x;
+
+						var gv = g[d];
+						if (gv <= 0)
+							continue;
+
+						var ri = round[d];
+						if (ri == r)
+							continue;
+
+						var m1 = 0f;
+						var d1 = 0;
+						var m2 = 0f;
+						var gc = 0;
+						var d2 = 0;
+						for (var yi = -1; yi <= 1; yi++)
+						{
+							for (var xi = -1; xi <= 1; xi++)
+							{
+								if (Math.Abs(xi) + Math.Abs(yi) != 1)
+									continue;
+
+								var di = (y + yi) * width + x + xi;
+								var gi = g[di];
+								if (gi > 0)
+									gc++;
+
+								var vi = gradient[di];
+								if (vi > m1)
+								{
+									m2 = m1;
+									d2 = d1;
+									m1 = vi;
+									d1 = di;
+								}
+								else if (vi > m2)
+								{
+									m2 = vi;
+									d2 = di;
+								}
+							}
+						}
+
+						if (gc >= 2)
+							continue;
+
+						if (2 * m1 > gv)
+						{
+							g[d1] = m1;
+							round[d1] = r;
+							isComplete = false;
+						}
+						if (2 * m2 > gv)
+						{
+							g[d2] = m2;
+							round[d2] = r;
+							isComplete = false;
+						}
+					}
+				}
+
+				//Swap(ref ga, ref gb);
+			}
+
+			g.RunAs(width, height, 1, "g.png");
+			g.RunAsText(width, height, 1, "g.txt");
+		}
+
+		[Test]
 		public void ConnectedComponentsAnalysis_multiple_components_Test()
 		{
 			var max = int.MaxValue;
