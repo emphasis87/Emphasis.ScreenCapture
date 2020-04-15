@@ -579,7 +579,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var source = new byte[]
 			{
 				255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-				255,   1, 255, 255, 255,   1, 255, 255,   1, 255,
+				255,   1,   1, 255, 255,   1, 255, 255,   1, 255,
 				255,   1, 255, 255, 255,   1, 255, 255,   1, 255,
 				255,   1, 255, 255,   1,   1, 255, 255,   1, 255,
 				255,   1, 255,   1,   1,   1, 255, 255,   1, 255,
@@ -601,7 +601,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var result = new int[]
 			{
 				max, max, max, max, max, max, max, max, max, max,
-				max,  11, max, max, max,  11, max, max,  11, max,
+				max,  11,  11, max, max,  11, max, max,  11, max,
 				max,  11, max, max, max,  11, max, max,  11, max,
 				max,  11, max, max,  11,  11, max, max,  11, max,
 				max,  11, max,  11,  11,  11, max, max,  11, max,

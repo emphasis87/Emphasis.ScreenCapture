@@ -537,10 +537,6 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var c = components[d];
-						if (c == int.MaxValue)
-							continue;
-
 						var cn = ColorComponent(width, height, source, swt, components, x, y, channels);
 						if (cn != components[d])
 						{
@@ -556,10 +552,11 @@ namespace Emphasis.ComputerVision
 
 		public static void PrepareComponents(int[] swt, int[] components)
 		{
+			var n = components.Length;
 			for (var i = 0; i < swt.Length; i++)
 			{
 				var stroke = swt[i];
-				components[i] = stroke < int.MaxValue ? i : int.MaxValue;
+				components[i] = stroke < int.MaxValue ? i : n + i;
 			}
 		}
 
@@ -596,9 +593,6 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c = components[d];
-						if (c == int.MaxValue)
-							continue;
-
 						var cn = ColorComponent(width, height, source, swt, components, x, y);
 						if (cn == int.MaxValue)
 						{
@@ -645,16 +639,13 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var c = components[d];
-						if (c == int.MaxValue)
-							continue;
-
+						var c0  = components[d];
 						var cn = ColorComponent(width, height, source, swt, components, x, y);
 						if (cn == int.MaxValue)
 						{
 							components[d] = int.MaxValue;
 						}
-						else if (cn < c)
+						else if (cn < c0)
 						{
 							for (var i = 0; i < 4; i++)
 							{
@@ -662,7 +653,7 @@ namespace Emphasis.ComputerVision
 								cn = cq;
 							}
 
-							AtomicMin(ref components[c], cn);
+							AtomicMin(ref components[c0], cn);
 							AtomicMin(ref components[d], cn);
 
 							components[d] = cn;
@@ -680,13 +671,14 @@ namespace Emphasis.ComputerVision
 			int height,
 			byte[] source,
 			int[] swt,
-			int[] components, 
+			int[] components,
 			int x0, 
 			int y0,
 			int channels = 1)
 		{
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
+
 			var c0 = components[d];
 			var s0 = swt[d];
 
@@ -709,6 +701,7 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var dn = (y + y0) * width + x + x0;
+
 					var sameColor = true;
 					for (var channel = 0; channel < channels; channel++)
 					{
@@ -724,13 +717,9 @@ namespace Emphasis.ComputerVision
 					if (!sameColor)
 						continue;
 
+					var cn = components[dn];
 					var sn = swt[dn];
-					if (sn == int.MaxValue)
-					{
-						if (c0 == int.MaxValue)
-							continue;
-					}
-					else
+					if (s0 != int.MaxValue && sn != int.MaxValue)
 					{
 						var smin = Math.Min(s0, sn);
 						var smax = Math.Max(s0, sn);
@@ -738,13 +727,12 @@ namespace Emphasis.ComputerVision
 							continue;
 					}
 
-					var cn = components[dn];
 					if (cn < c)
 						c = cn;
 				}
 			}
 
-			return c == int.MaxValue ? int.MaxValue : Math.Min(c, components[d]);
+			return c == int.MaxValue ? int.MaxValue : Math.Min(c, c0);
 		}
 
 		public const int ComponentCountOffset = 0;
