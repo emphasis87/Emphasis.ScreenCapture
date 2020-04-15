@@ -57,7 +57,8 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample04;
+			var sourceBitmap = Samples.sample03;
+			var path = "sample04.png";
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -108,13 +109,6 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var text = new int[height * width];
 			Array.Fill(text, 255);
-
-			void Swap<T>(ref T a, ref T b)
-			{
-				var c = a;
-				a = b;
-				b = c;
-			}
 
 			var valid = 0;
 			var invalid = 0;
@@ -174,7 +168,7 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 			}
 
-			Run("sample04.png");
+			Run(path);
 
 			grayscale.RunAsText(width, height, 1, "gray.txt");
 			angle.RunAsText(width, height, 1, "angle.txt");
@@ -307,7 +301,7 @@ namespace Emphasis.ScreenCapture.Tests
 			//swt0.RunAs(width, height, 1, "swt0.png");
 			//swt1.RunAs(width, height, 1, "swt1.png");
 
-			//components0.RunAs(width, height, 1, "cc0.png");
+			components0.RunAs(width, height, 1, "cc0.png");
 			//components1.RunAs(width, height, 1, "cc1.png");
 
 			//swt0.RunAsText(width, height, 1, "swt0.txt");
@@ -419,6 +413,8 @@ namespace Emphasis.ScreenCapture.Tests
 						var ri = round[d];
 						if (ri == r)
 							continue;
+
+						var ai = angle[d];
 
 						var m1 = 0f;
 						var d1 = 0;

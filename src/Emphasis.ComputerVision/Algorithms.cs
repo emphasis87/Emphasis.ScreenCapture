@@ -889,7 +889,7 @@ namespace Emphasis.ComputerVision
 					var a = min[c];
 					var l = len[c];
 					var v = source[i + c];
-					var r = ((v - a) / l) * 255;
+					var r = l == 0 ? min[c] : ((v - a) / l) * 255;
 					destination[i + c] = Convert.ToByte(r);
 				}
 			}
