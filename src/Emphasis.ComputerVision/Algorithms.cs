@@ -522,6 +522,8 @@ namespace Emphasis.ComputerVision
 			int[] components,
 			int channels = 1)
 		{
+			Algorithms.PrepareComponents(swt, components);
+
 			var rounds = 0;
 			var isComplete = false;
 			while (!isComplete)
@@ -552,6 +554,15 @@ namespace Emphasis.ComputerVision
 			return rounds;
 		}
 
+		public static void PrepareComponents(int[] swt, int[] components)
+		{
+			for (var i = 0; i < swt.Length; i++)
+			{
+				var stroke = swt[i];
+				components[i] = stroke < int.MaxValue ? i : int.MaxValue;
+			}
+		}
+
 		public static void IndexComponents(int[] components)
 		{
 			var n = components.Length;
@@ -569,6 +580,8 @@ namespace Emphasis.ComputerVision
 			int[] components,
 			int channels = 1)
 		{
+			Algorithms.PrepareComponents(swt, components);
+
 			var rounds = 0;
 			var isColored = false;
 			while (!isColored)
@@ -617,6 +630,8 @@ namespace Emphasis.ComputerVision
 			int[] components,
 			int channels = 1)
 		{
+			Algorithms.PrepareComponents(swt, components);
+
 			var rounds = 0;
 			var isColored = false;
 			while (!isColored)
@@ -672,6 +687,7 @@ namespace Emphasis.ComputerVision
 		{
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
+			var c0 = components[d];
 			var s0 = swt[d];
 
 			Span<byte> src = stackalloc byte[channels];
@@ -699,7 +715,7 @@ namespace Emphasis.ComputerVision
 						var dst = source[dn + channel];
 						var sl = Math.Min(src[channel], dst);
 						var sh = Math.Max(src[channel], dst);
-						if ((sh - sl) > 0.1 * 255)
+						if ((sh - sl) > 25)
 						{
 							sameColor = false;
 							break;
@@ -710,12 +726,17 @@ namespace Emphasis.ComputerVision
 
 					var sn = swt[dn];
 					if (sn == int.MaxValue)
-						continue;
-
-					var smin = Math.Min(s0, sn);
-					var smax = Math.Max(s0, sn);
-					if (smax > smin * 3)
-						continue;
+					{
+						if (c0 == int.MaxValue)
+							continue;
+					}
+					else
+					{
+						var smin = Math.Min(s0, sn);
+						var smax = Math.Max(s0, sn);
+						if (smax > smin * 3)
+							continue;
+					}
 
 					var cn = components[dn];
 					if (cn < c)
