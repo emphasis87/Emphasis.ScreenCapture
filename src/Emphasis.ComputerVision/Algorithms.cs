@@ -579,6 +579,7 @@ namespace Emphasis.ComputerVision
 		{
 			Algorithms.PrepareComponents(swt, components);
 
+			var n = components.Length;
 			var rounds = 0;
 			var isColored = false;
 			while (!isColored)
@@ -594,15 +595,11 @@ namespace Emphasis.ComputerVision
 						var d = y * width + x;
 						var c = components[d];
 						var cn = ColorComponent(width, height, source, swt, components, x, y);
-						if (cn == int.MaxValue)
-						{
-							components[d] = int.MaxValue;
-						}
-						else if (cn  < c)
+						if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
 							{
-								var cq = components[cn];
+								var cq = components[cn % n];
 								cn = cq;
 							}
 
@@ -626,6 +623,7 @@ namespace Emphasis.ComputerVision
 		{
 			Algorithms.PrepareComponents(swt, components);
 
+			var n = components.Length;
 			var rounds = 0;
 			var isColored = false;
 			while (!isColored)
@@ -641,19 +639,15 @@ namespace Emphasis.ComputerVision
 						var d = y * width + x;
 						var c0  = components[d];
 						var cn = ColorComponent(width, height, source, swt, components, x, y);
-						if (cn == int.MaxValue)
-						{
-							components[d] = int.MaxValue;
-						}
-						else if (cn < c0)
+						if (cn < c0)
 						{
 							for (var i = 0; i < 4; i++)
 							{
-								var cq = components[cn];
+								var cq = components[cn % n];
 								cn = cq;
 							}
 
-							AtomicMin(ref components[c0], cn);
+							AtomicMin(ref components[c0 % n], cn);
 							AtomicMin(ref components[d], cn);
 
 							components[d] = cn;

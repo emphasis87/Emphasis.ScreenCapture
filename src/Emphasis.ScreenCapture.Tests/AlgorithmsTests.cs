@@ -598,18 +598,19 @@ namespace Emphasis.ScreenCapture.Tests
 			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(width, height, source, values, components1);
 			var roundsBackPropagation = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, values, components2);
 
+			var r0 = height * width;
 			var result = new int[]
 			{
-				max, max, max, max, max, max, max, max, max, max,
-				max,  11,  11, max, max,  11, max, max,  11, max,
-				max,  11, max, max, max,  11, max, max,  11, max,
-				max,  11, max, max,  11,  11, max, max,  11, max,
-				max,  11, max,  11,  11,  11, max, max,  11, max,
-				max,  11, max,  11, max,  11, max,  11,  11, max,
-				max,  11,  11,  11, max,  11,  11,  11, max, max,
-				max,  11,  11, max, max,  11,  11, max, max, max,
-				max,  11, max, max, max,  11, max, max, max, max,
-				max, max, max, max, max, max, max, max, max, max,
+				 r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,
+				 r0,  11,  11,  r0,  r0,  11,  r0,  r0,  11,  r0,
+				 r0,  11,  r0,  r0,  r0,  11,  r0,  r0,  11,  r0,
+				 r0,  11,  r0,  r0,  11,  11,  r0,  r0,  11,  r0,
+				 r0,  11,  r0,  11,  11,  11,  r0,  r0,  11,  r0,
+				 r0,  11,  r0,  11,  r0,  11,  r0,  11,  11,  r0,
+				 r0,  11,  11,  11,  r0,  11,  11,  11,  r0,  r0,
+				 r0,  11,  11,  r0,  r0,  11,  11,  r0,  r0,  r0,
+				 r0,  11,  r0,  r0,  r0,  11,  r0,  r0,  r0,  r0,
+				 r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,
 			};
 
 			components0.Should().Equal(result);
