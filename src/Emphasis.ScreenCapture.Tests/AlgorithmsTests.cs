@@ -94,8 +94,8 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.IndexComponents(components0);
 			Algorithms.IndexComponents(components1);
 
-			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, swt0, components0);
-			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, swt1, components1);
+			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt0, components0, 4);
+			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt1, components1, 4);
 
 			var regionIndex0 = new int[height * width];
 			var regionIndex1 = new int[height * width];
@@ -491,11 +491,25 @@ namespace Emphasis.ScreenCapture.Tests
 				  4, max,   7,   3, max, max, max,   1, max, max,   1,   1,   1,   2,
 				max, max, max,   1,   1,   1, max, max,   1,   1, max, max, max, max,
 			};
+
+			var source = new byte[]
+			{
+				255, 255, 255,   3, 255, 255,   1, 255, 255, 255, 255,   1,   1,   1,
+				255, 255,   2,   2,   1, 255,   1, 255, 255, 255, 255,   1,   1,   1,
+				255, 255, 255, 255,   4, 255, 255,   1, 255, 255, 255,   1,   1,   1,
+				255, 255, 255, 255, 255,   2, 255, 255,   1, 255, 255, 255,   1, 255,
+				  1, 255, 255, 255, 255, 255, 255,   1, 255,   1, 255,   1, 255, 255,
+				 50,   3, 255, 255, 255, 255,   1, 255, 255, 255,   1, 255, 255, 255,
+				255,   2,   5, 255, 255, 255,   1, 255, 255, 255, 255, 255, 255, 255,
+				  4, 255,   7,   3, 255, 255, 255,   1, 255, 255,   1,   1,   1,   2,
+				255, 255, 255,   1,   1,   1, 255, 255,   1,   1, 255, 255, 255, 255,
+			};
+
 			values.Length.Should().Be(width * height);
 
 			var components = new int [height * width];
 			Algorithms.IndexComponents(components);
-			var rounds = Algorithms.ColorComponentsFixedPoint(width, height, values, components);
+			var rounds = Algorithms.ColorComponentsFixedPoint(width, height, source, values, components);
 
 			var result = new int[]
 			{
@@ -565,6 +579,20 @@ namespace Emphasis.ScreenCapture.Tests
 				max, max, max, max, max, max, max, max, max, max,
 			};
 
+			var source = new byte[]
+			{
+				255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+				255,   1, 255, 255, 255,   1, 255, 255,   1, 255,
+				255,   1, 255, 255, 255,   1, 255, 255,   1, 255,
+				255,   1, 255, 255,   1,   1, 255, 255,   1, 255,
+				255,   1, 255,   1,   1,   1, 255, 255,   1, 255,
+				255,   1, 255,   1, 255,   1, 255,   1,   1, 255,
+				255,   1,   1,   1, 255,   1,   1,   1, 255, 255,
+				255,   1,   1, 255, 255,   1,   1, 255, 255, 255,
+				255,   1, 255, 255, 255,   1, 255, 255, 255, 255,
+				255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+			};
+
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 			var components2 = new int[height * width];
@@ -573,9 +601,9 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.IndexComponents(components1);
 			Algorithms.IndexComponents(components2);
 
-			var roundsWatershed = Algorithms.ColorComponentsWatershed(width, height, values, components0);
-			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(width, height, values, components1);
-			var roundsBackPropagation = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, values, components2);
+			var roundsWatershed = Algorithms.ColorComponentsWatershed(width, height, source, values, components0);
+			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(width, height, source, values, components1);
+			var roundsBackPropagation = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, values, components2);
 
 			var result = new int[]
 			{

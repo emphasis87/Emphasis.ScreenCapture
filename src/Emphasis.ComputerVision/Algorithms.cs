@@ -517,9 +517,10 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentsWatershed(
 			int width,
 			int height,
+			byte[] source,
 			int[] swt,
 			int[] components,
-			int limit = 200)
+			int channels = 1)
 		{
 			var rounds = 0;
 			var isComplete = false;
@@ -538,7 +539,7 @@ namespace Emphasis.ComputerVision
 						if (c == int.MaxValue)
 							continue;
 
-						var cn = ColorComponent(width, height, swt, components, x, y);
+						var cn = ColorComponent(width, height, source, swt, components, x, y, channels);
 						if (cn != components[d])
 						{
 							components[d] = cn;
@@ -563,8 +564,10 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentsFixedPoint(
 			int width,
 			int height,
+			byte[] source,
 			int[] swt,
-			int[] components)
+			int[] components,
+			int channels = 1)
 		{
 			var rounds = 0;
 			var isColored = false;
@@ -583,7 +586,7 @@ namespace Emphasis.ComputerVision
 						if (c == int.MaxValue)
 							continue;
 
-						var cn = ColorComponent(width, height, swt, components, x, y);
+						var cn = ColorComponent(width, height, source, swt, components, x, y);
 						if (cn == int.MaxValue)
 						{
 							components[d] = int.MaxValue;
@@ -609,8 +612,10 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentsFixedPointBackPropagation(
 			int width,
 			int height,
+			byte[] source,
 			int[] swt,
-			int[] components)
+			int[] components,
+			int channels = 1)
 		{
 			var rounds = 0;
 			var isColored = false;
@@ -629,7 +634,7 @@ namespace Emphasis.ComputerVision
 						if (c == int.MaxValue)
 							continue;
 
-						var cn = ColorComponent(width, height, swt, components, x, y);
+						var cn = ColorComponent(width, height, source, swt, components, x, y);
 						if (cn == int.MaxValue)
 						{
 							components[d] = int.MaxValue;
@@ -657,15 +662,23 @@ namespace Emphasis.ComputerVision
 
 		public static int ColorComponent(
 			int width, 
-			int height, 
-			int[] swt, 
+			int height,
+			byte[] source,
+			int[] swt,
 			int[] components, 
 			int x0, 
-			int y0)
+			int y0,
+			int channels = 1)
 		{
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
 			var s0 = swt[d];
+
+			Span<byte> src = stackalloc byte[channels];
+			for (var channel = 0; channel < channels; channel++)
+			{
+				src[channel] = source[d + channel];
+			}
 
 			for (var y= -1; y <= 1; y++)
 			{
@@ -680,6 +693,21 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var dn = (y + y0) * width + x + x0;
+					var sameColor = true;
+					for (var channel = 0; channel < channels; channel++)
+					{
+						var dst = source[dn + channel];
+						var sl = Math.Min(src[channel], dst);
+						var sh = Math.Max(src[channel], dst);
+						if ((sh - sl) > 0.1 * 255)
+						{
+							sameColor = false;
+							break;
+						}
+					}
+					if (!sameColor)
+						continue;
+
 					var sn = swt[dn];
 					if (sn == int.MaxValue)
 						continue;
