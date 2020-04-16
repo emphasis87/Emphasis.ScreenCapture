@@ -57,9 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample06;
 
-			Run("sample03.png");
+			Run("sample06.png");
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -90,19 +90,21 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
+			gauss.RunAs(width,height,4,"gauss.png");
+
 			//grayscale.RunAsText(width, height, 1, "gray.txt");
 			//grayscale.RunAs(width, height, 1, "gray.png");
 
-			//gradient.RunAs(width, height, 1, "gradient.png");
+			gradient.RunAs(width, height, 1, "gradient.png");
 			//gradient.RunAsText(width, height, 1, "gradient.txt");
 
 			//angle.RunAsText(width, height, 1, "angle.txt");
 
-			//nms.RunAs(width, height, 1, "nms.png");
+			nms.RunAs(width, height, 1, "nms.png");
 			//nms.RunAsText(width, height, 1, "nms.txt");
 
-			//swt0.RunAs(width, height, 1, "swt0.png");
-			//swt1.RunAs(width, height, 1, "swt1.png");
+			swt0.RunAs(width, height, 1, "swt0.png");
+			swt1.RunAs(width, height, 1, "swt1.png");
 
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
