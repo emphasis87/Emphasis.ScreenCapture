@@ -746,7 +746,11 @@ namespace Emphasis.ComputerVision
 		public const int ComponentMaxXOffset = 5;
 		public const int ComponentMinYOffset = 6;
 		public const int ComponentMaxYOffset = 7;
-		public const int ComponentItemsOffset = 8;
+		public const int ComponentChannel1Offset = 8;
+		public const int ComponentChannel2Offset = 9;
+		public const int ComponentChannel3Offset = 10;
+		public const int ComponentChannel4Offset = 11;
+		public const int ComponentItemsOffset = 12;
 
 		public static int ComponentAnalysis(
 			int width, 
@@ -820,7 +824,7 @@ namespace Emphasis.ComputerVision
 			return count;
 		}
 
-		public static void TextDetection(int width, int height, int count, int[] regionIndex, int[] regions, int componentSizeLimit)
+		public static (int valid, int invalid) TextDetection(int width, int height, int count, int[] regionIndex, int[] regions, int componentSizeLimit)
 		{
 			var valid = 0;
 			var invalid = 0;
@@ -881,6 +885,8 @@ namespace Emphasis.ComputerVision
 					regionIndex[color] = -1;
 				}
 			}
+
+			return (valid, invalid);
 		}
 
 		public static void AtomicMin(ref int location, int next)

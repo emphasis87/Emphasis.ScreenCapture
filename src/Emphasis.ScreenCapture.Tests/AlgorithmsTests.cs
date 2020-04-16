@@ -57,8 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample04;
-			var path = "sample04.png";
+			var sourceBitmap = Samples.sample03;
+
+			Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -89,6 +90,20 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
+			//grayscale.RunAsText(width, height, 1, "gray.txt");
+			//grayscale.RunAs(width, height, 1, "gray.png");
+
+			//gradient.RunAs(width, height, 1, "gradient.png");
+			//gradient.RunAsText(width, height, 1, "gradient.txt");
+
+			//angle.RunAsText(width, height, 1, "angle.txt");
+
+			//nms.RunAs(width, height, 1, "nms.png");
+			//nms.RunAsText(width, height, 1, "nms.txt");
+
+			//swt0.RunAs(width, height, 1, "swt0.png");
+			//swt1.RunAs(width, height, 1, "swt1.png");
+
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 
@@ -113,32 +128,16 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
 			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
-			Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
+			var (valid, invalid) = Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
 
-			Run(path);
-
-			//nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
-			//nms.RunAsText(width, height, 1, "nms.txt");
-
-			//swt0.RunAs(width, height, 1, "swt0.png");
-			//swt1.RunAs(width, height, 1, "swt1.png");
-
-			//grayscale.RunAsText(width, height, 1, "gray.txt");
-			//grayscale.RunAs(width, height, 1, "gray.png");
-
-			//gradient.RunAs(width, height, 1, "gradient.png");
-			//gradient.RunAsText(width, height, 1, "gradient.txt");
-
-			//angle.RunAsText(width, height, 1, "angle.txt");
+			Console.WriteLine($"Valid components: {valid}");
+			Console.WriteLine($"Invalid components: {invalid}");
 
 			var text0 = new int[height * width];
 			for (var i = 0; i < text0.Length; i++)
 			{
-				var color = text0[i];
-				if (color >= n)
-					continue;
-
-				if (regionIndex0[color] == -1)
+				var color = components0[i];
+				if (color >= n || regionIndex0[color] == -1)
 					text0[i] = 255;
 			}
 
@@ -300,6 +299,8 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var width = 14;
 			var height = 9;
+			var n = height * width;
+
 			var swt = new int[]
 			{
 				max, max, max,   3, max, max,   1, max, max, max, max,   1,   1,   1,
@@ -333,19 +334,24 @@ namespace Emphasis.ScreenCapture.Tests
 			var rounds = Algorithms.ColorComponentsFixedPoint(width, height, source, swt, components);
 
 			var r0 = height * width;
-			var r1 = r0 + 6 * width;
 			var result = new int[]
 			{
 				 r0,  r0,  r0,   3,  r0,  r0,   6,  r0,  r0,  r0,  r0,   6,   6,   6,
 				 r0,  r0,   3,   3,   3,  r0,   6,  r0,  r0,  r0,  r0,   6,   6,   6,
-				 r0,  r0,   3,  r0,   3,  r0,  r0,   6,  r0,  r0,  r0,   6,   6,   6,
+				 r0,  r0,  r0,  r0,   3,  r0,  r0,   6,  r0,  r0,  r0,   6,   6,   6,
 				 r0,  r0,  r0,  r0,  r0,   3,  r0,  r0,   6,  r0,  r0,  r0,   6,  r0,
 				 56,  r0,  r0,  r0,  r0,  r0,  r0,   6,  r0,   6,  r0,   6,  r0,  r0,
 				 70,  56,  r0,  r0,  r0,  r0,   6,  r0,  r0,  r0,   6,  r0,  r0,  r0,
-				 r1,  56,  56,  r0,  r0,  r0,   6,  r0,  r0,  r0,  r0,  r0,  r0,  r0,
-				 56,  r1,  56,  56,  r0,  r0,  r0,   6,  r0,  r0,   6,   6,   6,   6,
-				 r1,  r1,  r1,  56,  56,  56,  r0,  r0,   6,   6,  r0,  r0,  r0,  r0,
+				 r0,  56,  56,  r0,  r0,  r0,   6,  r0,  r0,  r0,  r0,  r0,  r0,  r0,
+				 56,  r0,  56,  56,  r0,  r0,  r0,   6,  r0,  r0,   6,   6,   6,   6,
+				 r0,  r0,  r0,  56,  56,  56,  r0,  r0,   6,   6,  r0,  r0,  r0,  r0,
 			};
+
+			for (var i = 0; i < n; i++)
+			{
+				if (result[i] >= n)
+					result[i] = n + i;
+			}
 
 			Algorithms.Dump(result, width, height);
 			Algorithms.Dump(components, width, height);
@@ -359,32 +365,33 @@ namespace Emphasis.ScreenCapture.Tests
 			var regions = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 			Algorithms.ComponentAnalysis(width, height, swt, components, regionIndex, regions, componentLimit, componentSizeLimit);
 
-			regionIndex[3].Should().Be(0);
-			regionIndex[6].Should().Be(1);
+			regionIndex[6].Should().Be(0);
+			regionIndex[3].Should().Be(1);
 			regionIndex[56].Should().Be(2);
 
-			regions[Algorithms.ComponentCountOffset].Should().Be(6); // count -1
-			regions[Algorithms.ComponentCountSwtOffset].Should().Be(4); // swt count -1
-			regions[Algorithms.ComponentSumSwtOffset].Should().Be(12); // sum
-			regions[Algorithms.ComponentMinXOffset].Should().Be(2); // min x
-			regions[Algorithms.ComponentMaxXOffset].Should().Be(4); // max x
-			regions[Algorithms.ComponentMinYOffset].Should().Be(0); // min y
-			regions[Algorithms.ComponentMaxYOffset].Should().Be(2); // max y
+			regions[Algorithms.ComponentCountOffset].Should().Be(25);
+			regions[Algorithms.ComponentCountSwtOffset].Should().Be(5);
+			regions[Algorithms.ComponentSumSwtOffset].Should().Be(6);
+			regions[Algorithms.ComponentMinXOffset].Should().Be(6);
+			regions[Algorithms.ComponentMaxXOffset].Should().Be(13);
+			regions[Algorithms.ComponentMinYOffset].Should().Be(0);
+			regions[Algorithms.ComponentMaxYOffset].Should().Be(1);
 
-			//regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(3, 16, 17, 18, 32, 47);
-			regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(3, 2, 2, 1, 4, 0);
+			//regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(6, 11, 12, 13, 20, 25);
+			regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
 
-			var n = componentSizeLimit + Algorithms.ComponentItemsOffset;
-			regions[n + Algorithms.ComponentCountOffset].Should().Be(26);
-			regions[n + Algorithms.ComponentCountSwtOffset].Should().Be(5);
-			regions[n + Algorithms.ComponentSumSwtOffset].Should().Be(6);
-			regions[n + Algorithms.ComponentMinXOffset].Should().Be(6);
-			regions[n + Algorithms.ComponentMaxXOffset].Should().Be(13);
-			regions[n + Algorithms.ComponentMinYOffset].Should().Be(0);
-			regions[n + Algorithms.ComponentMaxYOffset].Should().Be(1);
+			var ci = componentSizeLimit + Algorithms.ComponentItemsOffset;
+			regions[ci + Algorithms.ComponentCountOffset].Should().Be(4); // count -2
+			regions[ci + Algorithms.ComponentCountSwtOffset].Should().Be(4); // swt count -2
+			regions[ci + Algorithms.ComponentSumSwtOffset].Should().Be(11); // sum
+			regions[ci + Algorithms.ComponentMinXOffset].Should().Be(2); // min x
+			regions[ci + Algorithms.ComponentMaxXOffset].Should().Be(5); // max x
+			regions[ci + Algorithms.ComponentMinYOffset].Should().Be(1); // min y
+			regions[ci + Algorithms.ComponentMaxYOffset].Should().Be(3); // max y
 
-			//regions.AsSpan(n + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(6, 11, 12, 13, 20, 25);
-			regions.AsSpan(n + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
+			//regions.AsSpan(ci + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(3, 16, 17, 18, 32, 47);
+			var reg1 = regions.AsSpan(ci + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray();
+			reg1.Should().Equal(2, 2, 1, 4, 2, 0);
 		}
 
 		[Test]
@@ -393,6 +400,8 @@ namespace Emphasis.ScreenCapture.Tests
 			var max = int.MaxValue;
 			var width = 10;
 			var height = 10;
+			var n = height * width;
+
 			var values = new int[]
 			{
 				max, max, max, max, max, max, max, max, max, max,
@@ -433,7 +442,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var result = new int[]
 			{
 				 r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,
-				 r0,  11,  11,  r0,  r0,  11,  r0,  r0,  11,  r0,
+				 r0,  11,  r0,  r0,  r0,  11,  r0,  r0,  11,  r0,
 				 r0,  11,  r0,  r0,  r0,  11,  r0,  r0,  11,  r0,
 				 r0,  11,  r0,  r0,  11,  11,  r0,  r0,  11,  r0,
 				 r0,  11,  r0,  11,  11,  11,  r0,  r0,  11,  r0,
@@ -443,6 +452,16 @@ namespace Emphasis.ScreenCapture.Tests
 				 r0,  11,  r0,  r0,  r0,  11,  r0,  r0,  r0,  r0,
 				 r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,
 			};
+
+			for (var i = 0; i < n; i++)
+			{
+				if (components0[i] >= n)
+					components0[i] = r0;
+				if (components1[i] >= n)
+					components1[i] = r0;
+				if (components2[i] >= n)
+					components2[i] = r0;
+			}
 
 			components0.Should().Equal(result);
 			components1.Should().Equal(result);
