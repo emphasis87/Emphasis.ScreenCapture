@@ -57,27 +57,28 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample05;
-			var path = "sample05.png";
+			var sourceBitmap = Samples.sample04;
+			var path = "sample04.png";
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
 
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
+			var n = height * width;
 
-			var grayscale = new byte[height * width];
+			var grayscale = new byte[n];
 
-			var gradient = new float[height * width];
-			var dx = new float[height * width];
-			var dy = new float[height * width];
-			var angle = new float[height * width];
-			var neighbors = new byte[height * width * 5];
-			var nms = new float[height * width];
-			var cmp1 = new float[height * width];
-			var cmp2 = new float[height * width];
-			var swt0 = new int[height * width];
-			var swt1 = new int[height * width];
+			var gradient = new float[n];
+			var dx = new float[n];
+			var dy = new float[n];
+			var angle = new float[n];
+			var neighbors = new byte[n * 5];
+			var nms = new float[n];
+			var cmp1 = new float[n];
+			var cmp2 = new float[n];
+			var swt0 = new int[n];
+			var swt1 = new int[n];
 			
 			Array.Fill(swt0, int.MaxValue);
 			Array.Fill(swt1, int.MaxValue);
@@ -88,245 +89,60 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
-			nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
-			nms.RunAsText(width, height, 1, "nms.txt");
-
-			swt0.RunAs(width, height, 1, "swt0.png");
-			swt1.RunAs(width, height, 1, "swt1.png");
-
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 
-			Algorithms.Dump(swt0, width, height);
-
-			var colorRounds0 = Algorithms.ColorComponentsWatershed(width, height, source, swt0, components0, 4);
-			var colorRounds1 = Algorithms.ColorComponentsWatershed(width, height, source, swt1, components1, 4);
+			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt0, components0, 4);
+			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt1, components1, 4);
 
 			components0.RunAs(width, height, 1, "cc0.png");
 			components0.RunAsText(width, height, 1, "cc0.txt");
 
-			var regionIndex0 = new int[height * width];
-			var regionIndex1 = new int[height * width];
+			components1.RunAs(width, height, 1, "cc1.png");
+			components1.RunAsText(width, height, 1, "cc1.txt");
+
+			var regionIndex0 = new int[n];
+			var regionIndex1 = new int[n];
+
 			var componentLimit = 100000;
 			var componentSizeLimit = 1024;
+
 			var regions0 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 			var regions1 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 
 			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
 			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
-			var text = new int[height * width];
-			Array.Fill(text, 255);
-
-			var n = height * width;
-			var valid = 0;
-			var invalid = 0;
-			for (var c = 0; c < regionCount0; c++)
-			{
-				var offset = c * (Algorithms.ComponentItemsOffset + componentSizeLimit);
-				var count = regions0[offset + Algorithms.ComponentCountOffset] + 1;
-				Array.Sort(regions0, offset + Algorithms.ComponentItemsOffset, count);
-
-				var median = regions0[offset + Algorithms.ComponentItemsOffset + (count >> 1)];
-				var avg = regions0[offset + Algorithms.ComponentSumSwtOffset] / (float)count;
-
-				var items = regions0.AsSpan(offset + Algorithms.ComponentItemsOffset, count);
-				var variance = 0.0f;
-				for (var i = 0; i < count; i++)
-				{
-					var ei = (items[i] - avg);
-					variance += ei * ei;
-				}
-				variance /= count;
-
-				var color = regions0[offset + Algorithms.ComponentColorOffset];
-				var x0 = regions0[offset + Algorithms.ComponentMinXOffset];
-				var x1 = regions0[offset + Algorithms.ComponentMaxXOffset];
-				var y0 = regions0[offset + Algorithms.ComponentMinYOffset];
-				var y1 = regions0[offset + Algorithms.ComponentMaxYOffset];
-				var w = x1 - x0;
-				var h = y1 - y0;
-				var sizeRatio = w / (float) h;
-
-				var diameter = Math.Sqrt(w * w + h * h);
-				var diameterRatio = diameter / median;
-
-				if (variance < 0.5 * avg &&
-				    sizeRatio > 0.1 && sizeRatio < 10 &&
-				    diameterRatio < 10)
-				{
-					valid++;
-
-					//for (var x = x0; x < x1; x++)
-					//{
-					//	text[y0 * width + x] = 0;
-					//	text[y1 * width + x] = 0;
-					//}
-
-					//for (var y = y0 + 1; y < y1 - 1; y++)
-					//{
-					//	text[y * width + x0] = 0;
-					//	text[y * width + x1] = 0;
-					//}
-				}
-				else
-				{
-					invalid++;
-
-					regionIndex0[color] = -1;
-				}
-			}
+			Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
 
 			Run(path);
 
-			grayscale.RunAsText(width, height, 1, "gray.txt");
-			angle.RunAsText(width, height, 1, "angle.txt");
+			//nms.RunAs(width, height, 1, "sobel_gradient_nms.png");
+			//nms.RunAsText(width, height, 1, "nms.txt");
 
-			//grayscale.RunAs(width, height, 1, "grayscale.png");
-			gradient.RunAs(width, height, 1, "sobel_gradient.png");
-			gradient.RunAsText(width, height, 1, "gradient.txt");
+			//swt0.RunAs(width, height, 1, "swt0.png");
+			//swt1.RunAs(width, height, 1, "swt1.png");
 
-			/*
-			var round = new int[height * width];
-			var g = new float[height * width];
-			//var gb = new float[height * width];
-			for (var y = 1; y < height - 1; y++)
+			//grayscale.RunAsText(width, height, 1, "gray.txt");
+			//grayscale.RunAs(width, height, 1, "gray.png");
+
+			//gradient.RunAs(width, height, 1, "gradient.png");
+			//gradient.RunAsText(width, height, 1, "gradient.txt");
+
+			//angle.RunAsText(width, height, 1, "angle.txt");
+
+			var text0 = new int[height * width];
+			for (var i = 0; i < text0.Length; i++)
 			{
-				for (var x = 1; x < width - 1; x++)
-				{
-					var d = y * width + x;
-
-					var v = gradient[d];
-					var vm = 0f;
-					for (var yi = -1; yi <= 1; yi++)
-					{
-						for (var xi = -1; xi <= 1; xi++)
-						{
-							var di = (y + yi) * width + x + xi;
-							var vi = gradient[di];
-							vm = Math.Max(vi, vm);
-						}
-					}
-
-					if (v >= vm)
-						g[d] = v;
-				}
-			}
-
-			g.RunAs(width, height, 1, "g0.png");
-			g.RunAsText(width, height, 1, "g0.txt");
-
-			var isComplete = false;
-			for(var r = 1; r <= 2; r++)
-			{
-				for (var y = 1; y < height - 1; y++)
-				{
-					for (var x = 1; x < width - 1; x++)
-					{
-						var d = y * width + x;
-
-						var gv = g[d];
-						if (gv <= 0)
-							continue;
-
-						var ri = round[d];
-						if (ri == r)
-							continue;
-
-						var m1 = 0f;
-						var d1 = 0;
-						var m2 = 0f;
-						var gc = 0;
-						var d2 = 0;
-						for (var yi = -1; yi <= 1; yi++)
-						{
-							for (var xi = -1; xi <= 1; xi++)
-							{
-								if (Math.Abs(xi) + Math.Abs(yi) != 1)
-									continue;
-
-								var di = (y + yi) * width + x + xi;
-								var gi = g[di];
-								if (gi > 0)
-									gc++;
-
-								var vi = gradient[di];
-								if (vi > m1)
-								{
-									m2 = m1;
-									d2 = d1;
-									m1 = vi;
-									d1 = di;
-								}
-								else if (vi > m2)
-								{
-									m2 = vi;
-									d2 = di;
-								}
-							}
-						}
-
-						if (gc >= 2)
-							continue;
-
-						if (2 * m1 > gv)
-						{
-							g[d1] = m1;
-							round[d1] = r;
-							isComplete = false;
-						}
-						if (2 * m2 > gv)
-						{
-							g[d2] = m2;
-							round[d2] = r;
-							isComplete = false;
-						}
-					}
-				}
-
-				//Swap(ref ga, ref gb);
-			}
-
-			g.RunAs(width, height, 1, "g.png");
-			g.RunAsText(width, height, 1, "g.txt");
-			*/
-
-			//var dxa = new float[height * width];
-			//var dya = new float[height * width];
-			//for (var y = 0; y < height; y++)
-			//{
-			//	for (var x = 0; x < height; x++)
-			//	{
-			//		var d = y * width + x;
-			//		dxa[d] = MathF.Abs(dx[d]);
-			//		dya[d] = MathF.Abs(dy[d]);
-			//	}
-			//}
-
-			//dxa.RunAs(width, height, 1, "dxa.png");
-			//dya.RunAs(width, height, 1, "dya.png");
-
-			//components1.RunAs(width, height, 1, "cc1.png");
-
-			//swt0.RunAsText(width, height, 1, "swt0.txt");
-			//swt1.RunAsText(width, height, 1, "swt1.txt");
-
-			//text.RunAs(width, height, 1, "text.png");
-
-			var text2 = new int[height * width];
-			Array.Copy(components0, text2, height * width);
-
-			for (var i = 0; i < text2.Length; i++)
-			{
-				var color = text2[i];
+				var color = text0[i];
 				if (color >= n)
 					continue;
 
 				if (regionIndex0[color] == -1)
-					text2[i] = int.MaxValue;
+					text0[i] = 255;
 			}
 
-			text2.RunAs(width, height, 1, "text2.png");
+			text0.RunAs(width, height, 1, "text0.png");
 		}
 
 		[Test]

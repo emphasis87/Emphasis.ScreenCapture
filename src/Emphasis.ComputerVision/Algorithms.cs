@@ -719,6 +719,9 @@ namespace Emphasis.ComputerVision
 
 					var cn = components[dn];
 					var sn = swt[dn];
+					if (s0 == int.MaxValue || sn == int.MaxValue)
+						continue;
+
 					if (s0 != int.MaxValue && sn != int.MaxValue)
 					{
 						var smin = Math.Min(s0, sn);
@@ -778,6 +781,9 @@ namespace Emphasis.ComputerVision
 					if (color >= n)
 						continue;
 
+					if (color == i)
+						continue;
+
 					var index = regionIndex[color];
 					if (index == -1)
 					{
@@ -812,6 +818,69 @@ namespace Emphasis.ComputerVision
 			}
 
 			return count;
+		}
+
+		public static void TextDetection(int width, int height, int count, int[] regionIndex, int[] regions, int componentSizeLimit)
+		{
+			var valid = 0;
+			var invalid = 0;
+
+			var n = height * width;
+			for (var c = 0; c < count; c++)
+			{
+				var offset = c * (ComponentItemsOffset + componentSizeLimit);
+				var cnt = regions[offset + ComponentCountOffset] + 1;
+				Array.Sort(regions, offset + ComponentItemsOffset, cnt);
+
+				var median = regions[offset + ComponentItemsOffset + (cnt >> 1)];
+				var avg = regions[offset + ComponentSumSwtOffset] / (float)cnt;
+
+				var items = regions.AsSpan(offset + ComponentItemsOffset, cnt);
+				var variance = 0.0f;
+				for (var i = 0; i < cnt; i++)
+				{
+					var ei = (items[i] - avg);
+					variance += ei * ei;
+				}
+				variance /= cnt;
+
+				var color = regions[offset + ComponentColorOffset];
+				var x0 = regions[offset + ComponentMinXOffset];
+				var x1 = regions[offset + ComponentMaxXOffset];
+				var y0 = regions[offset + ComponentMinYOffset];
+				var y1 = regions[offset + ComponentMaxYOffset];
+				var w = x1 - x0;
+				var h = y1 - y0;
+				var sizeRatio = w / (float)h;
+
+				var diameter = Math.Sqrt(w * w + h * h);
+				var diameterRatio = diameter / median;
+
+				if (variance < 0.5 * avg &&
+				    sizeRatio > 0.1 && sizeRatio < 10 &&
+				    diameterRatio < 10)
+				{
+					valid++;
+
+					//for (var x = x0; x < x1; x++)
+					//{
+					//	text[y0 * width + x] = 0;
+					//	text[y1 * width + x] = 0;
+					//}
+
+					//for (var y = y0 + 1; y < y1 - 1; y++)
+					//{
+					//	text[y * width + x0] = 0;
+					//	text[y * width + x1] = 0;
+					//}
+				}
+				else
+				{
+					invalid++;
+
+					regionIndex[color] = -1;
+				}
+			}
 		}
 
 		public static void AtomicMin(ref int location, int next)
