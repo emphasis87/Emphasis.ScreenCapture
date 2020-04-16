@@ -528,7 +528,7 @@ namespace Emphasis.ComputerVision
 			var isComplete = false;
 			while (!isComplete)
 			{
-				//components.Dump(width, height);
+				components.Dump(width, height);
 
 				rounds++;
 				isComplete = true;
@@ -599,8 +599,7 @@ namespace Emphasis.ComputerVision
 						{
 							for (var i = 0; i < 4; i++)
 							{
-								var cq = components[cn % n];
-								cn = cq;
+								cn = components[Mod1(cn, n)];
 							}
 
 							components[d] = cn;
@@ -611,6 +610,13 @@ namespace Emphasis.ComputerVision
 			}
 
 			return rounds;
+		}
+
+		public static int Mod1(int i, int mod)
+		{
+			if (i >= mod)
+				i -= mod;
+			return i;
 		}
 
 		public static int ColorComponentsFixedPointBackPropagation(
@@ -643,11 +649,11 @@ namespace Emphasis.ComputerVision
 						{
 							for (var i = 0; i < 4; i++)
 							{
-								var cq = components[cn % n];
+								var cq = components[Mod1(cn, n)];
 								cn = cq;
 							}
 
-							AtomicMin(ref components[c0 % n], cn);
+							AtomicMin(ref components[Mod1(c0, n)], cn);
 							AtomicMin(ref components[d], cn);
 
 							components[d] = cn;
@@ -726,17 +732,18 @@ namespace Emphasis.ComputerVision
 				}
 			}
 
-			return c == int.MaxValue ? int.MaxValue : Math.Min(c, c0);
+			return Math.Min(c, c0);
 		}
 
-		public const int ComponentCountOffset = 0;
-		public const int ComponentColorOffset = 1;
-		public const int ComponentSumOffset = 2;
-		public const int ComponentMinXOffset = 3;
-		public const int ComponentMaxXOffset = 4;
-		public const int ComponentMinYOffset = 5;
-		public const int ComponentMaxYOffset = 6;
-		public const int ComponentItemsOffset = 7;
+		public const int ComponentColorOffset = 0;
+		public const int ComponentCountOffset = 1;
+		public const int ComponentCountSwtOffset = 2;
+		public const int ComponentSumSwtOffset = 3;
+		public const int ComponentMinXOffset = 4;
+		public const int ComponentMaxXOffset = 5;
+		public const int ComponentMinYOffset = 6;
+		public const int ComponentMaxYOffset = 7;
+		public const int ComponentItemsOffset = 8;
 
 		public static int ComponentAnalysis(
 			int width, 
@@ -752,13 +759,15 @@ namespace Emphasis.ComputerVision
 			for (var c = 0; c < componentLimit; c++)
 			{
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentCountOffset] = -1;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentSumOffset] = 0;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentCountSwtOffset] = -1;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentSumSwtOffset] = 0;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMinXOffset] = int.MaxValue;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxXOffset] = int.MinValue;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMinYOffset] = int.MaxValue;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxYOffset] = int.MinValue;
 			}
 
+			var n = components.Length;
 			var count = -1;
 			var i = 0;
 			for (var y = 0; y < height; y++)
@@ -766,7 +775,7 @@ namespace Emphasis.ComputerVision
 				for (var x = 0; x < width; x++, i++)
 				{
 					var color = components[i];
-					if (color == int.MaxValue)
+					if (color >= n)
 						continue;
 
 					var index = regionIndex[color];
@@ -781,19 +790,24 @@ namespace Emphasis.ComputerVision
 					}
 
 					// Every region has count and a list of indexes
-					var componentIndex = index * (ComponentItemsOffset + componentSizeLimit);
-					var componentSize = Interlocked.Increment(ref regions[componentIndex + ComponentCountOffset]);
-					if (componentSize >= componentSizeLimit)
+					var cmpIndex = index * (ComponentItemsOffset + componentSizeLimit);
+					var cmpCount = Interlocked.Increment(ref regions[cmpIndex + ComponentCountOffset]);
+					if (cmpCount >= componentSizeLimit)
 						continue;
 
 					var s = swt[i];
-					Interlocked.Add(ref regions[componentIndex + ComponentSumOffset], s);
-					AtomicMin(ref regions[componentIndex + ComponentMinXOffset], x);
-					AtomicMax(ref regions[componentIndex + ComponentMaxXOffset], x);
-					AtomicMin(ref regions[componentIndex + ComponentMinYOffset], y);
-					AtomicMax(ref regions[componentIndex + ComponentMaxYOffset], y);
+					if (s < int.MaxValue)
+					{
+						var swtCount = Interlocked.Increment(ref regions[cmpIndex + ComponentCountSwtOffset]);
+						regions[cmpIndex + swtCount + ComponentItemsOffset] = s;
 
-					regions[componentIndex + componentSize + ComponentItemsOffset] = s;
+						Interlocked.Add(ref regions[cmpIndex + ComponentSumSwtOffset], s);
+					}
+
+					AtomicMin(ref regions[cmpIndex + ComponentMinXOffset], x);
+					AtomicMax(ref regions[cmpIndex + ComponentMaxXOffset], x);
+					AtomicMin(ref regions[cmpIndex + ComponentMinYOffset], y);
+					AtomicMax(ref regions[cmpIndex + ComponentMaxYOffset], y);
 				}
 			}
 
@@ -920,7 +934,7 @@ namespace Emphasis.ComputerVision
 					var a = min[c];
 					var l = len[c];
 					var v = source[i + c];
-					var r = l == 0 ? min[c] : ((v - a) / l) * 255;
+					var r = l == 0 ? min[c] : Math.Round((v - a) / (double)l) * 255;
 					destination[i + c] = Convert.ToByte(r);
 				}
 			}
@@ -944,7 +958,7 @@ namespace Emphasis.ComputerVision
 				{
 					var d = y * width + x;
 					var v = data[d];
-					Console.Write($"{(v == int.MaxValue ? -1 : v), 3}, ");
+					Console.Write($"{(v == int.MaxValue ? 255 : v), 4}, ");
 				}
 				Console.WriteLine();
 			}
