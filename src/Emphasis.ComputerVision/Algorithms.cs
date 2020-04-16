@@ -72,35 +72,53 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		private static readonly float[,] SobelDxMask = new float[,]
+		private static readonly float[,] SobelDxMask3 = new float[,]
 		{
 			{ +1, +0, -1 },
 			{ +2, +0, -2 },
 			{ +1, +0, -1 },
 		};
 
-		private static readonly float[,] SobelDyMask = new float[,]
+		private static readonly float[,] SobelDyMask3 = new float[,]
 		{
 			{ +1, +2, +1 },
 			{  0,  0,  0 },
 			{ -1, -2, -1 },
 		};
 
-		//private static readonly float[,] SobelDxMask = new float[,]
+		private static readonly float[,] SobelDxMask5 = new float[,]
+		{
+			{ +1, +2, +0, -2, -1 },
+			{ +4, +8, +0, -8, -4 },
+			{ +6,+12, +0,-12, -6 },
+			{ +4, +8, +0, -8, -4 },
+			{ +1, +2, +0, -2, -1 },
+		};
+
+		private static readonly float[,] SobelDyMask5 = new float[,]
+		{
+			{ +1, +4, +6, +2, +1 },
+			{ +2, +8,+12, +8, +4 },
+			{ +0, +0, +0, +0, +0 },
+			{ -2, -8,-12, -8, -4 },
+			{ -1, -4, -6, -4, -1 },
+		};
+
+		//private static readonly float[,] SobelDxMask3 = new float[,]
 		//{
 		//	{  +3, +0,  -3 },
 		//	{ +10, +0, -10 },
 		//	{  +3, +0,  -3 },
 		//};
 
-		//private static readonly float[,] SobelDyMask = new float[,]
+		//private static readonly float[,] SobelDyMask3 = new float[,]
 		//{
 		//	{ +3, +10, +3 },
 		//	{  0,  0,  0 },
 		//	{ -3, -10, -10 },
 		//};
 
-		public static void Sobel(int width, int height, byte[] source, float[] dx, float[] dy, float[] gradient, float[] angle, byte[] neighbors, int channels = 4)
+		public static void Sobel3(int width, int height, byte[] source, float[] dx, float[] dy, float[] gradient, float[] angle, byte[] neighbors, int channels = 4)
 		{
 			for (var y = 0; y < height; y++)
 			{
@@ -113,30 +131,89 @@ namespace Emphasis.ComputerVision
 					var idxa = 0.0f;
 					var idy = 0.0f;
 					var idya = 0.0f;
+					var cdx = 0.0f;
+					var cdy = 0.0f;
 
 					for (var c = 0; c < channels; c++)
 					{
-						var cdx =
-							source[(i - 1) * (width * channels) + (j - 1) * channels + c] * SobelDxMask[0, 0] +
-							source[(i - 1) * (width * channels) + (j + 0) * channels + c] * SobelDxMask[0, 1] +
-							source[(i - 1) * (width * channels) + (j + 1) * channels + c] * SobelDxMask[0, 2] +
-							source[(i + 0) * (width * channels) + (j - 1) * channels + c] * SobelDxMask[1, 0] +
-							source[(i + 0) * (width * channels) + (j + 0) * channels + c] * SobelDxMask[1, 1] +
-							source[(i + 0) * (width * channels) + (j + 1) * channels + c] * SobelDxMask[1, 2] +
-							source[(i + 1) * (width * channels) + (j - 1) * channels + c] * SobelDxMask[2, 0] +
-							source[(i + 1) * (width * channels) + (j + 0) * channels + c] * SobelDxMask[2, 1] +
-							source[(i + 1) * (width * channels) + (j + 1) * channels + c] * SobelDxMask[2, 2];
+						for (var iy = 0; iy < 3; iy++)
+						{
+							for (var ix = 0; ix < 3; ix++)
+							{
+								cdx += source[(i + (iy - 1)) * (width * channels) + (j + (ix - 1)) * channels + c] * SobelDxMask3[iy, ix];
+								cdy += source[(i + (iy - 1)) * (width * channels) + (j + (ix - 1)) * channels + c] * SobelDyMask3[iy, ix];
+							}
+						}
 
-						var cdy =
-							source[(i - 1) * (width * channels) + (j - 1) * channels + c] * SobelDyMask[0, 0] +
-							source[(i - 1) * (width * channels) + (j + 0) * channels + c] * SobelDyMask[0, 1] +
-							source[(i - 1) * (width * channels) + (j + 1) * channels + c] * SobelDyMask[0, 2] +
-							source[(i + 0) * (width * channels) + (j - 1) * channels + c] * SobelDyMask[1, 0] +
-							source[(i + 0) * (width * channels) + (j + 0) * channels + c] * SobelDyMask[1, 1] +
-							source[(i + 0) * (width * channels) + (j + 1) * channels + c] * SobelDyMask[1, 2] +
-							source[(i + 1) * (width * channels) + (j - 1) * channels + c] * SobelDyMask[2, 0] +
-							source[(i + 1) * (width * channels) + (j + 0) * channels + c] * SobelDyMask[2, 1] +
-							source[(i + 1) * (width * channels) + (j + 1) * channels + c] * SobelDyMask[2, 2];
+						cdx /= 8;
+						cdy /= 8;
+
+						var cdxAbs = MathF.Abs(cdx);
+						if (cdxAbs > idxa)
+						{
+							idx = cdx;
+							idxa = cdxAbs;
+						}
+
+						var cdyAbs = MathF.Abs(cdy);
+						if (cdyAbs > idya)
+						{
+							idy = cdy;
+							idya = cdyAbs;
+						}
+					}
+
+					var d = y * width + x;
+
+					dx[d] = idx;
+					dy[d] = idy;
+
+					// Up to sqrt(255*4 * 255*4 + 255*4 * 255*4) = 1442
+					var g = Gradient(idx, idy);
+					gradient[d] = g;
+
+					var a = GradientAngle(idx, idy);
+					angle[d] = a;
+
+					var (direction, count, w0, w1, w2) = GradientNeighbors(a);
+					var dn = y * width * 5 + x * 5;
+					neighbors[dn] = direction;
+					neighbors[dn + 1] = count;
+					neighbors[dn + 2] = w0;
+					neighbors[dn + 3] = w1;
+					neighbors[dn + 4] = w2;
+				}
+			}
+		}
+
+		public static void Sobel5(int width, int height, byte[] source, float[] dx, float[] dy, float[] gradient, float[] angle, byte[] neighbors, int channels = 4)
+		{
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var idx = 0.0f;
+					var idxa = 0.0f;
+					var idy = 0.0f;
+					var idya = 0.0f;
+					var cdx = 0.0f;
+					var cdy = 0.0f;
+
+					for (var c = 0; c < channels; c++)
+					{
+						for (var iy = 0; iy < 5; iy++)
+						{
+							for (var ix = 0; ix < 5; ix++)
+							{
+								var yn = ClampToEdge(y + (iy - 2), height);
+								var xn = ClampToEdge(x + (ix - 2), width);
+								cdx += source[yn * width * channels + xn * channels + c] * SobelDxMask5[iy, ix];
+								cdy += source[yn * width * channels + xn * channels + c] * SobelDyMask5[iy, ix];
+							}
+						}
+
+						cdx /= 16;
+						cdy /= 16;
 
 						var cdxAbs = MathF.Abs(cdx);
 						if (cdxAbs > idxa)
@@ -1013,6 +1090,15 @@ namespace Emphasis.ComputerVision
 					destination[i + c] = Convert.ToByte(r);
 				}
 			}
+		}
+
+		private static int ClampToEdge(int i, int length)
+		{
+			if (i < 0)
+				return 0;
+			if (i >= length)
+				return length - 1;
+			return i;
 		}
 
 		private static int Clamp(int value, int max)

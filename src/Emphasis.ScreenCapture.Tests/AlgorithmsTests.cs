@@ -45,7 +45,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var dx = new float[height * width];
 			var dy = new float[height * width];
 
-			Algorithms.Sobel(width, height, source, dx, dy, gradient, angle, neighbors);
+			Algorithms.Sobel3(width, height, source, dx, dy, gradient, angle, neighbors);
 
 			Run("sample00.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
@@ -57,9 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample06;
+			var sourceBitmap = Samples.sample03;
 
-			Run("sample06.png");
+			Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -86,7 +86,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.Grayscale(width,height, source, grayscale);
 			Algorithms.Gauss(width, height, source, gauss);
-			Algorithms.Sobel(width, height, gauss,  dx, dy, gradient, angle, neighbors);
+			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
 
@@ -175,7 +175,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Algorithms.Grayscale(width, height, source, grayscale);
 			Algorithms.Gauss(width, height, source, gauss);
-			Algorithms.Sobel(width, height, gauss, dx, dy, gradient, angle, neighbors);
+			Algorithms.Sobel3(width, height, gauss, dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 
 			Run("sample04.png");
