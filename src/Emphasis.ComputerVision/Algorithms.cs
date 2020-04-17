@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -671,7 +673,7 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c = components[d];
-						var cn = ColorComponent(width, height, source, swt, components, x, y);
+						var cn = ColorComponent(width, height, source, swt, components, x, y, channels);
 						if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
@@ -721,7 +723,7 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c0  = components[d];
-						var cn = ColorComponent(width, height, source, swt, components, x, y);
+						var cn = ColorComponent(width, height, source, swt, components, x, y, channels);
 						if (cn < c0)
 						{
 							for (var i = 0; i < 4; i++)
@@ -762,7 +764,8 @@ namespace Emphasis.ComputerVision
 			Span<byte> src = stackalloc byte[channels];
 			for (var channel = 0; channel < channels; channel++)
 			{
-				src[channel] = source[d + channel];
+				var ds = y0 * width * channels + x0 * channels + channel;
+				src[channel] = source[ds];
 			}
 
 			for (var y= -1; y <= 1; y++)
@@ -782,10 +785,10 @@ namespace Emphasis.ComputerVision
 					var sameColor = true;
 					for (var channel = 0; channel < channels; channel++)
 					{
-						var dst = source[dn + channel];
-						var sl = Math.Min(src[channel], dst);
-						var sh = Math.Max(src[channel], dst);
-						if ((sh - sl) > 25)
+						var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
+						var dst = source[ds];
+						var diff = Math.Abs(src[channel] - dst);
+						if (diff > 50)
 						{
 							sameColor = false;
 							break;
@@ -1124,6 +1127,90 @@ namespace Emphasis.ComputerVision
 				Console.WriteLine();
 			}
 			Console.WriteLine("}");
+		}
+
+		[Pure]
+		public static byte[] ReplaceEquals(this byte[] data, byte value, byte result)
+		{
+			var copy = new byte[data.Length];
+			Array.Copy(data, copy, data.Length);
+			for (var i = 0; i < data.Length; i++)
+			{
+				if (copy[i] == value)
+					copy[i] = result;
+			}
+
+			return copy;
+		}
+
+		[Pure]
+		public static int[] ReplaceEquals(this int[] data, int value, int result)
+		{
+			var copy = new int[data.Length];
+			Array.Copy(data, copy, data.Length);
+			for (var i = 0; i < copy.Length; i++)
+			{
+				if (copy[i] == value)
+					copy[i] = result;
+			}
+
+			return copy;
+		}
+
+		[Pure]
+		public static float[] ReplaceEquals(this float[] data, float value, float result, float eps = 10e-6f)
+		{
+			var copy = new float[data.Length];
+			Array.Copy(data, copy, data.Length);
+			for (var i = 0; i < copy.Length; i++)
+			{
+				if (MathF.Abs(copy[i] - value) < eps)
+					copy[i] = result;
+			}
+
+			return copy;
+		}
+
+		[Pure]
+		public static byte[] ReplaceGreaterOrEquals(this byte[] data, byte value, byte result)
+		{
+			var copy = new byte[data.Length];
+			Array.Copy(data, copy, data.Length);
+			for (var i = 0; i < copy.Length; i++)
+			{
+				if (copy[i] >= value)
+					copy[i] = result;
+			}
+
+			return copy;
+		}
+
+		[Pure]
+		public static int[] ReplaceGreaterOrEquals(this int[] data, int value, int result)
+		{
+			var copy = new int[data.Length];
+			Array.Copy(data, copy, data.Length);
+			for (var i = 0; i < copy.Length; i++)
+			{
+				if (copy[i] >= value)
+					copy[i] = result;
+			}
+
+			return copy;
+		}
+
+		[Pure]
+		public static float[] ReplaceGreaterOrEquals(this float[] data, float value, float result)
+		{
+			var copy = new float[data.Length];
+			Array.Copy(data, copy, data.Length);
+			for (var i = 0; i < copy.Length; i++)
+			{
+				if (copy[i] >= value)
+					copy[i] = result;
+			}
+
+			return copy;
 		}
 	}
 }

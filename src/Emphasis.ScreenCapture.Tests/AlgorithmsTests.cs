@@ -57,9 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample06;
 
-			Run("sample03.png");
+			Run("sample06.png");
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -84,39 +84,17 @@ namespace Emphasis.ScreenCapture.Tests
 			Array.Fill(swt0, int.MaxValue);
 			Array.Fill(swt1, int.MaxValue);
 
-			Algorithms.Grayscale(width,height, source, grayscale);
+			Algorithms.Grayscale(width, height, source, grayscale);
 			Algorithms.Gauss(width, height, source, gauss);
 			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
 			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
-
-			gauss.RunAs(width,height,4,"gauss.png");
-
-			//grayscale.RunAsText(width, height, 1, "gray.txt");
-			//grayscale.RunAs(width, height, 1, "gray.png");
-
-			gradient.RunAs(width, height, 1, "gradient.png");
-			//gradient.RunAsText(width, height, 1, "gradient.txt");
-
-			//angle.RunAsText(width, height, 1, "angle.txt");
-
-			nms.RunAs(width, height, 1, "nms.png");
-			//nms.RunAsText(width, height, 1, "nms.txt");
-
-			swt0.RunAs(width, height, 1, "swt0.png");
-			swt1.RunAs(width, height, 1, "swt1.png");
 
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 
 			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt0, components0, 4);
 			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt1, components1, 4);
-
-			components0.RunAs(width, height, 1, "cc0.png");
-			components0.RunAsText(width, height, 1, "cc0.txt");
-
-			components1.RunAs(width, height, 1, "cc1.png");
-			components1.RunAsText(width, height, 1, "cc1.txt");
 
 			var regionIndex0 = new int[n];
 			var regionIndex1 = new int[n];
@@ -131,6 +109,31 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
 
 			var (valid, invalid) = Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
+
+			//gauss.RunAs(width,height,4,"gauss.png");
+
+			//grayscale.RunAs(width, height, 1, "gray.png");
+			grayscale.ReplaceEquals(255, 0).RunAsText(width, height, 1, "gray.txt");
+
+			//gradient.RunAs(width, height, 1, "gradient.png");
+			gradient.RunAsText(width, height, 1, "gradient.txt");
+
+			//angle.RunAsText(width, height, 1, "angle.txt");
+
+			//nms.RunAs(width, height, 1, "nms.png");
+			nms.RunAsText(width, height, 1, "nms.txt");
+
+			swt0.RunAs(width, height, 1, "swt0.png");
+			swt0.ReplaceEquals(int.MaxValue, 0).RunAsText(width, height, 1, "swt0.txt");
+
+			//swt1.RunAs(width, height, 1, "swt1.png");
+			//swt1.ReplaceEquals(int.MaxValue, 0).RunAsText(width, height, 1, "swt1.txt");
+
+			components0.RunAs(width, height, 1, "cc0.png");
+			components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0.txt");
+
+			components1.RunAs(width, height, 1, "cc1.png");
+			components1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
 
 			Console.WriteLine($"Valid components: {valid}");
 			Console.WriteLine($"Invalid components: {invalid}");
