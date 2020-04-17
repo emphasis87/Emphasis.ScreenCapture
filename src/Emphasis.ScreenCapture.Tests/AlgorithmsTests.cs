@@ -57,9 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample06;
+			var sourceBitmap = Samples.sample03;
 
-			Run("sample06.png");
+			Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
@@ -88,7 +88,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.Gauss(width, height, source, gauss);
 			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
-			Algorithms.StrokeWidthTransform(width, height, nms, angle, dx, dy, swt0, swt1);
+			Algorithms.StrokeWidthTransform(width, height, source, nms, angle, dx, dy, swt0, swt1);
 
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];

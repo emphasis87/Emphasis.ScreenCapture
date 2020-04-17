@@ -324,7 +324,7 @@ namespace Emphasis.ComputerVision
 					destination[d] = 0;
 
 					var g = gradient[d];
-					if (g < 30)
+					if (g < 15)
 						continue;
 
 					var dn = y * width * 5 + x * 5;
@@ -368,6 +368,7 @@ namespace Emphasis.ComputerVision
 		public static void StrokeWidthTransform(
 			int width,
 			int height,
+			byte[] source,
 			float[] edges,
 			float[] angles,
 			float[] dx,
@@ -394,16 +395,17 @@ namespace Emphasis.ComputerVision
 
 			// Find the stroke width in positive direction
 			var swtList0 = new List<int>();
-			StrokeWidthTransform(width, height, edges, angles, dx, dy, swt0, rayLength, true, edgeList, swtList0);
+			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt0, rayLength, true, edgeList, swtList0);
 
 			// Find the stroke width in positive direction
 			var swtList1 = new List<int>();
-			StrokeWidthTransform(width, height, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1);
+			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1);
 		}
 
 		public static void StrokeWidthTransform(
 			int width,
 			int height,
+			byte[] source,
 			float[] edges,
 			float[] angles,
 			float[] dx,
@@ -412,7 +414,8 @@ namespace Emphasis.ComputerVision
 			int rayLength,
 			bool direction,
 			List<int> edgeList,
-			List<int> swtList)
+			List<int> swtList,
+			int channels = 4)
 		{
 			var dir = direction ? 1 : -1;
 
@@ -464,11 +467,18 @@ namespace Emphasis.ComputerVision
 				}
 			}
 
+			Span<byte> src = stackalloc byte[channels];
+
 			var en = edgeList.Count;
 			for (var i = 0; i < en; i += 2)
 			{
 				x = edgeList[i];
 				y = edgeList[i + 1];
+
+				for (var c = 0; c < channels; c++)
+				{
+					src[c] = source[y * width * channels + x * channels + c];
+				}
 				
 				InitializeLine();
 
@@ -493,7 +503,24 @@ namespace Emphasis.ComputerVision
 					// The current distance
 					var cd = cy * width + cx;
 					var cg = edges[cd];
-					if (cg > 0)
+
+					var isSameColor = true;
+					// Not an edge
+					if (cg <= 0)
+					{
+						for (var c = 0; c < channels; c++)
+						{
+							var color = source[cy * width * channels + cx * channels + c];
+							if (Math.Abs(src[c] - color) > 50)
+							{
+								isSameColor = false;
+								break;
+							}
+						}
+						
+					}
+
+					if (!isSameColor || cg > 0)
 					{
 						// Check that the found edge is roughly opposite
 						var ca = angles[cd];
@@ -782,20 +809,20 @@ namespace Emphasis.ComputerVision
 
 					var dn = (y + y0) * width + x + x0;
 
-					var sameColor = true;
-					for (var channel = 0; channel < channels; channel++)
-					{
-						var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
-						var dst = source[ds];
-						var diff = Math.Abs(src[channel] - dst);
-						if (diff > 50)
-						{
-							sameColor = false;
-							break;
-						}
-					}
-					if (!sameColor)
-						continue;
+					//var sameColor = true;
+					//for (var channel = 0; channel < channels; channel++)
+					//{
+					//	var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
+					//	var dst = source[ds];
+					//	var diff = Math.Abs(src[channel] - dst);
+					//	if (diff > 50)
+					//	{
+					//		sameColor = false;
+					//		break;
+					//	}
+					//}
+					//if (!sameColor)
+					//	continue;
 
 					var cn = components[dn];
 					var sn = swt[dn];
