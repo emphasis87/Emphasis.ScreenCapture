@@ -809,31 +809,39 @@ namespace Emphasis.ComputerVision
 
 					var dn = (y + y0) * width + x + x0;
 
-					//var sameColor = true;
-					//for (var channel = 0; channel < channels; channel++)
-					//{
-					//	var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
-					//	var dst = source[ds];
-					//	var diff = Math.Abs(src[channel] - dst);
-					//	if (diff > 50)
-					//	{
-					//		sameColor = false;
-					//		break;
-					//	}
-					//}
-					//if (!sameColor)
-					//	continue;
-
 					var cn = components[dn];
 					var sn = swt[dn];
-					if (s0 == int.MaxValue || sn == int.MaxValue)
-						continue;
-
+					
 					if (s0 != int.MaxValue && sn != int.MaxValue)
 					{
 						var smin = Math.Min(s0, sn);
 						var smax = Math.Max(s0, sn);
 						if (smax > smin * 3)
+							continue;
+					}
+					else
+					{
+						continue;
+						//if (s0 == int.MaxValue || sn == int.MaxValue)
+						//	continue;
+
+						if (s0 == int.MaxValue && sn == int.MaxValue)
+							continue;
+						
+						var sameColor = true;
+						for (var channel = 0; channel < channels; channel++)
+						{
+							var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
+							var dst = source[ds];
+							var diff = Math.Abs(src[channel] - dst);
+							if (diff > 50)
+							{
+								sameColor = false;
+								break;
+							}
+						}
+
+						if (!sameColor)
 							continue;
 					}
 

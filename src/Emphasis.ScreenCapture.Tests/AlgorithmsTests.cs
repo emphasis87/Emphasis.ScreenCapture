@@ -447,7 +447,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var result = new int[]
 			{
 				 r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,  r0,
-				 r0,  11,  r0,  r0,  r0,  11,  r0,  r0,  11,  r0,
+				 r0,  11,  11,  r0,  r0,  11,  r0,  r0,  11,  r0,
 				 r0,  11,  r0,  r0,  r0,  11,  r0,  r0,  11,  r0,
 				 r0,  11,  r0,  r0,  11,  11,  r0,  r0,  11,  r0,
 				 r0,  11,  r0,  11,  11,  11,  r0,  r0,  11,  r0,
