@@ -809,80 +809,83 @@ namespace Emphasis.ComputerVision
 					var c1 = components[d1];
 					var s1 = swt[d1];
 
-					if (s0 == int.MaxValue || s1 == int.MaxValue)
-					{
-						// A region not connected by stroke width
-						if (c1 >= n)
-							continue;
-
-						// Check the neighbor is of the same color
-						var sameColor = true;
-						for (var channel = 0; channel < sourceChannels; channel++)
-						{
-							var ds = y1 * width * sourceChannels + x1 * sourceChannels + channel;
-							var dst = source[ds];
-							var diff = Math.Abs(src[channel] - dst);
-							if (diff > colorDifference)
-							{
-								sameColor = false;
-								break;
-							}
-						}
-
-						if (!sameColor)
-							continue;
-
-						// Also check that the neighbor has other of the same color
-						var ofSameColor = 0;
-						var ofOtherColor = 0;
-						for (var yn = -1; yn <= 1; yn++)
-						{
-							var y2 = y1 + yn;
-							if (y2 < 0 || y2 >= height)
-								continue;
-
-							for (var xn = -1; xn <= 1; xn++)
-							{
-								var x2 = x1 + xn;
-								if (x2 < 0 || x2 >= width)
-									continue;
-								if (xn == 0 && yn == 0)
-									continue;
-
-								var d2 = y2 * width + x2;
-								var c2 = components[d2];
-								if (c2 != c1)
-									continue;
-
-								var neighborSameColor = true;
-								for (var channel = 0; channel < sourceChannels; channel++)
-								{
-									var ds = y2 * width * sourceChannels + x2 * sourceChannels + channel;
-									var dst = source[ds];
-									var diff = Math.Abs(src[channel] - dst);
-									if (diff > colorDifference)
-									{
-										neighborSameColor = false;
-										break;
-									}
-								}
-
-								if (neighborSameColor)
-									ofSameColor++;
-								else
-									ofOtherColor++;
-							}
-						}
-						if (ofSameColor == 0 || ofOtherColor >= ofSameColor)
-							continue;
-					}
-					else
+					if (s0 != int.MaxValue && s1 != int.MaxValue)
 					{
 						var smin = Math.Min(s0, s1);
 						var smax = Math.Max(s0, s1);
-						if (smax > smin * 3)
+						if (smax <= smin * 3)
+						{
+							if (c1 < c)
+								c = c1;
+
 							continue;
+						}
 					}
+
+					// A region not connected by stroke width
+					if (c1 >= n)
+						continue;
+
+					// Check the neighbor is of the same color
+					var sameColor = true;
+					for (var channel = 0; channel < sourceChannels; channel++)
+					{
+						var ds = y1 * width * sourceChannels + x1 * sourceChannels + channel;
+						var dst = source[ds];
+						var diff = Math.Abs(src[channel] - dst);
+						if (diff > colorDifference)
+						{
+							sameColor = false;
+							break;
+						}
+					}
+
+					if (!sameColor)
+						continue;
+
+					// Also check that the neighbor has other of the same color
+					var ofSameColor = 0;
+					var ofOtherColor = 0;
+					for (var yn = -1; yn <= 1; yn++)
+					{
+						var y2 = y1 + yn;
+						if (y2 < 0 || y2 >= height)
+							continue;
+
+						for (var xn = -1; xn <= 1; xn++)
+						{
+							var x2 = x1 + xn;
+							if (x2 < 0 || x2 >= width)
+								continue;
+							if (xn == 0 && yn == 0)
+								continue;
+
+							var d2 = y2 * width + x2;
+							var c2 = components[d2];
+							if (c2 != c1)
+								continue;
+
+							var neighborSameColor = true;
+							for (var channel = 0; channel < sourceChannels; channel++)
+							{
+								var ds = y2 * width * sourceChannels + x2 * sourceChannels + channel;
+								var dst = source[ds];
+								var diff = Math.Abs(src[channel] - dst);
+								if (diff > colorDifference)
+								{
+									neighborSameColor = false;
+									break;
+								}
+							}
+
+							if (neighborSameColor)
+								ofSameColor++;
+							else
+								ofOtherColor++;
+						}
+					}
+					if (ofSameColor == 0 || ofOtherColor >= ofSameColor)
+						continue;
 
 					if (c1 < c)
 						c = c1;
