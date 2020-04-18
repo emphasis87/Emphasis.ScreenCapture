@@ -365,6 +365,8 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public const int ColorDifference = 50;
+
 		public static void StrokeWidthTransform(
 			int width,
 			int height,
@@ -375,7 +377,9 @@ namespace Emphasis.ComputerVision
 			float[] dy,
 			int[] swt0,
 			int[] swt1,
-			int rayLength = 20)
+			int sourceChannels = 4,
+			int rayLength = 20,
+			int colorDifference = 50)
 		{
 			// Prefix scan edges
 			var edgeList = new List<int>();
@@ -395,11 +399,15 @@ namespace Emphasis.ComputerVision
 
 			// Find the stroke width in positive direction
 			var swtList0 = new List<int>();
-			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt0, rayLength, true, edgeList, swtList0);
+			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt0, rayLength, true, edgeList, swtList0, 
+				channels: sourceChannels,
+				colorDifference: colorDifference);
 
 			// Find the stroke width in positive direction
 			var swtList1 = new List<int>();
-			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1);
+			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1, 
+				channels: sourceChannels, 
+				colorDifference: colorDifference);
 		}
 
 		public static void StrokeWidthTransform(
@@ -415,7 +423,8 @@ namespace Emphasis.ComputerVision
 			bool direction,
 			List<int> edgeList,
 			List<int> swtList,
-			int channels = 4)
+			int channels = 4,
+			int colorDifference = 50)
 		{
 			var dir = direction ? 1 : -1;
 
@@ -512,7 +521,7 @@ namespace Emphasis.ComputerVision
 						for (var c = 0; c < channels; c++)
 						{
 							var color = source[cy * width * channels + cx * channels + c];
-							if (Math.Abs(src[c] - color) > 50)
+							if (Math.Abs(src[c] - color) > colorDifference)
 							{
 								isSameColor = false;
 								break;
@@ -614,7 +623,7 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
-			int channels = 1)
+			int sourceChannels = 4)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
@@ -629,7 +638,8 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, channels);
+						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, 
+							sourceChannels: sourceChannels);
 						if (cn != components[d])
 						{
 							components[d] = cn;
@@ -667,7 +677,7 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
-			int channels = 1)
+			int sourceChannels = 4)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
@@ -684,7 +694,8 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c = components[d];
-						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, channels);
+						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y,
+							sourceChannels: sourceChannels);
 						if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
@@ -715,7 +726,7 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
-			int channels = 1)
+			int sourceChannels = 4)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
@@ -732,7 +743,8 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c0  = components[d];
-						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, channels);
+						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y,
+							sourceChannels: sourceChannels);
 						if (cn < c0)
 						{
 							for (var i = 0; i < 4; i++)
@@ -762,7 +774,7 @@ namespace Emphasis.ComputerVision
 			int[] components,
 			int x0, 
 			int y0,
-			int channels = 1)
+			int sourceChannels = 4)
 		{
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
@@ -787,7 +799,7 @@ namespace Emphasis.ComputerVision
 					var cn = components[dn];
 					var sn = swt[dn];
 					
-					if (s0 != int.MaxValue || sn != int.MaxValue)
+					if (s0 == int.MaxValue || sn == int.MaxValue)
 						continue;
 					
 					var smin = Math.Min(s0, sn);
@@ -811,7 +823,7 @@ namespace Emphasis.ComputerVision
 			int[] components,
 			int x0,
 			int y0,
-			int channels = 1)
+			int sourceChannels = 4)
 		{
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
@@ -819,10 +831,10 @@ namespace Emphasis.ComputerVision
 			var c0 = components[d];
 			var s0 = swt[d];
 
-			Span<byte> src = stackalloc byte[channels];
-			for (var channel = 0; channel < channels; channel++)
+			Span<byte> src = stackalloc byte[sourceChannels];
+			for (var channel = 0; channel < sourceChannels; channel++)
 			{
-				var ds = y0 * width * channels + x0 * channels + channel;
+				var ds = y0 * width * sourceChannels + x0 * sourceChannels + channel;
 				src[channel] = source[ds];
 			}
 
@@ -851,9 +863,9 @@ namespace Emphasis.ComputerVision
 					}
 					
 					var sameColor = true;
-					for (var channel = 0; channel < channels; channel++)
+					for (var channel = 0; channel < sourceChannels; channel++)
 					{
-						var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
+						var ds = (y + y0) * width * sourceChannels + (x + x0) * sourceChannels + channel;
 						var dst = source[ds];
 						var diff = Math.Abs(src[channel] - dst);
 						if (diff > 50)

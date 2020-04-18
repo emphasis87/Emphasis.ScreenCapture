@@ -88,13 +88,18 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.Gauss(width, height, source, gauss);
 			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
-			Algorithms.StrokeWidthTransform(width, height, source, nms, angle, dx, dy, swt0, swt1);
+			Algorithms.StrokeWidthTransform(width, height, source, nms, angle, dx, dy, swt0, swt1,
+				sourceChannels: 4,
+				rayLength: 20,
+				colorDifference: Algorithms.ColorDifference);
 
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 
-			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt0, components0, 4);
-			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt1, components1, 4);
+			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt0, components0, 
+				sourceChannels: 4);
+			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt1, components1,
+				sourceChannels: 4);
 
 			var regionIndex0 = new int[n];
 			var regionIndex1 = new int[n];
