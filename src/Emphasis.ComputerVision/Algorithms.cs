@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Emphasis.ComputerVision
 {
@@ -39,13 +33,67 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public static void Enlarge2Interpolated(int width, int height, byte[] source, byte[] destination, int channels = 4)
+		{
+			for (var y = 0; y < height - 1; y++)
+			{
+				for (var x = 0; x < width - 1; x++)
+				{
+					for (var c = 0; c < channels; c++)
+					{
+						var d1 = (2 * y + 0) * 2 * width * channels + (2 * x + 0) * channels + c;
+						var d2 = (2 * y + 0) * 2 * width * channels + (2 * x + 1) * channels + c;
+						var d3 = (2 * y + 1) * 2 * width * channels + (2 * x + 0) * channels + c;
+						var d4 = (2 * y + 1) * 2 * width * channels + (2 * x + 1) * channels + c;
+
+						var s1 = (y + 0) * width * channels + (x + 0) * channels + c;
+						var s2 = (y + 0) * width * channels + (x + 1) * channels + c;
+						var s3 = (y + 1) * width * channels + (x + 0) * channels + c;
+						var s4 = (y + 1) * width * channels + (x + 1) * channels + c;
+
+						destination[d1] = source[s1];
+						destination[d2] = (byte) ((source[s1] + source[s2]) >> 1);
+						destination[d3] = (byte) ((source[s1] + source[s3]) >> 1);
+						destination[d4] = (byte) ((source[s1] + source[s4]) >> 1);
+					}
+				}
+			}
+		}
+
+		public static void Enlarge2(int width, int height, byte[] source, byte[] destination, int channels = 4)
+		{
+			for (var y = 0; y < height - 1; y++)
+			{
+				for (var x = 0; x < width - 1; x++)
+				{
+					for (var c = 0; c < channels; c++)
+					{
+						var d1 = (2 * y + 0) * 2 * width * channels + (2 * x + 0) * channels + c;
+						var d2 = (2 * y + 0) * 2 * width * channels + (2 * x + 1) * channels + c;
+						var d3 = (2 * y + 1) * 2 * width * channels + (2 * x + 0) * channels + c;
+						var d4 = (2 * y + 1) * 2 * width * channels + (2 * x + 1) * channels + c;
+
+						var s1 = (y + 0) * width * channels + (x + 0) * channels + c;
+						var s2 = (y + 0) * width * channels + (x + 1) * channels + c;
+						var s3 = (y + 1) * width * channels + (x + 0) * channels + c;
+						var s4 = (y + 1) * width * channels + (x + 1) * channels + c;
+
+						destination[d1] = source[s1];
+						destination[d2] = source[s1];
+						destination[d3] = source[s1];
+						destination[d4] = source[s1];
+					}
+				}
+			}
+		}
+
 		//constant float gauss[3][3] = 
 		//{   
 		//	{ 0.0625, 0.1250, 0.0625 },
 		//	{ 0.1250, 0.2500, 0.1250 },
 		//	{ 0.0625, 0.1250, 0.0625 },
 		//};
-		
+
 		public static void Gauss(int width, int height, byte[] source, byte[] destination, int channels = 4)
 		{
 			for (var y = 0; y < height; y++)
@@ -784,13 +832,6 @@ namespace Emphasis.ComputerVision
 			var c0 = components[d];
 			var s0 = swt[d];
 
-			Span<byte> src = stackalloc byte[sourceChannels];
-			for (var channel = 0; channel < sourceChannels; channel++)
-			{
-				var ds = y0 * width * sourceChannels + x0 * sourceChannels + channel;
-				src[channel] = source[ds];
-			}
-
 			for (var y = -1; y <= 1; y++)
 			{
 				var y1 = y + y0;
@@ -817,78 +858,8 @@ namespace Emphasis.ComputerVision
 						{
 							if (c1 < c)
 								c = c1;
-
-							continue;
 						}
 					}
-
-					// A region not connected by stroke width
-					if (c1 >= n)
-						continue;
-
-					// Check the neighbor is of the same color
-					var sameColor = true;
-					for (var channel = 0; channel < sourceChannels; channel++)
-					{
-						var ds = y1 * width * sourceChannels + x1 * sourceChannels + channel;
-						var dst = source[ds];
-						var diff = Math.Abs(src[channel] - dst);
-						if (diff > colorDifference)
-						{
-							sameColor = false;
-							break;
-						}
-					}
-
-					if (!sameColor)
-						continue;
-
-					// Also check that the neighbor has other of the same color
-					var ofSameColor = 0;
-					var ofOtherColor = 0;
-					for (var yn = -1; yn <= 1; yn++)
-					{
-						var y2 = y1 + yn;
-						if (y2 < 0 || y2 >= height)
-							continue;
-
-						for (var xn = -1; xn <= 1; xn++)
-						{
-							var x2 = x1 + xn;
-							if (x2 < 0 || x2 >= width)
-								continue;
-							if (xn == 0 && yn == 0)
-								continue;
-
-							var d2 = y2 * width + x2;
-							var c2 = components[d2];
-							if (c2 != c1)
-								continue;
-
-							var neighborSameColor = true;
-							for (var channel = 0; channel < sourceChannels; channel++)
-							{
-								var ds = y2 * width * sourceChannels + x2 * sourceChannels + channel;
-								var dst = source[ds];
-								var diff = Math.Abs(src[channel] - dst);
-								if (diff > colorDifference)
-								{
-									neighborSameColor = false;
-									break;
-								}
-							}
-
-							if (neighborSameColor)
-								ofSameColor++;
-							else
-								ofOtherColor++;
-						}
-					}
-					if (ofSameColor == 0 || ofOtherColor >= ofSameColor)
-						continue;
-
-					if (c1 < c)
-						c = c1;
 				}
 			}
 

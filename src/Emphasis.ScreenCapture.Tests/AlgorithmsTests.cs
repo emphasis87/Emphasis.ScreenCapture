@@ -55,19 +55,45 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
-		public void NonMaximumSuppression_Test()
+		public void Enlarge_Test()
 		{
-			var sourceBitmap = Samples.sample06;
+			var sourceBitmap = Samples.sample03;
 
-			Run("sample06.png");
+			Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
-			var gauss = new byte[source.Length];
+			var channels = 4;
 
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
+
+			var large = new byte[height * width * 4 * channels];
+			Algorithms.Enlarge2(width, height, source, large, channels);
+
+			large.RunAs(width * 2, height * 2, channels, "large.png");
+		}
+
+		[Test]
+		public void NonMaximumSuppression_Test()
+		{
+			var sourceBitmap = Samples.sample04;
+
+			Run("sample04.png");
+
+			var source = sourceBitmap.ToBytes();
+			var channels = 4;
+
+			var width = sourceBitmap.Width;
+			var height = sourceBitmap.Height;
+
+			var large = new byte[height * width * 4 * channels];
+			Algorithms.Enlarge2(width, height, source, large, channels);
+
+			width *= 2;
+			height *= 2;
 			var n = height * width;
 
+			var gauss = new byte[n * channels];
 			var grayscale = new byte[n];
 
 			var gradient = new float[n];
@@ -84,21 +110,24 @@ namespace Emphasis.ScreenCapture.Tests
 			Array.Fill(swt0, int.MaxValue);
 			Array.Fill(swt1, int.MaxValue);
 
-			Algorithms.Grayscale(width, height, source, grayscale);
-			Algorithms.Gauss(width, height, source, gauss);
+			var src = large;
+			//var src = source;
+
+			Algorithms.Grayscale(width, height, src, grayscale);
+			Algorithms.Gauss(width, height, src, gauss);
 			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
-			Algorithms.StrokeWidthTransform(width, height, source, nms, angle, dx, dy, swt0, swt1,
+			Algorithms.StrokeWidthTransform(width, height, src, nms, angle, dx, dy, swt0, swt1,
 				sourceChannels: 4,
-				rayLength: 20,
+				rayLength: 30,
 				colorDifference: Algorithms.ColorDifference);
 
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 
-			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt0, components0, 
+			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, 
 				sourceChannels: 4);
-			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, swt1, components1,
+			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1,
 				sourceChannels: 4);
 
 			var regionIndex0 = new int[n];
@@ -115,7 +144,8 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var (valid, invalid) = Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
 
-			//gauss.RunAs(width,height,4,"gauss.png");
+			large.RunAs(width, height, channels, "large.png");
+			gauss.RunAs(width, height, channels, "gauss.png");
 
 			//grayscale.RunAs(width, height, 1, "gray.png");
 			grayscale.ReplaceEquals(255, 0).RunAsText(width, height, 1, "gray.txt");
@@ -125,7 +155,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			//angle.RunAsText(width, height, 1, "angle.txt");
 
-			//nms.RunAs(width, height, 1, "nms.png");
+			nms.RunAs(width, height, 1, "nms.png");
 			nms.RunAsText(width, height, 1, "nms.txt");
 
 			swt0.RunAs(width, height, 1, "swt0.png");
