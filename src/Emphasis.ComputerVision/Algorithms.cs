@@ -770,13 +770,6 @@ namespace Emphasis.ComputerVision
 			var c0 = components[d];
 			var s0 = swt[d];
 
-			Span<byte> src = stackalloc byte[channels];
-			for (var channel = 0; channel < channels; channel++)
-			{
-				var ds = y0 * width * channels + x0 * channels + channel;
-				src[channel] = source[ds];
-			}
-
 			for (var y= -1; y <= 1; y++)
 			{
 				if (y + y0 < 0 || y + y0 >= height) 
@@ -833,6 +826,7 @@ namespace Emphasis.ComputerVision
 				src[channel] = source[ds];
 			}
 
+			// TODO find the same color? Voting?
 			for (var y = -1; y <= 1; y++)
 			{
 				if (y + y0 < 0 || y + y0 >= height)
@@ -852,36 +846,25 @@ namespace Emphasis.ComputerVision
 
 					if (s0 != int.MaxValue && sn != int.MaxValue)
 					{
-						var smin = Math.Min(s0, sn);
-						var smax = Math.Max(s0, sn);
-						if (smax > smin * 3)
-							continue;
-					}
-					else
-					{
+						// Should already have been connected
 						continue;
-						//if (s0 == int.MaxValue || sn == int.MaxValue)
-						//	continue;
-
-						if (s0 == int.MaxValue && sn == int.MaxValue)
-							continue;
-
-						var sameColor = true;
-						for (var channel = 0; channel < channels; channel++)
-						{
-							var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
-							var dst = source[ds];
-							var diff = Math.Abs(src[channel] - dst);
-							if (diff > 50)
-							{
-								sameColor = false;
-								break;
-							}
-						}
-
-						if (!sameColor)
-							continue;
 					}
+					
+					var sameColor = true;
+					for (var channel = 0; channel < channels; channel++)
+					{
+						var ds = (y + y0) * width * channels + (x + x0) * channels + channel;
+						var dst = source[ds];
+						var diff = Math.Abs(src[channel] - dst);
+						if (diff > 50)
+						{
+							sameColor = false;
+							break;
+						}
+					}
+
+					if (!sameColor)
+						continue;
 
 					if (cn < c)
 						c = cn;
