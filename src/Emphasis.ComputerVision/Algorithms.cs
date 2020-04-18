@@ -774,41 +774,118 @@ namespace Emphasis.ComputerVision
 			int[] components,
 			int x0, 
 			int y0,
-			int sourceChannels = 4)
+			int sourceChannels = 4,
+			int colorDifference = 50)
 		{
+			var n = height * width;
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
 
 			var c0 = components[d];
 			var s0 = swt[d];
 
-			for (var y= -1; y <= 1; y++)
+			Span<byte> src = stackalloc byte[sourceChannels];
+			for (var channel = 0; channel < sourceChannels; channel++)
 			{
-				if (y + y0 < 0 || y + y0 >= height) 
+				var ds = y0 * width * sourceChannels + x0 * sourceChannels + channel;
+				src[channel] = source[ds];
+			}
+
+			for (var y = -1; y <= 1; y++)
+			{
+				var y1 = y + y0;
+				if (y1 < 0 || y1 >= height) 
 					continue;
 
 				for (var x = -1; x <= 1; x++)
 				{
-					if (x + x0 < 0 || x + x0 >= width)
+					var x1 = x + x0;
+					if (x1 < 0 || x1 >= width)
 						continue;
 					if (x == 0 && y == 0)
 						continue;
 
-					var dn = (y + y0) * width + x + x0;
+					var d1 = y1 * width + x1;
+					var c1 = components[d1];
+					var s1 = swt[d1];
 
-					var cn = components[dn];
-					var sn = swt[dn];
-					
-					if (s0 == int.MaxValue || sn == int.MaxValue)
-						continue;
-					
-					var smin = Math.Min(s0, sn);
-					var smax = Math.Max(s0, sn);
-					if (smax > smin * 3)
-						continue;
+					if (s0 == int.MaxValue || s1 == int.MaxValue)
+					{
+						// A region not connected by stroke width
+						if (c1 >= n)
+							continue;
 
-					if (cn < c)
-						c = cn;
+						// Check the neighbor is of the same color
+						var sameColor = true;
+						for (var channel = 0; channel < sourceChannels; channel++)
+						{
+							var ds = y1 * width * sourceChannels + x1 * sourceChannels + channel;
+							var dst = source[ds];
+							var diff = Math.Abs(src[channel] - dst);
+							if (diff > colorDifference)
+							{
+								sameColor = false;
+								break;
+							}
+						}
+
+						if (!sameColor)
+							continue;
+
+						// Also check that the neighbor has other of the same color
+						var ofSameColor = 0;
+						var ofOtherColor = 0;
+						for (var yn = -1; yn <= 1; yn++)
+						{
+							var y2 = y1 + yn;
+							if (y2 < 0 || y2 >= height)
+								continue;
+
+							for (var xn = -1; xn <= 1; xn++)
+							{
+								var x2 = x1 + xn;
+								if (x2 < 0 || x2 >= width)
+									continue;
+								if (xn == 0 && yn == 0)
+									continue;
+
+								var d2 = y2 * width + x2;
+								var c2 = components[d2];
+								if (c2 != c1)
+									continue;
+
+								var neighborSameColor = true;
+								for (var channel = 0; channel < sourceChannels; channel++)
+								{
+									var ds = y2 * width * sourceChannels + x2 * sourceChannels + channel;
+									var dst = source[ds];
+									var diff = Math.Abs(src[channel] - dst);
+									if (diff > colorDifference)
+									{
+										neighborSameColor = false;
+										break;
+									}
+								}
+
+								if (neighborSameColor)
+									ofSameColor++;
+								else
+									ofOtherColor++;
+							}
+						}
+						if (ofSameColor == 0 || ofOtherColor >= ofSameColor)
+							continue;
+					}
+					else
+					{
+						var smin = Math.Min(s0, s1);
+						var smax = Math.Max(s0, s1);
+						if (smax > smin * 3)
+							continue;
+					}
+
+					if (c1 < c)
+						c = c1;
 				}
 			}
 
@@ -823,7 +900,8 @@ namespace Emphasis.ComputerVision
 			int[] components,
 			int x0,
 			int y0,
-			int sourceChannels = 4)
+			int sourceChannels = 4,
+			int colorDifference = 50)
 		{
 			var d = y0 * width + x0;
 			var c = int.MaxValue;
@@ -868,7 +946,7 @@ namespace Emphasis.ComputerVision
 						var ds = (y + y0) * width * sourceChannels + (x + x0) * sourceChannels + channel;
 						var dst = source[ds];
 						var diff = Math.Abs(src[channel] - dst);
-						if (diff > 50)
+						if (diff > colorDifference)
 						{
 							sameColor = false;
 							break;

@@ -57,9 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample06;
 
-			Run("sample03.png");
+			Run("sample06.png");
 
 			var source = sourceBitmap.ToBytes();
 			var gauss = new byte[source.Length];
