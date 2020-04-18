@@ -493,6 +493,7 @@ namespace Emphasis.ComputerVision
 				if (cx == mx || cy == my)
 					continue;
 
+				// Find and collect opposing edges
 				for (var ci = 2; ci < rayLength; ci++)
 				{
 					Advance();
@@ -535,19 +536,6 @@ namespace Emphasis.ComputerVision
 					}
 				}
 			}
-
-			/*
-			var sn = swtList.Count;
-			for (var i = 0; i < sn; i += 3)
-			{
-				var x = swtList[i];
-				var y = swtList[i + 1];
-				var len = swtList[i + 2];
-				var d = y * width + x;
-
-				swt[d] = 255;
-			}
-			*/
 
 			// Fill in the strokes
 			var sn = swtList.Count;
@@ -634,8 +622,6 @@ namespace Emphasis.ComputerVision
 			var isComplete = false;
 			while (!isComplete)
 			{
-				components.Dump(width, height);
-
 				rounds++;
 				isComplete = true;
 				for (var y = 0; y < height; y++)
@@ -643,7 +629,7 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var cn = ColorComponent(width, height, source, swt, components, x, y, channels);
+						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, channels);
 						if (cn != components[d])
 						{
 							components[d] = cn;
@@ -690,8 +676,6 @@ namespace Emphasis.ComputerVision
 			var isColored = false;
 			while (!isColored)
 			{
-				//components.Dump(width, height);
-
 				rounds++;
 				isColored = true;
 				for (var y = 0; y < height; y++)
@@ -700,7 +684,7 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c = components[d];
-						var cn = ColorComponent(width, height, source, swt, components, x, y, channels);
+						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, channels);
 						if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
@@ -740,8 +724,6 @@ namespace Emphasis.ComputerVision
 			var isColored = false;
 			while (!isColored)
 			{
-				//components.Dump(width, height);
-
 				rounds++;
 				isColored = true;
 				for (var y = 0; y < height; y++)
@@ -750,7 +732,7 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c0  = components[d];
-						var cn = ColorComponent(width, height, source, swt, components, x, y, channels);
+						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, channels);
 						if (cn < c0)
 						{
 							for (var i = 0; i < 4; i++)
@@ -772,7 +754,7 @@ namespace Emphasis.ComputerVision
 			return rounds;
 		}
 
-		public static int ColorComponent(
+		public static int ColorComponentByStrokeWidth(
 			int width, 
 			int height,
 			byte[] source,
@@ -812,6 +794,62 @@ namespace Emphasis.ComputerVision
 					var cn = components[dn];
 					var sn = swt[dn];
 					
+					if (s0 != int.MaxValue || sn != int.MaxValue)
+						continue;
+					
+					var smin = Math.Min(s0, sn);
+					var smax = Math.Max(s0, sn);
+					if (smax > smin * 3)
+						continue;
+
+					if (cn < c)
+						c = cn;
+				}
+			}
+
+			return Math.Min(c, c0);
+		}
+
+		public static int ColorComponentByColorSimilarity(
+			int width,
+			int height,
+			byte[] source,
+			int[] swt,
+			int[] components,
+			int x0,
+			int y0,
+			int channels = 1)
+		{
+			var d = y0 * width + x0;
+			var c = int.MaxValue;
+
+			var c0 = components[d];
+			var s0 = swt[d];
+
+			Span<byte> src = stackalloc byte[channels];
+			for (var channel = 0; channel < channels; channel++)
+			{
+				var ds = y0 * width * channels + x0 * channels + channel;
+				src[channel] = source[ds];
+			}
+
+			for (var y = -1; y <= 1; y++)
+			{
+				if (y + y0 < 0 || y + y0 >= height)
+					continue;
+
+				for (var x = -1; x <= 1; x++)
+				{
+					if (x + x0 < 0 || x + x0 >= width)
+						continue;
+					if (x == 0 && y == 0)
+						continue;
+
+					var dn = (y + y0) * width + x + x0;
+
+					var cn = components[dn];
+					var sn = swt[dn];
+
 					if (s0 != int.MaxValue && sn != int.MaxValue)
 					{
 						var smin = Math.Min(s0, sn);
@@ -827,7 +865,7 @@ namespace Emphasis.ComputerVision
 
 						if (s0 == int.MaxValue && sn == int.MaxValue)
 							continue;
-						
+
 						var sameColor = true;
 						for (var channel = 0; channel < channels; channel++)
 						{
