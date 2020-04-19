@@ -86,11 +86,16 @@ namespace Emphasis.ScreenCapture.Tests
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
 
+			var useLarge = false;
+
 			var large = new byte[height * width * 4 * channels];
 			Algorithms.Enlarge2(width, height, source, large, channels);
 
-			width *= 2;
-			height *= 2;
+			if (useLarge)
+			{
+				width *= 2;
+				height *= 2;
+			}
 			var n = height * width;
 
 			var gauss = new byte[n * channels];
@@ -110,8 +115,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Array.Fill(swt0, int.MaxValue);
 			Array.Fill(swt1, int.MaxValue);
 
-			var src = large;
-			//var src = source;
+			var src = useLarge ? large : source;
 
 			Algorithms.Grayscale(width, height, src, grayscale);
 			Algorithms.Gauss(width, height, src, gauss);
