@@ -61,6 +61,19 @@ namespace Emphasis.ScreenCapture.Helpers
 
 		public static IEnumerable<string> PrintFormatted(this int[] data, int width, int height, int channels = 1)
 		{
+			var min = int.MaxValue;
+			var max = int.MinValue;
+			for (var i = 0; i < data.Length; i++)
+			{
+				var v = data[i];
+				min = Math.Min(min, v);
+				max = Math.Max(max, v);
+			}
+
+			var len0 = min.ToString().Length;
+			var len1 = max.ToString().Length;
+			var len = Math.Max(len0, len1) + 1;
+
 			var sb = new StringBuilder();
 			for (var y = 0; y < height; y++)
 			{
@@ -70,8 +83,8 @@ namespace Emphasis.ScreenCapture.Helpers
 					var pixel = line.Slice(x * channels, channels);
 					for (var i = 0; i < channels; i++)
 					{
-						var v = pixel[i];
-						sb.Append($"{v,4} ");
+						var v = $"{pixel[i]}".PadLeft(len);
+						sb.Append($"{v} ");
 					}
 
 					sb.Append("| ");

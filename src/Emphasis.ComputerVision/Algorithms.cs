@@ -413,12 +413,13 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public const int ColorDifference = 50;
+		public const int ColorDifference = 100;
 
 		public static void StrokeWidthTransform(
 			int width,
 			int height,
 			byte[] source,
+			float[] gradient,
 			float[] edges,
 			float[] angles,
 			float[] dx,
@@ -447,13 +448,13 @@ namespace Emphasis.ComputerVision
 
 			// Find the stroke width in positive direction
 			var swtList0 = new List<int>();
-			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt0, rayLength, true, edgeList, swtList0, 
+			StrokeWidthTransform(width, height, source, gradient,edges, angles, dx, dy, swt0, rayLength, true, edgeList, swtList0, 
 				channels: sourceChannels,
 				colorDifference: colorDifference);
 
 			// Find the stroke width in positive direction
 			var swtList1 = new List<int>();
-			StrokeWidthTransform(width, height, source, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1, 
+			StrokeWidthTransform(width, height, source, gradient, edges, angles, dx, dy, swt1, rayLength, false, edgeList, swtList1, 
 				channels: sourceChannels, 
 				colorDifference: colorDifference);
 		}
@@ -462,6 +463,7 @@ namespace Emphasis.ComputerVision
 			int width,
 			int height,
 			byte[] source,
+			float[] gradient,
 			float[] edges,
 			float[] angles,
 			float[] dx,
@@ -479,13 +481,13 @@ namespace Emphasis.ComputerVision
 			int x, y, d, len, cx, cy, mx, my, ix, iy;
 			float a, idx, idy, idxa, idya, ex, ey;
 
-			void InitializeLine()
+			void InitializeLine(float rdx = 1.0f, float rdy = 1.0f)
 			{
 				d = y * width + x;
 
 				// Differential on x and y-axis
-				idx = dx[d];
-				idy = dy[d];
+				idx = dx[d] * rdx;
+				idy = dy[d] * rdy;
 
 				// Sign of the differential in the direction (black on white or white on black)
 				ix = dir * MathF.Sign(idx);
@@ -526,70 +528,72 @@ namespace Emphasis.ComputerVision
 
 			Span<byte> src = stackalloc byte[channels];
 
+			var rp = new float[,]
+			{
+				{0.75f, 1.00f, 15},
+				{1.00f, 1.00f, 0},
+				{1.00f, 0.75f, 345},
+			};
+			var rc = rp.Length / 3;
+
 			var en = edgeList.Count;
 			for (var i = 0; i < en; i += 2)
 			{
-				x = edgeList[i];
-				y = edgeList[i + 1];
-
-				for (var c = 0; c < channels; c++)
+				for (var r = 0; r < rc; r++)
 				{
-					src[c] = source[y * width * channels + x * channels + c];
-				}
-				
-				InitializeLine();
+					var rdx = rp[r, 0];
+					var rdy = rp[r, 1];
+					var ra = rp[r, 2];
 
-				a = angles[d];
+					x = edgeList[i];
+					y = edgeList[i + 1];
 
-				// The indexing limits
-				mx = ix > 0 ? width : -1;
-				my = iy > 0 ? height : -1;
+					InitializeLine(rdx, rdy);
 
-				Advance();
+					a = angles[d];
 
-				if (cx == mx || cy == my)
-					continue;
+					// The indexing limits
+					mx = ix > 0 ? width : -1;
+					my = iy > 0 ? height : -1;
 
-				// Find and collect opposing edges
-				for (var ci = 2; ci < rayLength; ci++)
-				{
 					Advance();
 
 					if (cx == mx || cy == my)
-						break;
+						continue;
 
-					// The current distance
-					var cd = cy * width + cx;
-					var cg = edges[cd];
+					//for (var c = 0; c < channels; c++)
+					//{
+					//	src[c] = source[cy * width * channels + cx * channels + c];
+					//}
 
-					var isSameColor = true;
-					// Not an edge
-					if (cg <= 0)
+					// Find and collect opposing edges
+					for (var ci = 2; ci < rayLength; ci++)
 					{
-						for (var c = 0; c < channels; c++)
+						Advance();
+
+						if (cx == mx || cy == my)
+							break;
+
+						// The current distance
+						var cd = cy * width + cx;
+						var cg = edges[cd];
+
+						if (cg > 0)
 						{
-							var color = source[cy * width * channels + cx * channels + c];
-							if (Math.Abs(src[c] - color) > colorDifference)
+							// Check that the found edge is roughly opposite
+							var ca = angles[cd] + ra;
+							if (ca > 360)
+								ca -= 360;
+							var cad = MathF.Abs(180 - MathF.Abs(a - ca));
+							if (cad < 45)
 							{
-								isSameColor = false;
-								break;
+								swtList.Add(x);
+								swtList.Add(y);
+								swtList.Add(ci);
 							}
-						}
-						
-					}
 
-					if (!isSameColor || cg > 0)
-					{
-						// Check that the found edge is roughly opposite
-						var ca = angles[cd];
-						var cad = MathF.Abs(180 - MathF.Abs(a - ca));
-						if (cad < 45)
-						{
-							swtList.Add(x);
-							swtList.Add(y);
-							swtList.Add(ci);
+							break;
 						}
-						break;
 					}
 				}
 			}
@@ -671,10 +675,12 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
-			int sourceChannels = 4)
+			int sourceChannels = 4,
+			bool connectByColor = false)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
+			var n = height * width;
 			var rounds = 0;
 			var isComplete = false;
 			while (!isComplete)
@@ -686,8 +692,8 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y, 
-							sourceChannels: sourceChannels);
+						var cn = ColorComponentByStrokeWidth(
+							width, height, n, source, swt, components, x, y, d, sourceChannels: sourceChannels);
 						if (cn != components[d])
 						{
 							components[d] = cn;
@@ -725,11 +731,12 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
-			int sourceChannels = 4)
+			int sourceChannels = 4,
+			bool connectByColor = false)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
-			var n = components.Length;
+			var n = height * width;
 			var rounds = 0;
 			var isColored = false;
 			while (!isColored)
@@ -742,8 +749,8 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c = components[d];
-						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y,
-							sourceChannels: sourceChannels);
+						var cn = ColorComponentByStrokeWidth(
+							width, height, n, source, swt, components, x, y, d, sourceChannels: sourceChannels);
 						if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
@@ -774,12 +781,21 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
-			int sourceChannels = 4)
+			int sourceChannels = 4,
+			bool connectByColor = false)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
-			var n = components.Length;
+			var n = height * width;
 			var rounds = 0;
+
+			var byColor = new bool[]
+			{
+				false,
+				true,
+				false
+			};
+
 			var isColored = false;
 			while (!isColored)
 			{
@@ -791,25 +807,61 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c0  = components[d];
-						var cn = ColorComponentByStrokeWidth(width, height, source, swt, components, x, y,
-							sourceChannels: sourceChannels);
-						if (cn < c0)
+						var cn = ColorComponent(
+							width, height, n, source, swt, components, x, y, d, sourceChannels: sourceChannels, byColor: false);
+						
+						if (cn >= c0) 
+							continue;
+
+						for (var i = 0; i < 4; i++)
 						{
-							for (var i = 0; i < 4; i++)
-							{
-								var cq = components[Mod1(cn, n)];
-								cn = cq;
-							}
-
-							AtomicMin(ref components[Mod1(c0, n)], cn);
-							AtomicMin(ref components[d], cn);
-
-							components[d] = cn;
-							isColored = false;
+							var cq = components[Mod1(cn, n)];
+							cn = cq;
 						}
+
+						AtomicMin(ref components[Mod1(c0, n)], cn);
+						AtomicMin(ref components[d], cn);
+
+						components[d] = cn;
+						isColored = false;
 					}
 				}
 			}
+
+			if (!connectByColor) 
+				return rounds;
+
+			//isColored = false;
+			//while (!isColored)
+			//{
+			//	rounds++;
+			//	isColored = true;
+			//	var d = 0;
+			//	for (var y = 0; y < height; y++)
+			//	{
+			//		for (var x = 0; x < width; x++, d++)
+			//		{
+			//			var c0 = components[d];
+			//			var cn = ColorComponentByColorSimilarity(
+			//				width, height, n, source, swt, components, x, y, d, sourceChannels: sourceChannels);
+						
+			//			if (cn >= c0) 
+			//				continue;
+
+			//			for (var i = 0; i < 4; i++)
+			//			{
+			//				var cq = components[Mod1(cn, n)];
+			//				cn = cq;
+			//			}
+
+			//			AtomicMin(ref components[Mod1(c0, n)], cn);
+			//			AtomicMin(ref components[d], cn);
+
+			//			components[d] = cn;
+			//			isColored = false;
+			//		}
+			//	}
+			//}
 
 			return rounds;
 		}
@@ -817,18 +869,17 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentByStrokeWidth(
 			int width, 
 			int height,
+			int n,
 			byte[] source,
 			int[] swt,
 			int[] components,
 			int x0, 
 			int y0,
+			int d,
 			int sourceChannels = 4,
 			int colorDifference = 50)
 		{
-			var n = height * width;
-			var d = y0 * width + x0;
 			var c = int.MaxValue;
-
 			var c0 = components[d];
 			var s0 = swt[d];
 
@@ -869,17 +920,17 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentByColorSimilarity(
 			int width,
 			int height,
+			int n,
 			byte[] source,
 			int[] swt,
 			int[] components,
 			int x0,
 			int y0,
+			int d,
 			int sourceChannels = 4,
 			int colorDifference = 50)
 		{
-			var d = y0 * width + x0;
 			var c = int.MaxValue;
-
 			var c0 = components[d];
 			var s0 = swt[d];
 
@@ -890,52 +941,71 @@ namespace Emphasis.ComputerVision
 				src[channel] = source[ds];
 			}
 
-			// TODO find the same color? Voting?
 			for (var y = -1; y <= 1; y++)
 			{
-				if (y + y0 < 0 || y + y0 >= height)
+				var y1 = y + y0;
+				if (y1 < 0 || y1 >= height)
 					continue;
 
 				for (var x = -1; x <= 1; x++)
 				{
-					if (x + x0 < 0 || x + x0 >= width)
+					var x1 = x + x0;
+					if (x1 < 0 || x1 >= width)
 						continue;
 					if (x == 0 && y == 0)
 						continue;
 
-					var dn = (y + y0) * width + x + x0;
+					var d1 = y1 * width + x1;
+					var c1 = components[d1];
+					var s1 = swt[d1];
 
-					var cn = components[dn];
-					var sn = swt[dn];
-
-					if (s0 != int.MaxValue && sn != int.MaxValue)
-					{
-						// Should already have been connected
-						continue;
-					}
 					
-					var sameColor = true;
+					var isOfSameColor = true;
 					for (var channel = 0; channel < sourceChannels; channel++)
 					{
-						var ds = (y + y0) * width * sourceChannels + (x + x0) * sourceChannels + channel;
+						var ds = y1 * width * sourceChannels + x1 * sourceChannels + channel;
 						var dst = source[ds];
 						var diff = Math.Abs(src[channel] - dst);
 						if (diff > colorDifference)
 						{
-							sameColor = false;
+							isOfSameColor = false;
 							break;
 						}
 					}
 
-					if (!sameColor)
-						continue;
+					if (isOfSameColor)
+					{
+						if (c1 < c)
+							c = c1;
 
-					if (cn < c)
-						c = cn;
+						continue;
+					}
 				}
 			}
 
 			return Math.Min(c, c0);
+		}
+
+		public static int ColorComponent(
+			int width,
+			int height,
+			int n,
+			byte[] source,
+			int[] swt,
+			int[] components,
+			int x0,
+			int y0,
+			int d,
+			int sourceChannels = 4,
+			int colorDifference = 50,
+			bool byColor = false)
+		{
+			if (byColor)
+				return ColorComponentByColorSimilarity(
+					width, height, n, source, swt, components, x0, y0, d, sourceChannels: sourceChannels);
+
+			return ColorComponentByStrokeWidth(
+					width, height, n, source, swt, components, x0, y0, d, sourceChannels: sourceChannels);
 		}
 
 		public const int ComponentColorOffset = 0;
@@ -1033,20 +1103,21 @@ namespace Emphasis.ComputerVision
 			for (var c = 0; c < count; c++)
 			{
 				var offset = c * (ComponentItemsOffset + componentSizeLimit);
-				var cnt = regions[offset + ComponentCountOffset] + 1;
-				Array.Sort(regions, offset + ComponentItemsOffset, cnt);
+				var cnt = regions[offset + ComponentCountOffset] + 2;
+				var cntSwt = regions[offset + ComponentCountSwtOffset] + 2;
+				Array.Sort(regions, offset + ComponentItemsOffset, cntSwt);
 
-				var median = regions[offset + ComponentItemsOffset + (cnt >> 1)];
-				var avg = regions[offset + ComponentSumSwtOffset] / (float)cnt;
+				var median = regions[offset + ComponentItemsOffset + (cntSwt >> 1)];
+				var avg = regions[offset + ComponentSumSwtOffset] / (float)cntSwt;
 
-				var items = regions.AsSpan(offset + ComponentItemsOffset, cnt);
+				var items = regions.AsSpan(offset + ComponentItemsOffset, cntSwt);
 				var variance = 0.0f;
-				for (var i = 0; i < cnt; i++)
+				for (var i = 0; i < cntSwt; i++)
 				{
 					var ei = (items[i] - avg);
 					variance += ei * ei;
 				}
-				variance /= cnt;
+				variance /= cntSwt;
 
 				var color = regions[offset + ComponentColorOffset];
 				var x0 = regions[offset + ComponentMinXOffset];
@@ -1059,24 +1130,23 @@ namespace Emphasis.ComputerVision
 
 				var diameter = Math.Sqrt(w * w + h * h);
 				var diameterRatio = diameter / median;
-
-				if (variance < 0.5 * avg &&
-				    sizeRatio > 0.1 && sizeRatio < 10 &&
-				    diameterRatio < 10)
+				var hasLowVariance =
+					true;
+					//variance < 0.5 * avg;
+					//variance >= 0.5 * avg && variance < 0.7 * avg;
+				var isSizeProportional = sizeRatio > 0.1 && sizeRatio < 10;
+				var isStrokeProportional = diameterRatio < 12;
+				var isTall = h > 10 && h < 300;
+				var isSparse =
+					true;
+					//!(sizeRatio > 0.5) || !(sizeRatio < 5) || 3 * cnt < 2 * h * w;
+				if (hasLowVariance &&
+					isSizeProportional &&
+				    isStrokeProportional &&
+					isTall &&
+					isSparse)
 				{
 					valid++;
-
-					//for (var x = x0; x < x1; x++)
-					//{
-					//	text[y0 * width + x] = 0;
-					//	text[y1 * width + x] = 0;
-					//}
-
-					//for (var y = y0 + 1; y < y1 - 1; y++)
-					//{
-					//	text[y * width + x0] = 0;
-					//	text[y * width + x1] = 0;
-					//}
 				}
 				else
 				{
@@ -1209,8 +1279,16 @@ namespace Emphasis.ComputerVision
 					var a = min[c];
 					var l = len[c];
 					var v = source[i + c];
-					var r = l == 0 ? min[c] : Math.Round((v - a) / (double)l) * 255;
-					destination[i + c] = Convert.ToByte(r);
+					
+					if (l == 0)
+					{
+						destination[i + c] = a > 0 ? (byte)255 : (byte)0;
+					}
+					else
+					{
+						var r = Math.Round((v - a) / (double) l) * 255;
+						destination[i + c] = Convert.ToByte(r);
+					}
 				}
 			}
 		}
@@ -1328,6 +1406,19 @@ namespace Emphasis.ComputerVision
 			{
 				if (copy[i] >= value)
 					copy[i] = result;
+			}
+
+			return copy;
+		}
+
+		[Pure]
+		public static int[] MultiplyBy(this int[] data, int value)
+		{
+			var copy = new int[data.Length];
+			Array.Copy(data, copy, data.Length);
+			for (var i = 0; i < copy.Length; i++)
+			{
+				copy[i] *= value;
 			}
 
 			return copy;

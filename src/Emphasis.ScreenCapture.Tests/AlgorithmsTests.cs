@@ -76,9 +76,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample04;
+			var sourceBitmap = Samples.sample03;
 
-			Run("sample04.png");
+			Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 			var channels = 4;
@@ -86,7 +86,9 @@ namespace Emphasis.ScreenCapture.Tests
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
 
-			var useLarge = false;
+			var useLarge = true;
+			var swtSameColor = false;
+			var swtConnectByColor = false;
 
 			var large = new byte[height * width * 4 * channels];
 			Algorithms.Enlarge2(width, height, source, large, channels);
@@ -121,7 +123,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.Gauss(width, height, src, gauss);
 			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
 			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
-			Algorithms.StrokeWidthTransform(width, height, src, nms, angle, dx, dy, swt0, swt1,
+			Algorithms.StrokeWidthTransform(width, height, src, gradient, nms, angle, dx, dy, swt0, swt1,
 				sourceChannels: 4,
 				rayLength: 30,
 				colorDifference: Algorithms.ColorDifference);
@@ -130,9 +132,9 @@ namespace Emphasis.ScreenCapture.Tests
 			var components1 = new int[height * width];
 
 			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, 
-				sourceChannels: 4);
+				sourceChannels: 4, connectByColor: swtConnectByColor);
 			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1,
-				sourceChannels: 4);
+				sourceChannels: 4, connectByColor: swtConnectByColor);
 
 			var regionIndex0 = new int[n];
 			var regionIndex1 = new int[n];
@@ -149,7 +151,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var (valid, invalid) = Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
 
 			large.RunAs(width, height, channels, "large.png");
-			gauss.RunAs(width, height, channels, "gauss.png");
+			//gauss.RunAs(width, height, channels, "gauss.png");
 
 			//grayscale.RunAs(width, height, 1, "gray.png");
 			grayscale.ReplaceEquals(255, 0).RunAsText(width, height, 1, "gray.txt");
@@ -157,16 +159,16 @@ namespace Emphasis.ScreenCapture.Tests
 			//gradient.RunAs(width, height, 1, "gradient.png");
 			gradient.RunAsText(width, height, 1, "gradient.txt");
 
-			//angle.RunAsText(width, height, 1, "angle.txt");
+			angle.RunAsText(width, height, 1, "angle.txt");
 
-			nms.RunAs(width, height, 1, "nms.png");
+			//nms.RunAs(width, height, 1, "nms.png");
 			nms.RunAsText(width, height, 1, "nms.txt");
 
 			swt0.RunAs(width, height, 1, "swt0.png");
-			swt0.ReplaceEquals(int.MaxValue, 0).RunAsText(width, height, 1, "swt0.txt");
+			swt0.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt0.txt");
 
 			//swt1.RunAs(width, height, 1, "swt1.png");
-			//swt1.ReplaceEquals(int.MaxValue, 0).RunAsText(width, height, 1, "swt1.txt");
+			//swt1.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt1.txt");
 
 			components0.RunAs(width, height, 1, "cc0.png");
 			components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0.txt");
@@ -186,154 +188,6 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 			text0.RunAs(width, height, 1, "text0.png");
-		}
-
-		[Test]
-		public void EdgeDetection_Test()
-		{
-			var sourceBitmap = Samples.sample04;
-
-			var source = sourceBitmap.ToBytes();
-			var gauss = new byte[source.Length];
-
-			var width = sourceBitmap.Width;
-			var height = sourceBitmap.Height;
-
-			var grayscale = new byte[height * width];
-
-			var gradient = new float[height * width];
-			var dx = new float[height * width];
-			var dy = new float[height * width];
-			var angle = new float[height * width];
-			var neighbors = new byte[height * width * 5];
-			var nms = new float[height * width];
-			var cmp1 = new float[height * width];
-			var cmp2 = new float[height * width];
-			var swt0 = new int[height * width];
-			var swt1 = new int[height * width];
-
-			Array.Fill(swt0, int.MaxValue);
-			Array.Fill(swt1, int.MaxValue);
-
-			Algorithms.Grayscale(width, height, source, grayscale);
-			Algorithms.Gauss(width, height, source, gauss);
-			Algorithms.Sobel3(width, height, gauss, dx, dy, gradient, angle, neighbors);
-			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
-
-			Run("sample04.png");
-
-			nms.RunAs(width, height, 1, "nms.png");
-			nms.RunAsText(width, height, 1, "nms.txt");
-
-			grayscale.RunAsText(width, height, 1, "gray.txt");
-			angle.RunAsText(width, height, 1, "angle.txt");
-
-			//grayscale.RunAs(width, height, 1, "grayscale.png");
-			gradient.RunAs(width, height, 1, "gradient.png");
-			gradient.RunAsText(width, height, 1, "gradient.txt");
-
-			var round = new int[height * width];
-			var g = new float[height * width];
-			//var gb = new float[height * width];
-			for (var y = 1; y < height - 1; y++)
-			{
-				for (var x = 1; x < width - 1; x++)
-				{
-					var d = y * width + x;
-
-					var v = gradient[d];
-					var vm = 0f;
-					for (var yi = -1; yi <= 1; yi++)
-					{
-						for (var xi = -1; xi <= 1; xi++)
-						{
-							var di = (y + yi) * width + x + xi;
-							var vi = gradient[di];
-							vm = Math.Max(vi, vm);
-						}
-					}
-
-					if (v >= vm)
-						g[d] = v;
-				}
-			}
-
-			g.RunAs(width, height, 1, "g0.png");
-			g.RunAsText(width, height, 1, "g0.txt");
-
-			var isComplete = false;
-			for (var r = 1; r <= 3; r++)
-			{
-				for (var y = 1; y < height - 1; y++)
-				{
-					for (var x = 1; x < width - 1; x++)
-					{
-						var d = y * width + x;
-
-						var gv = g[d];
-						if (gv <= 0)
-							continue;
-
-						var ri = round[d];
-						if (ri == r)
-							continue;
-
-						var ai = angle[d];
-
-						var m1 = 0f;
-						var d1 = 0;
-						var m2 = 0f;
-						var gc = 0;
-						var d2 = 0;
-						for (var yi = -1; yi <= 1; yi++)
-						{
-							for (var xi = -1; xi <= 1; xi++)
-							{
-								if (Math.Abs(xi) + Math.Abs(yi) != 1)
-									continue;
-
-								var di = (y + yi) * width + x + xi;
-								var gi = g[di];
-								if (gi > 0)
-									gc++;
-
-								var vi = gradient[di];
-								if (vi > m1)
-								{
-									m2 = m1;
-									d2 = d1;
-									m1 = vi;
-									d1 = di;
-								}
-								else if (vi > m2)
-								{
-									m2 = vi;
-									d2 = di;
-								}
-							}
-						}
-
-						if (gc >= 2)
-							continue;
-
-						if (2 * m1 > gv)
-						{
-							g[d1] = m1;
-							round[d1] = r;
-							isComplete = false;
-						}
-						if (2 * m2 > gv)
-						{
-							g[d2] = m2;
-							round[d2] = r;
-							isComplete = false;
-						}
-					}
-				}
-
-				g.RunAs(width, height, 1, $"g{r}.png");
-				g.RunAsText(width, height, 1, $"g{r}.txt");
-			}
 		}
 
 		[Test]
