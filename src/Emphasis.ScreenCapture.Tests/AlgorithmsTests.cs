@@ -57,9 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void Enlarge_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample04;
 
-			Run("sample03.png");
+			Run("sample04.png");
 
 			var source = sourceBitmap.ToBytes();
 			var channels = 4;
@@ -76,7 +76,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample04;
 
 			//Run("sample03.png");
 
@@ -147,8 +147,10 @@ namespace Emphasis.ScreenCapture.Tests
 			var regions0 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 			var regions1 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
 
-			var regionCount0 = Algorithms.ComponentAnalysis(width, height, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit);
-			var regionCount1 = Algorithms.ComponentAnalysis(width, height, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit);
+			var regionCount0 = Algorithms.ComponentAnalysis(
+				width, height, src, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit, sourceChannels: channels);
+			var regionCount1 = Algorithms.ComponentAnalysis(
+				width, height, src, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit, sourceChannels: channels);
 
 			var (valid, invalid) = Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
 
@@ -265,7 +267,8 @@ namespace Emphasis.ScreenCapture.Tests
 			var componentSizeLimit = 6;
 			var regionIndex = new int[height * width];
 			var regions = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
-			Algorithms.ComponentAnalysis(width, height, swt, components, regionIndex, regions, componentLimit, componentSizeLimit);
+			Algorithms.ComponentAnalysis(
+				width, height, source, swt, components, regionIndex, regions, componentLimit, componentSizeLimit, sourceChannels: 1);
 
 			regionIndex[6].Should().Be(0);
 			regionIndex[3].Should().Be(1);

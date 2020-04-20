@@ -1017,21 +1017,23 @@ namespace Emphasis.ComputerVision
 		public const int ComponentMaxXOffset = 5;
 		public const int ComponentMinYOffset = 6;
 		public const int ComponentMaxYOffset = 7;
-		public const int ComponentChannel1Offset = 8;
-		public const int ComponentChannel2Offset = 9;
-		public const int ComponentChannel3Offset = 10;
-		public const int ComponentChannel4Offset = 11;
+		public const int ComponentChannel0Offset = 8;
+		public const int ComponentChannel1Offset = 9;
+		public const int ComponentChannel2Offset = 10;
+		public const int ComponentChannel3Offset = 11;
 		public const int ComponentItemsOffset = 12;
 
 		public static int ComponentAnalysis(
 			int width, 
 			int height,
+			byte[] source,
 			int[] swt, 
 			int[] components, 
 			int[] regionIndex, 
-			int[] regions, 
+			int[] regions,
 			int componentLimit, 
-			int componentSizeLimit)
+			int componentSizeLimit,
+			int sourceChannels = 4)
 		{
 			Array.Fill(regionIndex, -1);
 			for (var c = 0; c < componentLimit; c++)
@@ -1043,10 +1045,10 @@ namespace Emphasis.ComputerVision
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxXOffset] = int.MinValue;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMinYOffset] = int.MaxValue;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxYOffset] = int.MinValue;
+				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel0Offset] = 0;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel1Offset] = 0;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel2Offset] = 0;
 				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel3Offset] = 0;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel4Offset] = 0;
 			}
 
 			var n = components.Length;
@@ -1093,6 +1095,12 @@ namespace Emphasis.ComputerVision
 					AtomicMax(ref regions[cmpIndex + ComponentMaxXOffset], x);
 					AtomicMin(ref regions[cmpIndex + ComponentMinYOffset], y);
 					AtomicMax(ref regions[cmpIndex + ComponentMaxYOffset], y);
+
+					for (var c = 0; c < sourceChannels; c++)
+					{
+						var src = source[y * width * sourceChannels + x * sourceChannels + c];
+						Interlocked.Add(ref regions[cmpIndex + ComponentChannel0Offset + c], src);
+					}
 				}
 			}
 
