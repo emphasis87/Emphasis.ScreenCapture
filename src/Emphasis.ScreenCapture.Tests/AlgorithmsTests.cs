@@ -78,7 +78,7 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample03;
 
-			Run("sample03.png");
+			//Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 			var channels = 4;
@@ -88,6 +88,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var useLarge = true;
 			var swtSameColor = false;
+			var swtSameColorTolerance = 50;
 			var swtConnectByColor = false;
 
 			var large = new byte[height * width * 4 * channels];
@@ -126,7 +127,8 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.StrokeWidthTransform(width, height, src, gradient, nms, angle, dx, dy, swt0, swt1,
 				sourceChannels: 4,
 				rayLength: 30,
-				colorDifference: Algorithms.ColorDifference);
+				colorDifference: swtSameColorTolerance,
+				useStrokeColor: swtSameColor);
 
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
@@ -151,18 +153,20 @@ namespace Emphasis.ScreenCapture.Tests
 			var (valid, invalid) = Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
 
 			large.RunAs(width, height, channels, "large.png");
+			//large.RunAsText(width, height, channels, "large.txt");
+
 			//gauss.RunAs(width, height, channels, "gauss.png");
 
 			//grayscale.RunAs(width, height, 1, "gray.png");
-			grayscale.ReplaceEquals(255, 0).RunAsText(width, height, 1, "gray.txt");
+			//grayscale.ReplaceEquals(255, 0).RunAsText(width, height, 1, "gray.txt");
 
 			//gradient.RunAs(width, height, 1, "gradient.png");
-			gradient.RunAsText(width, height, 1, "gradient.txt");
+			//gradient.RunAsText(width, height, 1, "gradient.txt");
 
-			angle.RunAsText(width, height, 1, "angle.txt");
+			//angle.RunAsText(width, height, 1, "angle.txt");
 
 			//nms.RunAs(width, height, 1, "nms.png");
-			nms.RunAsText(width, height, 1, "nms.txt");
+			//nms.RunAsText(width, height, 1, "nms.txt");
 
 			swt0.RunAs(width, height, 1, "swt0.png");
 			swt0.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt0.txt");
