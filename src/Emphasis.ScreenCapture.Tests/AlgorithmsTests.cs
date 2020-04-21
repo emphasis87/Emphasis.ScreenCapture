@@ -57,9 +57,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void Enlarge_Test()
 		{
-			var sourceBitmap = Samples.sample04;
+			var sourceBitmap = Samples.sample03;
 
-			Run("sample04.png");
+			Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 			var channels = 4;
@@ -76,7 +76,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample04;
+			var sourceBitmap = Samples.sample03;
 
 			//Run("sample03.png");
 
@@ -87,9 +87,9 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = sourceBitmap.Height;
 
 			var useLarge = true;
-			var swtSameColor = false;
-			var swtSameColorTolerance = 50;
-			var swtConnectByColor = false;
+			var swtEdgeOnColorChange = false;
+			var swtEdgeColorTolerance = 50;
+			var swtConnectByColor = true;
 
 			var large = new byte[height * width * 4 * channels];
 			Algorithms.Enlarge2(width, height, source, large, channels);
@@ -127,16 +127,16 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.StrokeWidthTransform(width, height, src, gradient, nms, angle, dx, dy, swt0, swt1,
 				sourceChannels: 4,
 				rayLength: 30,
-				colorDifference: swtSameColorTolerance,
-				useStrokeColor: swtSameColor);
+				colorDifference: swtEdgeColorTolerance,
+				useStrokeColor: swtEdgeOnColorChange);
 
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 
-			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, 
-				sourceChannels: 4, connectByColor: swtConnectByColor);
-			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1,
-				sourceChannels: 4, connectByColor: swtConnectByColor);
+			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, null,
+				sourceChannels: 4, connectByColor: false);
+			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1, null,
+				sourceChannels: 4, connectByColor: false);
 
 			var regionIndex0 = new int[n];
 			var regionIndex1 = new int[n];
@@ -151,6 +151,53 @@ namespace Emphasis.ScreenCapture.Tests
 				width, height, src, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit, sourceChannels: channels);
 			var regionCount1 = Algorithms.ComponentAnalysis(
 				width, height, src, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit, sourceChannels: channels);
+
+			if (swtConnectByColor)
+			{
+				// Compute color for each component
+				var avgColor0 = new int[regionCount0 * channels];
+				var avgColor1 = new int[regionCount1 * channels];
+				for (var r = 0; r < regionCount0; r++)
+				{
+					var swtCountOffset = Algorithms.GetComponentSwtCountOffset(r, componentSizeLimit);
+					var channelOffset = Algorithms.GetComponentChannel0Offset(r, componentSizeLimit);
+					for (var c = 0; c < channels; c++)
+					{
+						var color = regions0[channelOffset + c];
+						var swtCount = regions0[swtCountOffset] + 1;
+						avgColor0[r * channels + c] = color / swtCount;
+					}
+				}
+
+				for (var r = 0; r < regionCount1; r++)
+				{
+					var swtCountOffset = Algorithms.GetComponentSwtCountOffset(r, componentSizeLimit);
+					var channelOffset = Algorithms.GetComponentChannel0Offset(r, componentSizeLimit);
+					for (var c = 0; c < channels; c++)
+					{
+						var color = regions1[channelOffset + c];
+						var swtCount = regions1[swtCountOffset] + 1;
+						avgColor1[r * channels + c] = color / swtCount;
+					}
+				}
+
+				components0.RunAs(width, height, 1, "cc0-1st.png");
+				components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0-1nd.txt");
+
+				colorRounds0 += Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0,
+					components0, regionIndex0, avgColor0,
+					sourceChannels: 4, connectByColor: true);
+				colorRounds1 += Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1,
+					components1, regionIndex1, avgColor1,
+					sourceChannels: 4, connectByColor: true);
+
+				regionCount0 = Algorithms.ComponentAnalysis(
+					width, height, src, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit,
+					sourceChannels: channels);
+				regionCount1 = Algorithms.ComponentAnalysis(
+					width, height, src, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit,
+					sourceChannels: channels);
+			}
 
 			var (valid, invalid) = Algorithms.TextDetection(width, height, regionCount0, regionIndex0, regions0, componentSizeLimit);
 
@@ -176,11 +223,11 @@ namespace Emphasis.ScreenCapture.Tests
 			//swt1.RunAs(width, height, 1, "swt1.png");
 			//swt1.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt1.txt");
 
-			components0.RunAs(width, height, 1, "cc0.png");
-			components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0.txt");
+			components0.RunAs(width, height, 1, "cc0-2nd.png");
+			components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0-2nd.txt");
 
-			components1.RunAs(width, height, 1, "cc1.png");
-			components1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
+			//components1.RunAs(width, height, 1, "cc1.png");
+			//components1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
 
 			Console.WriteLine($"Valid components: {valid}");
 			Console.WriteLine($"Invalid components: {invalid}");
@@ -267,9 +314,10 @@ namespace Emphasis.ScreenCapture.Tests
 			var componentSizeLimit = 6;
 			var regionIndex = new int[height * width];
 			var regions = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
-			Algorithms.ComponentAnalysis(
+			var regiounCount = Algorithms.ComponentAnalysis(
 				width, height, source, swt, components, regionIndex, regions, componentLimit, componentSizeLimit, sourceChannels: 1);
 
+			regiounCount.Should().Be(3);
 			regionIndex[6].Should().Be(0);
 			regionIndex[3].Should().Be(1);
 			regionIndex[56].Should().Be(2);

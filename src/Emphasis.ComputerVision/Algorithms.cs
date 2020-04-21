@@ -460,6 +460,11 @@ namespace Emphasis.ComputerVision
 				useStrokeColor: useStrokeColor);
 		}
 
+		public static int Hypot(int width, int height)
+		{
+			return (int)Math.Sqrt(width * width + height * height);
+		}
+
 		public static void StrokeWidthTransform(
 			int width,
 			int height,
@@ -480,7 +485,7 @@ namespace Emphasis.ComputerVision
 		{
 			var dir = direction ? 1 : -1;
 
-			int x, y, d, len, cx, cy, mx, my, ix, iy;
+			int x, y, d, len, sw, cx, cy, mx, my, ix, iy;
 			float a, idx, idy, idxa, idya, ex, ey;
 
 			void InitializeLine(float rdx = 1.0f, float rdy = 1.0f)
@@ -540,6 +545,8 @@ namespace Emphasis.ComputerVision
 					swtList.Add(x);
 					swtList.Add(y);
 					swtList.Add(ci);
+					var sw = Hypot(Math.Abs(x - cx), Math.Abs(y - cy));
+					swtList.Add(sw);
 				}
 			}
 
@@ -552,6 +559,8 @@ namespace Emphasis.ComputerVision
 				{1.00f, 0.75f, 345},
 			};
 			var rc = rp.Length / 3;
+
+			var swtItemSize = 4;
 
 			var en = edgeList.Count;
 			for (var i = 0; i < en; i += 2)
@@ -607,10 +616,6 @@ namespace Emphasis.ComputerVision
 						if (useStrokeColor)
 						{
 							var isSameColor = true;
-							if (y == 33 && x == 272)
-							{
-
-							}
 							for (var c = 0; c < channels; c++)
 							{
 								var dst = source[cy * width * channels + cx * channels + c];
@@ -634,11 +639,12 @@ namespace Emphasis.ComputerVision
 
 			// Fill in the strokes
 			var sn = swtList.Count;
-			for (var i = 0; i < sn; i += 3)
+			for (var i = 0; i < sn; i += swtItemSize)
 			{
 				x = swtList[i];
 				y = swtList[i + 1];
 				len = swtList[i + 2];
+				sw = swtList[i + 3];
 
 				InitializeLine();
 
@@ -651,13 +657,13 @@ namespace Emphasis.ComputerVision
 					var cs = swt[cd];
 					// Set the stroke width to the lowest found
 					if (cs > len)
-						swt[cd] = len;
+						swt[cd] = sw;
 
 					Advance();
 				}
 			}
 
-			for (int i = 0, j = 0; i < sn; j++, i += 3)
+			for (int i = 0, j = 0; i < sn; j++, i += swtItemSize)
 			{
 				x = swtList[i];
 				y = swtList[i + 1];
@@ -709,8 +715,11 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
+			int[] regionIndex = null,
+			int[] colors = null,
 			int sourceChannels = 4,
-			bool connectByColor = false)
+			bool connectByColor = false,
+			int colorDifference = 50)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
@@ -726,8 +735,12 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var cn = ColorComponentByStrokeWidth(
-							width, height, n, source, swt, components, x, y, d, sourceChannels: sourceChannels);
+						var cn = ColorComponent(
+							width, height, n, source, swt, components, regionIndex, colors, x, y, d,
+							sourceChannels: sourceChannels,
+							connectByColor: connectByColor,
+							colorDifference: colorDifference);
+
 						if (cn != components[d])
 						{
 							components[d] = cn;
@@ -765,8 +778,11 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
+			int[] regionIndex = null,
+			int[] colors = null,
 			int sourceChannels = 4,
-			bool connectByColor = false)
+			bool connectByColor = false,
+			int colorDifference = 50)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
@@ -783,8 +799,12 @@ namespace Emphasis.ComputerVision
 					{
 						var d = y * width + x;
 						var c = components[d];
-						var cn = ColorComponentByStrokeWidth(
-							width, height, n, source, swt, components, x, y, d, sourceChannels: sourceChannels);
+						var cn = ColorComponent(
+							width, height, n, source, swt, components, regionIndex, colors, x, y, d,
+							sourceChannels: sourceChannels,
+							connectByColor: connectByColor,
+							colorDifference: colorDifference);
+
 						if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
@@ -815,8 +835,11 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
+			int[] regionIndex = null,
+			int[] colors = null,
 			int sourceChannels = 4,
-			bool connectByColor = false)
+			bool connectByColor = false,
+			int colorDifference = 50)
 		{
 			Algorithms.PrepareComponents(swt, components);
 
@@ -842,8 +865,10 @@ namespace Emphasis.ComputerVision
 							var d = y * width + x;
 							var c0 = components[d];
 							var cn = ColorComponent(
-								width, height, n, source, swt, components, x, y, d, sourceChannels: sourceChannels,
-								byColor: false);
+								width, height, n, source, swt, components, regionIndex, colors, x, y, d,
+								sourceChannels: sourceChannels,
+								connectByColor: connectByColor,
+								colorDifference: colorDifference);
 
 							if (cn >= c0)
 								continue;
@@ -874,11 +899,12 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
+			int[] regionIndex,
+			int[] colors,
 			int x0, 
 			int y0,
 			int d,
-			int sourceChannels = 4,
-			int colorDifference = 50)
+			int sourceChannels = 4)
 		{
 			var c = int.MaxValue;
 			var c0 = components[d];
@@ -907,10 +933,7 @@ namespace Emphasis.ComputerVision
 						var smin = Math.Min(s0, s1);
 						var smax = Math.Max(s0, s1);
 						if (smax <= smin * 3)
-						{
-							if (c1 < c)
-								c = c1;
-						}
+							c = Math.Min(c, c1);
 					}
 				}
 			}
@@ -925,11 +948,13 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
+			int[] regionIndex,
+			int[] regionColor,
 			int x0,
 			int y0,
 			int d,
 			int sourceChannels = 4,
-			int colorDifference = 50)
+			int colorTolerance = 50)
 		{
 			var c = int.MaxValue;
 			var c0 = components[d];
@@ -941,6 +966,8 @@ namespace Emphasis.ComputerVision
 				var ds = y0 * width * sourceChannels + x0 * sourceChannels + channel;
 				src[channel] = source[ds];
 			}
+
+			var minColorDiff = int.MaxValue;
 
 			for (var y = -1; y <= 1; y++)
 			{
@@ -958,28 +985,52 @@ namespace Emphasis.ComputerVision
 
 					var d1 = y1 * width + x1;
 					var c1 = components[d1];
-					var s1 = swt[d1];
 
-					
+					if (c0 == c1 || c1 >= n)
+						continue;
+
+					if (y0 == 34 && c1 == 9207)
+					{
+
+					}
+
+					var s1 = swt[d1];
+					if (s0 != int.MaxValue && s1 != int.MaxValue)
+					{
+						var smin = Math.Min(s0, s1);
+						var smax = Math.Max(s0, s1);
+						// Too high stroke difference should not be connected
+						if (smax <= smin * 3)
+						{
+							c = Math.Min(c, c1);
+							continue;
+						}
+					}
+
+					if (s0 == int.MaxValue && s1 == int.MaxValue)
+						continue;
+
+					var index = regionIndex[c1];
+					if (index == -1)
+						continue;
+
+					var colorDiff = 0;
 					var isOfSameColor = true;
 					for (var channel = 0; channel < sourceChannels; channel++)
 					{
-						var ds = y1 * width * sourceChannels + x1 * sourceChannels + channel;
-						var dst = source[ds];
-						var diff = Math.Abs(src[channel] - dst);
-						if (diff > colorDifference)
+						var diff = Math.Abs(src[channel] - regionColor[index * 4 + channel]);
+						colorDiff += diff;
+						if (diff > colorTolerance)
 						{
 							isOfSameColor = false;
 							break;
 						}
 					}
 
-					if (isOfSameColor)
+					if (isOfSameColor && colorDiff < minColorDiff)
 					{
-						if (c1 < c)
-							c = c1;
-
-						continue;
+						minColorDiff = colorDiff;
+						c = Math.Min(c, c1);
 					}
 				}
 			}
@@ -994,19 +1045,24 @@ namespace Emphasis.ComputerVision
 			byte[] source,
 			int[] swt,
 			int[] components,
+			int[] regionIndex,
+			int[] colors,
 			int x0,
 			int y0,
 			int d,
 			int sourceChannels = 4,
 			int colorDifference = 50,
-			bool byColor = false)
+			bool connectByColor = false)
 		{
-			if (byColor)
+			if (connectByColor)
 				return ColorComponentByColorSimilarity(
-					width, height, n, source, swt, components, x0, y0, d, sourceChannels: sourceChannels);
+					width, height, n, source, swt, components, regionIndex, colors, x0, y0, d, 
+					sourceChannels: sourceChannels,
+					colorTolerance: colorDifference);
 
 			return ColorComponentByStrokeWidth(
-					width, height, n, source, swt, components, x0, y0, d, sourceChannels: sourceChannels);
+					width, height, n, source, swt, components, regionIndex, colors, x0, y0, d,
+					sourceChannels: sourceChannels);
 		}
 
 		public const int ComponentColorOffset = 0;
@@ -1022,6 +1078,16 @@ namespace Emphasis.ComputerVision
 		public const int ComponentChannel2Offset = 10;
 		public const int ComponentChannel3Offset = 11;
 		public const int ComponentItemsOffset = 12;
+
+		public static int GetComponentChannel0Offset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentChannel0Offset;
+		}
+
+		public static int GetComponentSwtCountOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentCountSwtOffset;
+		}
 
 		public static int ComponentAnalysis(
 			int width, 
@@ -1104,7 +1170,7 @@ namespace Emphasis.ComputerVision
 				}
 			}
 
-			return count;
+			return count + 1;
 		}
 
 		public static (int valid, int invalid) TextDetection(int width, int height, int count, int[] regionIndex, int[] regions, int componentSizeLimit)

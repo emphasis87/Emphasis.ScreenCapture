@@ -145,4 +145,16 @@
   <data name="sample08" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>sample08.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="sample09" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>sample09.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sample10" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>sample10.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sample11" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>sample11.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sample12" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>sample12.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
