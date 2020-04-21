@@ -1173,7 +1173,14 @@ namespace Emphasis.ComputerVision
 			return count + 1;
 		}
 
-		public static (int valid, int invalid) TextDetection(int width, int height, int count, int[] regionIndex, int[] regions, int componentSizeLimit)
+		public static (int valid, int invalid) TextDetection(
+			int width, 
+			int height, 
+			int count, 
+			int[] regionIndex, 
+			int[] regions, 
+			int componentSizeLimit, 
+			float varianceTolerance = 0.5f)
 		{
 			var valid = 0;
 			var invalid = 0;
@@ -1211,7 +1218,7 @@ namespace Emphasis.ComputerVision
 				var diameterRatio = diameter / median;
 				var hasLowVariance =
 					//true;
-					variance < 0.5 * avg;
+					variance < varianceTolerance * avg;
 					//variance >= 0.5 * avg && variance < 0.7 * avg;
 				var isSizeProportional = sizeRatio > 0.1 && sizeRatio < 10;
 				var isStrokeProportional = diameterRatio < 12;
