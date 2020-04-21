@@ -1213,20 +1213,23 @@ namespace Emphasis.ComputerVision
 				var w = x1 - x0;
 				var h = y1 - y0;
 				var sizeRatio = w / (float)h;
+				var minDim = Math.Min(w, h);
 
-				var diameter = Math.Sqrt(w * w + h * h);
+				var diameter = Hypot(w, h);
 				var diameterRatio = diameter / median;
-				var hasLowVariance =
-					//true;
-					variance < varianceTolerance * avg;
-					//variance >= 0.5 * avg && variance < 0.7 * avg;
-				var isSizeProportional = sizeRatio > 0.1 && sizeRatio < 10;
-				var isStrokeProportional = diameterRatio < 12;
-				var isTall = h > 10 && h < 300;
-				if (hasLowVariance &&
-					isSizeProportional &&
-				    isStrokeProportional &&
-					isTall)
+				var hasLowVariance = variance < varianceTolerance * avg;
+				var isSizeProportional = (sizeRatio > 0.1 && sizeRatio < 10) || minDim < 20;
+				var isSparse = diameterRatio < 12;
+				var isTall = h > 10;
+				var isSmall = h < 100;
+				var isLarge = cnt >= 20;
+				if (hasLowVariance
+					&& isSizeProportional
+					&& isSparse
+					//&& isTall
+					&& isSmall
+					&& isLarge
+					)
 				{
 					valid++;
 				}

@@ -76,7 +76,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample07;
+			var sourceBitmap = Samples.sample13;
 
 			//Run("sample03.png");
 
@@ -200,8 +200,11 @@ namespace Emphasis.ScreenCapture.Tests
 					sourceChannels: channels);
 			}
 
-			var (valid, invalid) = Algorithms.TextDetection(
+			var (valid0, invalid0) = Algorithms.TextDetection(
 				width, height, regionCount0, regionIndex0, regions0, componentSizeLimit,
+				varianceTolerance: varianceTolerance);
+			var (valid1, invalid1) = Algorithms.TextDetection(
+				width, height, regionCount1, regionIndex1, regions1, componentSizeLimit,
 				varianceTolerance: varianceTolerance);
 
 			large.RunAs(width, height, channels, "large.png");
@@ -223,27 +226,35 @@ namespace Emphasis.ScreenCapture.Tests
 			swt0.RunAs(width, height, 1, "swt0.png");
 			swt0.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt0.txt");
 
-			//swt1.RunAs(width, height, 1, "swt1.png");
-			//swt1.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt1.txt");
+			swt1.RunAs(width, height, 1, "swt1.png");
+			swt1.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt1.txt");
 
 			components0.RunAs(width, height, 1, "cc0.png");
 			components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0.txt");
 
-			//components1.RunAs(width, height, 1, "cc1.png");
-			//components1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
+			components1.RunAs(width, height, 1, "cc1.png");
+			components1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
 
-			Console.WriteLine($"Valid components: {valid}");
-			Console.WriteLine($"Invalid components: {invalid}");
+			Console.WriteLine($"Components BoW: {valid0}/{invalid0}");
+			Console.WriteLine($"Components WoB: {valid1}/{invalid1}");
 
-			var text0 = new int[height * width];
-			for (var i = 0; i < text0.Length; i++)
+			var text0 = new int[n];
+			var text1 = new int[n];
+			for (var i = 0; i < n; i++)
 			{
 				var color = components0[i];
 				if (color >= n || regionIndex0[color] == -1)
 					text0[i] = 255;
 			}
+			for (var i = 0; i < n; i++)
+			{
+				var color = components1[i];
+				if (color >= n || regionIndex1[color] == -1)
+					text1[i] = 255;
+			}
 
 			text0.RunAs(width, height, 1, "text0.png");
+			text1.RunAs(width, height, 1, "text1.png");
 		}
 
 		[Test]
