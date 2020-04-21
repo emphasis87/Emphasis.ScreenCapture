@@ -1178,7 +1178,8 @@ namespace Emphasis.ComputerVision
 			int height, 
 			int count, 
 			int[] regionIndex, 
-			int[] regions, 
+			int[] regions,
+			int[] result,
 			int componentSizeLimit, 
 			float varianceTolerance = 0.5f)
 		{
@@ -1194,16 +1195,16 @@ namespace Emphasis.ComputerVision
 				Array.Sort(regions, offset + ComponentItemsOffset, cntSwt);
 
 				var median = regions[offset + ComponentItemsOffset + (cntSwt >> 1)];
-				var avg = regions[offset + ComponentSumSwtOffset] / (float)cntSwt;
+				var swtAverage = regions[offset + ComponentSumSwtOffset] / (float)cntSwt;
 
 				var items = regions.AsSpan(offset + ComponentItemsOffset, cntSwt);
-				var variance = 0.0f;
+				var swtVariance = 0.0f;
 				for (var i = 0; i < cntSwt; i++)
 				{
-					var ei = (items[i] - avg);
-					variance += ei * ei;
+					var ei = (items[i] - swtAverage);
+					swtVariance += ei * ei;
 				}
-				variance /= cntSwt;
+				swtVariance /= cntSwt;
 
 				var color = regions[offset + ComponentColorOffset];
 				var x0 = regions[offset + ComponentMinXOffset];
@@ -1214,30 +1215,36 @@ namespace Emphasis.ComputerVision
 				var h = y1 - y0;
 				var sizeRatio = w / (float)h;
 				var minDim = Math.Min(w, h);
+				var maxDim = Math.Max(w, h);
 
 				var diameter = Hypot(w, h);
 				var diameterRatio = diameter / median;
-				var hasLowVariance = variance < varianceTolerance * avg;
-				var isSizeProportional = (sizeRatio > 0.1 && sizeRatio < 10) || minDim < 20;
-				var isSparse = diameterRatio < 12;
+				var hasLowVariance = swtVariance < varianceTolerance * swtAverage;
+				var isSizeProportional =
+					(sizeRatio > 0.1 && sizeRatio < 10);
+					//|| (minDim < 5 && maxDim < 20);
+				var isSparse =
+					((w * h) / median * median) < 10;
+					//diameterRatio < 15;
 				var isTall = h > 10;
 				var isSmall = h < 100;
-				var isLarge = cnt >= 20;
-				if (hasLowVariance
+				var isLarge = cnt >= 10;
+				if (
+					hasLowVariance
 					&& isSizeProportional
 					&& isSparse
+					//&& isSmall
 					//&& isTall
-					&& isSmall
-					&& isLarge
+					//&& isLarge
 					)
 				{
+					result[valid] = c;
 					valid++;
 				}
 				else
 				{
-					invalid++;
-
 					regionIndex[color] = -1;
+					invalid++;
 				}
 			}
 

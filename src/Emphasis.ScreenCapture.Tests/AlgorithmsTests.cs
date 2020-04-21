@@ -90,7 +90,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var swtEdgeOnColorChange = false;
 			var swtEdgeColorTolerance = 50;
 			var swtConnectByColor = false;
-			var varianceTolerance = 1.0f;
+			var varianceTolerance = 2.0f;
 
 			var large = new byte[height * width * 4 * channels];
 			Algorithms.Enlarge2(width, height, source, large, channels);
@@ -200,11 +200,13 @@ namespace Emphasis.ScreenCapture.Tests
 					sourceChannels: channels);
 			}
 
+			var result0 = new int[componentLimit];
+			var result1 = new int[componentLimit];
 			var (valid0, invalid0) = Algorithms.TextDetection(
-				width, height, regionCount0, regionIndex0, regions0, componentSizeLimit,
+				width, height, regionCount0, regionIndex0, regions0, result0, componentSizeLimit,
 				varianceTolerance: varianceTolerance);
 			var (valid1, invalid1) = Algorithms.TextDetection(
-				width, height, regionCount1, regionIndex1, regions1, componentSizeLimit,
+				width, height, regionCount1, regionIndex1, regions1, result1, componentSizeLimit,
 				varianceTolerance: varianceTolerance);
 
 			large.RunAs(width, height, channels, "large.png");
