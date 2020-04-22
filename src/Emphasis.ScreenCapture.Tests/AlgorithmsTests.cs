@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Emgu.CV;
@@ -9,7 +10,7 @@ using Emphasis.ComputerVision;
 using Emphasis.ScreenCapture.Helpers;
 using FluentAssertions;
 using NUnit.Framework;
-
+using RBush;
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
 
 namespace Emphasis.ScreenCapture.Tests
@@ -261,6 +262,20 @@ namespace Emphasis.ScreenCapture.Tests
 			text0.RunAs(width, height, 1, "text0.png");
 			text1.RunAs(width, height, 1, "text1.png");
 
+			var rtree0 = new RBush<Point2D>();
+			var points = new List<Point2D>(valid0);
+			for (var i = 0; i < valid0; i++)
+			{
+				var color = regions0[Algorithms.GetComponentColorOffset(i, componentSizeLimit)];
+				var x0 = regions0[Algorithms.GetComponentMinXOffset(i, componentSizeLimit)];
+				var x1 = regions0[Algorithms.GetComponentMaxXOffset(i, componentSizeLimit)];
+				var y0 = regions0[Algorithms.GetComponentMinXOffset(i, componentSizeLimit)];
+				var y1 = regions0[Algorithms.GetComponentMaxXOffset(i, componentSizeLimit)];
+				var p = new Point2D(x0, x1, y0, y1, color);
+				points.Add(p);
+			}
+			rtree0.BulkLoad(points);
+
 			// Horizontal lines
 			var hl0 = result0.Take(valid0).OrderBy(c => regions0[Algorithms.GetComponentMinXOffset(c, componentSizeLimit)]).ToArray();
 			var hl1 = result1.Take(valid1).OrderBy(c => regions1[Algorithms.GetComponentMinXOffset(c, componentSizeLimit)]).ToArray();
@@ -271,14 +286,14 @@ namespace Emphasis.ScreenCapture.Tests
 
 			for (var i = 0; i < valid0; i++)
 			{
-				var c = hl0[i];
-				xl0[c] = i;
+				var ci = hl0[i];
+				xl0[ci] = i;
 			}
 
 			for (var i = 0; i < valid1; i++)
 			{
-				var c = hl1[i];
-				xl1[c] = i;
+				var ci = hl1[i];
+				xl1[ci] = i;
 			}
 
 			// Vertical lines
@@ -291,14 +306,45 @@ namespace Emphasis.ScreenCapture.Tests
 
 			for (var i = 0; i < valid0; i++)
 			{
-				var c = vl0[i];
-				yl0[c] = i;
+				var ci = vl0[i];
+				yl0[ci] = i;
 			}
 
 			for (var i = 0; i < valid1; i++)
 			{
-				var c = vl1[i];
-				yl1[c] = i;
+				var ci = vl1[i];
+				yl1[ci] = i;
+			}
+
+			// Find horizontal lines (same y-position)
+			for (var i = 0; i < valid0; i++)
+			{
+				// The index of the component in x-order
+				var ci = hl0[i];
+				var count = regions0[Algorithms.GetComponentCountOffset(ci, componentSizeLimit)];
+				if (count < 40)
+					continue;
+
+				var color = regions0[Algorithms.GetComponentColorOffset(ci, componentSizeLimit)];
+				var x0 = regions0[Algorithms.GetComponentMinXOffset(ci, componentSizeLimit)];
+				var x1 = regions0[Algorithms.GetComponentMaxXOffset(ci, componentSizeLimit)];
+				var y0 = regions0[Algorithms.GetComponentMinXOffset(ci, componentSizeLimit)];
+				var y1 = regions0[Algorithms.GetComponentMaxXOffset(ci, componentSizeLimit)];
+				var cw = x1 - x0;
+				var ch = y1 - y0;
+
+				// The x0-order position of the component
+				var xi = xl0[ci];
+
+				// Find all other component within a certain distance in horizontal direction
+				var dim = Math.Max(Math.Max(cw, ch), 10);
+				var nx0 = Math.Max(0, x0 - dim * 2);
+				var nx1 = Math.Min(width - 1, x1 + dim * 2);
+				var ny0 = Math.Max(0, y0 - dim);
+				var ny1 = Math.Min(height - 1, y1 + dim);
+
+				var near = rtree0.Search(new Envelope(nx0, ny0, nx1, ny1));
+
 			}
 		}
 

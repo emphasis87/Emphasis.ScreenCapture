@@ -1084,9 +1084,19 @@ namespace Emphasis.ComputerVision
 			return i * (ComponentItemsOffset + size) + ComponentChannel0Offset;
 		}
 
+		public static int GetComponentColorOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentColorOffset;
+		}
+
 		public static int GetComponentSwtCountOffset(int i, int size)
 		{
 			return i * (ComponentItemsOffset + size) + ComponentCountSwtOffset;
+		}
+
+		public static int GetComponentCountOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentCountOffset;
 		}
 
 		public static int GetComponentMinXOffset(int i, int size)
@@ -1094,9 +1104,19 @@ namespace Emphasis.ComputerVision
 			return i * (ComponentItemsOffset + size) + ComponentMinXOffset;
 		}
 
+		public static int GetComponentMaxXOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentMaxXOffset;
+		}
+
 		public static int GetComponentMinYOffset(int i, int size)
 		{
 			return i * (ComponentItemsOffset + size) + ComponentMinYOffset;
+		}
+
+		public static int GetComponentMaxYOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentMaxYOffset;
 		}
 
 		public static int ComponentAnalysis(
