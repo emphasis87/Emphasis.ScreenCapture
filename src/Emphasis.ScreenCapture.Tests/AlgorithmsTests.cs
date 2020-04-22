@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
@@ -76,7 +79,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample13;
+			var sourceBitmap = Samples.sample11;
 
 			//Run("sample03.png");
 
@@ -257,6 +260,46 @@ namespace Emphasis.ScreenCapture.Tests
 
 			text0.RunAs(width, height, 1, "text0.png");
 			text1.RunAs(width, height, 1, "text1.png");
+
+			// Horizontal lines
+			var hl0 = result0.Take(valid0).OrderBy(c => regions0[Algorithms.GetComponentMinXOffset(c, componentSizeLimit)]).ToArray();
+			var hl1 = result1.Take(valid1).OrderBy(c => regions1[Algorithms.GetComponentMinXOffset(c, componentSizeLimit)]).ToArray();
+
+			// Reverse indexing
+			var xl0 = new int[componentLimit];
+			var xl1 = new int[componentLimit];
+
+			for (var i = 0; i < valid0; i++)
+			{
+				var c = hl0[i];
+				xl0[c] = i;
+			}
+
+			for (var i = 0; i < valid1; i++)
+			{
+				var c = hl1[i];
+				xl1[c] = i;
+			}
+
+			// Vertical lines
+			var vl0 = result0.Take(valid0).OrderBy(c => regions0[Algorithms.GetComponentMinYOffset(c, componentSizeLimit)]).ToArray();
+			var vl1 = result1.Take(valid1).OrderBy(c => regions1[Algorithms.GetComponentMinYOffset(c, componentSizeLimit)]).ToArray();
+
+			// Reverse indexing
+			var yl0 = new int[componentLimit];
+			var yl1 = new int[componentLimit];
+
+			for (var i = 0; i < valid0; i++)
+			{
+				var c = vl0[i];
+				yl0[c] = i;
+			}
+
+			for (var i = 0; i < valid1; i++)
+			{
+				var c = vl1[i];
+				yl1[c] = i;
+			}
 		}
 
 		[Test]

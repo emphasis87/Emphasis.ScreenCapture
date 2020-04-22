@@ -1089,6 +1089,16 @@ namespace Emphasis.ComputerVision
 			return i * (ComponentItemsOffset + size) + ComponentCountSwtOffset;
 		}
 
+		public static int GetComponentMinXOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentMinXOffset;
+		}
+
+		public static int GetComponentMinYOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size) + ComponentMinYOffset;
+		}
+
 		public static int ComponentAnalysis(
 			int width, 
 			int height,
@@ -1224,15 +1234,15 @@ namespace Emphasis.ComputerVision
 					(sizeRatio > 0.1 && sizeRatio < 10);
 					//|| (minDim < 5 && maxDim < 20);
 				var isSparse =
-					((w * h) / median * median) < 10;
-					//diameterRatio < 15;
+					//((w * h) / median * median) < 10;
+					diameterRatio < 15;
 				var isTall = h > 10;
 				var isSmall = h < 100;
 				var isLarge = cnt >= 10;
 				if (
 					hasLowVariance
 					&& isSizeProportional
-					&& isSparse
+					//&& isSparse
 					//&& isSmall
 					//&& isTall
 					//&& isLarge
