@@ -116,8 +116,8 @@ namespace Emphasis.ScreenCapture.Tests
 			var angle = new float[n];
 			var neighbors = new byte[n * 5];
 			var nms = new float[n];
+			var cmp0 = new float[n];
 			var cmp1 = new float[n];
-			var cmp2 = new float[n];
 			var swt0 = new int[n];
 			var swt1 = new int[n];
 			
@@ -129,7 +129,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.Grayscale(width, height, src, grayscale);
 			Algorithms.Gauss(width, height, src, gauss);
 			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
-			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp1, cmp2);
+			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp0, cmp1);
 			Algorithms.StrokeWidthTransform(width, height, src, gradient, nms, angle, dx, dy, swt0, swt1,
 				sourceChannels: 4,
 				rayLength: 30,
@@ -149,15 +149,23 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var componentLimit = 100000;
 			var componentSizeLimit = 1024;
+			var cn = componentLimit * componentSizeLimit;
 
-			var regions0 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
-			var regions1 = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
+			var regions0 = new int[cn];
+			var regions1 = new int[cn];
+
+			var regionSwt0 = new int[cn];
+			var regionSwt1 = new int[cn];
+
+			var componentList0 = new Component[componentLimit];
+			var componentList1 = new Component[componentLimit];
 
 			var regionCount0 = Algorithms.ComponentAnalysis(
-				width, height, src, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit, sourceChannels: channels);
+				width, height, src, swt0, components0, regionIndex0, regions0, regionSwt0, componentList0, componentLimit, componentSizeLimit, sourceChannels: channels);
 			var regionCount1 = Algorithms.ComponentAnalysis(
-				width, height, src, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit, sourceChannels: channels);
+				width, height, src, swt1, components1, regionIndex1, regions1, regionSwt0, componentList1, componentLimit, componentSizeLimit, sourceChannels: channels);
 
+			/*
 			if (swtConnectByColor)
 			{
 				// Compute color for each component
@@ -204,6 +212,7 @@ namespace Emphasis.ScreenCapture.Tests
 					width, height, src, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit,
 					sourceChannels: channels);
 			}
+			*/
 
 			var result0 = new int[componentLimit];
 			var result1 = new int[componentLimit];
@@ -472,12 +481,16 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var componentLimit = 1024;
 			var componentSizeLimit = 6;
+			var cn = componentLimit * componentSizeLimit;
 			var regionIndex = new int[height * width];
-			var regions = new int[componentLimit * (Algorithms.ComponentItemsOffset + componentSizeLimit)];
-			var regiounCount = Algorithms.ComponentAnalysis(
-				width, height, source, swt, components, regionIndex, regions, componentLimit, componentSizeLimit, sourceChannels: 1);
+			var regions = new int[cn];
+			var regionSwt = new int[cn];
+			var componentList = new Component[componentLimit];
 
-			regiounCount.Should().Be(3);
+			var regionCount = Algorithms.ComponentAnalysis(
+				width, height, source, swt, components, regionIndex, regions, regionSwt, componentList, componentLimit, componentSizeLimit, sourceChannels: 1);
+
+			regionCount.Should().Be(3);
 			regionIndex[6].Should().Be(0);
 			regionIndex[3].Should().Be(1);
 			regionIndex[56].Should().Be(2);

@@ -1132,24 +1132,18 @@ namespace Emphasis.ComputerVision
 			int[] components, 
 			int[] regionIndex, 
 			int[] regions,
+			int[] regionSwt,
+			Component[] componentList,
 			int componentLimit, 
 			int componentSizeLimit,
 			int sourceChannels = 4)
 		{
 			Array.Fill(regionIndex, -1);
-			for (var c = 0; c < componentLimit; c++)
+
+			for (var ci = 0; ci < componentLimit; ci++)
 			{
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentCountOffset] = -1;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentCountSwtOffset] = -1;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentSumSwtOffset] = 0;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMinXOffset] = int.MaxValue;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxXOffset] = int.MinValue;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMinYOffset] = int.MaxValue;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentMaxYOffset] = int.MinValue;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel0Offset] = 0;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel1Offset] = 0;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel2Offset] = 0;
-				regions[c * (ComponentItemsOffset + componentSizeLimit) + ComponentChannel3Offset] = 0;
+				ref var c = ref componentList[ci];
+				c.Initialize();
 			}
 
 			var n = components.Length;
@@ -1166,46 +1160,87 @@ namespace Emphasis.ComputerVision
 					if (color == i)
 						continue;
 
-					var index = regionIndex[color];
-					if (index == -1)
+					var ci = regionIndex[color];
+					if (ci == -1)
 					{
-						index = Interlocked.Increment(ref count);
-						if (index >= componentLimit)
+						ci = Interlocked.Increment(ref count);
+						if (ci >= componentLimit)
 							return count;
 
-						regionIndex[color] = index;
-						regions[index * (ComponentItemsOffset + componentSizeLimit) + ComponentColorOffset] = color;
+						regionIndex[color] = ci;
+						ref var c0 = ref componentList[ci];
+						c0.Color = color;
 					}
 
-					// Every region has count and a list of indexes
-					var cmpIndex = index * (ComponentItemsOffset + componentSizeLimit);
-					var cmpCount = Interlocked.Increment(ref regions[cmpIndex + ComponentCountOffset]);
-					if (cmpCount >= componentSizeLimit)
+					ref var c = ref componentList[ci];
+					var size = Interlocked.Increment(ref c.Size);
+					if (size >= componentSizeLimit)
 						continue;
 
+					var offset = ci * componentSizeLimit;
 					var s = swt[i];
 					if (s < int.MaxValue)
 					{
-						var swtCount = Interlocked.Increment(ref regions[cmpIndex + ComponentCountSwtOffset]);
-						regions[cmpIndex + swtCount + ComponentItemsOffset] = s;
+						var swtSize = Interlocked.Increment(ref c.SwtSize);
+						regions[offset + swtSize] = i;
+						regionSwt[offset + swtSize] = s;
 
-						Interlocked.Add(ref regions[cmpIndex + ComponentSumSwtOffset], s);
+						Interlocked.Add(ref c.SwtSum, s);
 					}
 
-					AtomicMin(ref regions[cmpIndex + ComponentMinXOffset], x);
-					AtomicMax(ref regions[cmpIndex + ComponentMaxXOffset], x);
-					AtomicMin(ref regions[cmpIndex + ComponentMinYOffset], y);
-					AtomicMax(ref regions[cmpIndex + ComponentMaxYOffset], y);
+					AtomicMin(ref c.X0, x);
+					AtomicMax(ref c.X1, x);
+					AtomicMin(ref c.Y0, y);
+					AtomicMax(ref c.Y1, y);
 
-					for (var c = 0; c < sourceChannels; c++)
+					for (var channel = 0; channel < sourceChannels; channel++)
 					{
-						var src = source[y * width * sourceChannels + x * sourceChannels + c];
-						Interlocked.Add(ref regions[cmpIndex + ComponentChannel0Offset + c], src);
+						unsafe
+						{
+							var srcColor = source[y * width * sourceChannels + x * sourceChannels + channel];
+							Interlocked.Add(ref c.ChannelSum[channel], srcColor);
+						}
 					}
 				}
 			}
 
-			return count + 1;
+			count++;
+
+			for (var ci = 0; ci < count; ci++)
+			{
+				ref var c = ref componentList[ci];
+				
+				// Add the first pixel of the component which is omitted
+				c.Size += 1;
+				var swtSize = c.SwtSize += 1;
+				var offset = ci * componentSizeLimit;
+				var color = regions[offset] = c.Color;
+				var s = regionSwt[offset] = swt[color];
+				c.SwtSum += s;
+
+				var w = c.Width = c.X1 - c.X0;
+				var h = c.Height = c.Y1 - c.Y0;
+				var d0 = c.MinDimension = Math.Min(w, h);
+				var d1 = c.MaxDimension = Math.Max(w, h);
+				c.SizeRatio = d1 / (float) d0;
+				var swtAverage = c.SwtAverage = c.SwtSum / (float)swtSize;
+
+				Array.Sort(regionSwt, offset, swtSize);
+
+				var cs = regionSwt.AsSpan(offset, swtSize);
+				c.SwtMedian = cs[swtSize >> 1];
+				
+				var swtVariance = 0.0f;
+				for (var si = 0; si < swtSize; si++)
+				{
+					var ei = cs[si] - swtAverage;
+					swtVariance += ei * ei;
+				}
+
+				c.SwtVariance = swtVariance /= swtSize;
+			}
+
+			return count;
 		}
 
 		public static (int valid, int invalid) TextDetection(
