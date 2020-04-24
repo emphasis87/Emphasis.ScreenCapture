@@ -214,13 +214,16 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 			*/
 
+			// Filter components 1st pass
+
+
 			var result0 = new int[componentLimit];
 			var result1 = new int[componentLimit];
 			var (valid0, invalid0) = Algorithms.TextDetection(
-				width, height, regionCount0, regionIndex0, regions0, result0, componentSizeLimit,
+				width, height, regionCount0, regionIndex0, regions0, result0, componentList0, componentSizeLimit,
 				varianceTolerance: varianceTolerance);
 			var (valid1, invalid1) = Algorithms.TextDetection(
-				width, height, regionCount1, regionIndex1, regions1, result1, componentSizeLimit,
+				width, height, regionCount1, regionIndex1, regions1, result1, componentList1, componentSizeLimit,
 				varianceTolerance: varianceTolerance);
 
 			large.RunAs(width, height, channels, "large.png");

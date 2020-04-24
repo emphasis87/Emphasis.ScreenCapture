@@ -14,9 +14,11 @@ namespace Emphasis.ComputerVision
 		public int Y1;
 		public int Width;
 		public int Height;
-		public float SizeRatio;
 		public int MinDimension;
 		public int MaxDimension;
+		public float SizeRatio;
+		public float Diameter;
+		public float DiameterToSwtMedianRatio;
 		public float SwtVariance;
 		public float SwtAverage;
 		public int SwtMedian;

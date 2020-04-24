@@ -460,9 +460,9 @@ namespace Emphasis.ComputerVision
 				useStrokeColor: useStrokeColor);
 		}
 
-		public static int Hypot(int width, int height)
+		public static float Hypot(int width, int height)
 		{
-			return (int)Math.Sqrt(width * width + height * height);
+			return MathF.Sqrt(width * width + height * height);
 		}
 
 		public static void StrokeWidthTransform(
@@ -545,7 +545,7 @@ namespace Emphasis.ComputerVision
 					swtList.Add(x);
 					swtList.Add(y);
 					swtList.Add(ci);
-					var sw = Hypot(Math.Abs(x - cx), Math.Abs(y - cy));
+					var sw = (int)Hypot(Math.Abs(x - cx), Math.Abs(y - cy));
 					swtList.Add(sw);
 				}
 			}
@@ -1211,7 +1211,7 @@ namespace Emphasis.ComputerVision
 				ref var c = ref componentList[ci];
 				
 				// Add the first pixel of the component which is omitted
-				c.Size += 1;
+				var size = c.Size += 1;
 				var swtSize = c.SwtSize += 1;
 				var offset = ci * componentSizeLimit;
 				var color = regions[offset] = c.Color;
@@ -1223,12 +1223,14 @@ namespace Emphasis.ComputerVision
 				var d0 = c.MinDimension = Math.Min(w, h);
 				var d1 = c.MaxDimension = Math.Max(w, h);
 				c.SizeRatio = d1 / (float) d0;
+				var diameter = c.Diameter = Hypot(w, h);
 				var swtAverage = c.SwtAverage = c.SwtSum / (float)swtSize;
 
 				Array.Sort(regionSwt, offset, swtSize);
 
 				var cs = regionSwt.AsSpan(offset, swtSize);
-				c.SwtMedian = cs[swtSize >> 1];
+				var swtMedian = c.SwtMedian = cs[swtSize >> 1];
+				c.DiameterToSwtMedianRatio = diameter / swtMedian;
 				
 				var swtVariance = 0.0f;
 				for (var si = 0; si < swtSize; si++)
@@ -1238,6 +1240,14 @@ namespace Emphasis.ComputerVision
 				}
 
 				c.SwtVariance = swtVariance /= swtSize;
+
+				for (var channel = 0; channel < sourceChannels; channel++)
+				{
+					unsafe
+					{
+						c.ChannelAverage[channel] = c.ChannelSum[channel] / size;
+					}
+				}
 			}
 
 			return count;
@@ -1250,6 +1260,7 @@ namespace Emphasis.ComputerVision
 			int[] regionIndex, 
 			int[] regions,
 			int[] result,
+			Component[] componentList,
 			int componentSizeLimit, 
 			float varianceTolerance = 0.5f)
 		{
@@ -1257,48 +1268,16 @@ namespace Emphasis.ComputerVision
 			var invalid = 0;
 
 			var n = height * width;
-			for (var c = 0; c < count; c++)
+			for (var ci = 0; ci < count; ci++)
 			{
-				var offset = c * (ComponentItemsOffset + componentSizeLimit);
-				var cnt = regions[offset + ComponentCountOffset] + 2;
-				var cntSwt = regions[offset + ComponentCountSwtOffset] + 2;
-				Array.Sort(regions, offset + ComponentItemsOffset, cntSwt);
-
-				var median = regions[offset + ComponentItemsOffset + (cntSwt >> 1)];
-				var swtAverage = regions[offset + ComponentSumSwtOffset] / (float)cntSwt;
-
-				var items = regions.AsSpan(offset + ComponentItemsOffset, cntSwt);
-				var swtVariance = 0.0f;
-				for (var i = 0; i < cntSwt; i++)
-				{
-					var ei = (items[i] - swtAverage);
-					swtVariance += ei * ei;
-				}
-				swtVariance /= cntSwt;
-
-				var color = regions[offset + ComponentColorOffset];
-				var x0 = regions[offset + ComponentMinXOffset];
-				var x1 = regions[offset + ComponentMaxXOffset];
-				var y0 = regions[offset + ComponentMinYOffset];
-				var y1 = regions[offset + ComponentMaxYOffset];
-				var w = x1 - x0;
-				var h = y1 - y0;
-				var sizeRatio = w / (float)h;
-				var minDim = Math.Min(w, h);
-				var maxDim = Math.Max(w, h);
-
-				var diameter = Hypot(w, h);
-				var diameterRatio = diameter / median;
-				var hasLowVariance = swtVariance < varianceTolerance * swtAverage;
-				var isSizeProportional =
-					(sizeRatio > 0.1 && sizeRatio < 10);
-					//|| (minDim < 5 && maxDim < 20);
-				var isSparse =
-					//((w * h) / median * median) < 10;
-					diameterRatio < 15;
-				var isTall = h > 10;
-				var isSmall = h < 100;
-				var isLarge = cnt >= 10;
+				var c = componentList[ci];
+				var color = c.Color;
+				var hasLowVariance = c.SwtVariance < varianceTolerance * c.SwtAverage;
+				var isSizeProportional = c.SizeRatio < 10;
+				var isSparse = c.DiameterToSwtMedianRatio < 10;
+				var isTall = c.Height > 10;
+				var isShort = c.Height < 100;
+				var isLarge = c.Size >= 10;
 				if (
 					hasLowVariance
 					&& isSizeProportional
@@ -1308,7 +1287,7 @@ namespace Emphasis.ComputerVision
 					//&& isLarge
 					)
 				{
-					result[valid] = c;
+					result[valid] = ci;
 					valid++;
 				}
 				else
