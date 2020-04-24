@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Emphasis.ComputerVision;
+using Emphasis.OpenCL.Extensions;
 using Emphasis.ScreenCapture.Helpers;
 using FluentAssertions;
 using NUnit.Framework;
@@ -269,12 +270,66 @@ namespace Emphasis.ScreenCapture.Tests
 				var color = regions0[Algorithms.GetComponentColorOffset(i, componentSizeLimit)];
 				var x0 = regions0[Algorithms.GetComponentMinXOffset(i, componentSizeLimit)];
 				var x1 = regions0[Algorithms.GetComponentMaxXOffset(i, componentSizeLimit)];
-				var y0 = regions0[Algorithms.GetComponentMinXOffset(i, componentSizeLimit)];
-				var y1 = regions0[Algorithms.GetComponentMaxXOffset(i, componentSizeLimit)];
+				var y0 = regions0[Algorithms.GetComponentMinYOffset(i, componentSizeLimit)];
+				var y1 = regions0[Algorithms.GetComponentMaxYOffset(i, componentSizeLimit)];
 				var p = new Point2D(x0, x1, y0, y1, color);
 				points.Add(p);
 			}
 			rtree0.BulkLoad(points);
+
+			Span<int> srcColor = stackalloc int[channels];
+
+			// Merge components of the same color too close to each other
+			for (var i = 0; i < valid0; i++)
+			{
+				// The index of the component
+				var ci = result0[i];
+
+				var offset = Algorithms.GetComponentOffset(ci, componentSizeLimit);
+				var color = regions0[offset + Algorithms.ComponentColorOffset];
+				
+				for (var channel = 0; channel < channels; channel++)
+				{
+					srcColor[channel] = regions0[offset + Algorithms.ComponentChannel0Offset + channel];
+				}
+				
+				var x0 = regions0[Algorithms.GetComponentMinXOffset(ci, componentSizeLimit)];
+				var x1 = regions0[Algorithms.GetComponentMaxXOffset(ci, componentSizeLimit)];
+				var y0 = regions0[Algorithms.GetComponentMinYOffset(ci, componentSizeLimit)];
+				var y1 = regions0[Algorithms.GetComponentMaxYOffset(ci, componentSizeLimit)];
+
+				var cw = x1 - x0;
+				var ch = y1 - y0;
+
+				// Find all other component within a certain distance in horizontal direction
+				var dim = Math.Max(Math.Max(cw, ch), 10);
+				var nx0 = Math.Max(0, x0 - dim);
+				var nx1 = Math.Min(width - 1, x1 + dim);
+				var ny0 = Math.Max(0, y0 - dim);
+				var ny1 = Math.Min(height - 1, y1 + dim);
+
+				var near = rtree0.Search(new Envelope(nx0, ny0, nx1, ny1));
+
+				foreach (var p in near)
+				{
+					var xdist = 0;
+					if (p.X0 < x0 && p.X1 < x0)
+						xdist = x0 - p.X1;
+					else if (p.X0 > x1)
+						xdist = p.X0 - x1;
+
+					var ydist = 0;
+					if (p.Y0 < y0 && p.Y1 < y1)
+						ydist = y0 - p.Y1;
+					else if (p.Y0 > y1)
+						ydist = p.Y0 - y1;
+
+					if (xdist < 4 && ydist < 4)
+					{
+
+					}
+				}
+			}
 
 			// Horizontal lines
 			var hl0 = result0.Take(valid0).OrderBy(c => regions0[Algorithms.GetComponentMinXOffset(c, componentSizeLimit)]).ToArray();
@@ -328,8 +383,8 @@ namespace Emphasis.ScreenCapture.Tests
 				var color = regions0[Algorithms.GetComponentColorOffset(ci, componentSizeLimit)];
 				var x0 = regions0[Algorithms.GetComponentMinXOffset(ci, componentSizeLimit)];
 				var x1 = regions0[Algorithms.GetComponentMaxXOffset(ci, componentSizeLimit)];
-				var y0 = regions0[Algorithms.GetComponentMinXOffset(ci, componentSizeLimit)];
-				var y1 = regions0[Algorithms.GetComponentMaxXOffset(ci, componentSizeLimit)];
+				var y0 = regions0[Algorithms.GetComponentMinYOffset(ci, componentSizeLimit)];
+				var y1 = regions0[Algorithms.GetComponentMaxYOffset(ci, componentSizeLimit)];
 				var cw = x1 - x0;
 				var ch = y1 - y0;
 

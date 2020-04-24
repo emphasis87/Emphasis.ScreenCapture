@@ -12,6 +12,7 @@ using Cloo.Bindings;
 using Emphasis.OpenCL.Extensions;
 using Emphasis.OpenCL.Helpers;
 using Emphasis.ScreenCapture.Helpers;
+using FluentAssertions;
 using NUnit.Framework;
 using SharpDX.DXGI;
 
@@ -272,6 +273,94 @@ void kernel copy(
 	b[d+3] = p.w * 255;
 }
 ";
+
+		private string Struct_kernel = @"
+typedef struct
+{
+    int a;
+    float b;
+    int c;
+	int d[2];
+} Target;
+
+void kernel fill(
+	global Target* target) 
+{
+	const int x = get_global_id(0);
+
+	target[x].a = x * 2;
+	target[x].b = x + 0.5;
+	target[x].c = x + 1;
+	target[x].d[0] = 1;
+	target[x].d[1] = 2;
+}
+";
+
+		public unsafe struct Target
+		{
+			public int a;
+			public float b;
+			public int c;
+			public fixed int d[2];
+		}
+
+		[Test]
+		public async Task Can_use_struct()
+		{
+			var platform = ComputePlatform.Platforms.First();
+			var device = platform.Devices.First();
+			var context = new ComputeContext(new[] { device }, new ComputeContextPropertyList(platform), null, IntPtr.Zero);
+
+			using var program = new ComputeProgram(context, Struct_kernel);
+
+			try
+			{
+				program.Build(new[] { device }, "-cl-std=CL1.2", null, IntPtr.Zero);
+			}
+			catch (Exception ex)
+			{
+				OnProgramBuilt(program, device);
+				return;
+			}
+
+			using var queue = new ComputeCommandQueue(context, device, ComputeCommandQueueFlags.None);
+			using var kernel = program.CreateKernel("fill");
+
+			var target = new Target[10];
+			var gcHandle = GCHandle.Alloc(target, GCHandleType.Pinned);
+			var ptr = gcHandle.AddrOfPinnedObject();
+			var buffer = new ComputeBuffer<Target>(
+				context,
+				ComputeMemoryFlags.ReadWrite | ComputeMemoryFlags.UseHostPointer,
+				10,
+				ptr);
+
+
+			kernel.SetMemoryArgument(0, buffer);
+
+			var events = new List<ComputeEventBase>();
+			queue.Execute(kernel, null, new long[] { 10 }, null, events);
+			await events.WaitForEvents();
+
+			unsafe
+			{
+				target[0].a.Should().Be(0);
+				target[0].b.Should().BeApproximately(0.5f, 0.01f);
+				target[0].c.Should().Be(1);
+				target[0].d[0].Should().Be(1);
+				target[0].d[1].Should().Be(2);
+				target[1].a.Should().Be(2);
+				target[1].b.Should().BeApproximately(1.5f, 0.01f);
+				target[1].c.Should().Be(2);
+				target[1].d[0].Should().Be(1);
+				target[1].d[1].Should().Be(2);
+				target[9].a.Should().Be(18);
+				target[9].b.Should().BeApproximately(9.5f, 0.01f);
+				target[9].c.Should().Be(10);
+				target[9].d[0].Should().Be(1);
+				target[9].d[1].Should().Be(2);
+			}
+		}
 
 		[Test]
 		public void Can_copy()

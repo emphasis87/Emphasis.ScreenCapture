@@ -1079,6 +1079,11 @@ namespace Emphasis.ComputerVision
 		public const int ComponentChannel3Offset = 11;
 		public const int ComponentItemsOffset = 12;
 
+		public static int GetComponentOffset(int i, int size)
+		{
+			return i * (ComponentItemsOffset + size);
+		}
+
 		public static int GetComponentChannel0Offset(int i, int size)
 		{
 			return i * (ComponentItemsOffset + size) + ComponentChannel0Offset;
