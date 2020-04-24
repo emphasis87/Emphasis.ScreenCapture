@@ -96,6 +96,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var swtEdgeColorTolerance = 50;
 			var swtConnectByColor = false;
 			var varianceTolerance = 2.0f;
+			var sizeRatioTolerance = 10;
 
 			var large = new byte[height * width * 4 * channels];
 			Algorithms.Enlarge2(width, height, source, large, channels);
@@ -214,17 +215,44 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 			*/
 
+			var rtree0 = new RBush<Point2D>();
+			var points0 = new List<Point2D>(regionCount0);
+			for (var ci = 0; ci < regionCount0; ci++)
+			{
+				ref var c = ref componentList0[ci];
+				if (!c.IsValid())
+					continue;
+
+				var p = new Point2D(c.X0, c.X1, c.Y0, c.Y1, c.Color);
+				points0.Add(p);
+			}
+			rtree0.BulkLoad(points0);
+
+			var rtree1 = new RBush<Point2D>();
+			var points1 = new List<Point2D>(regionCount1);
+			for (var ci = 0; ci < regionCount1; ci++)
+			{
+				ref var c = ref componentList1[ci];
+				if (!c.IsValid())
+					continue;
+
+				var p = new Point2D(c.X0, c.X1, c.Y0, c.Y1, c.Color);
+				points1.Add(p);
+			}
+			rtree1.BulkLoad(points1);
+
+			Algorithms.MergeComponents(width, height, regionCount0, componentList0, rtree0);
+			Algorithms.MergeComponents(width, height, regionCount1, componentList1, rtree1);
+
 			// Filter components 1st pass
-
-
-			var result0 = new int[componentLimit];
-			var result1 = new int[componentLimit];
-			var (valid0, invalid0) = Algorithms.TextDetection(
-				width, height, regionCount0, regionIndex0, regions0, result0, componentList0, componentSizeLimit,
+			var valid0 = Algorithms.TextDetectionFilter1(regionCount0, componentList0,
+				varianceTolerance: varianceTolerance,
+				sizeRatioTolerance: sizeRatioTolerance);
+			var valid1 = Algorithms.TextDetectionFilter1(regionCount1, componentList1,
 				varianceTolerance: varianceTolerance);
-			var (valid1, invalid1) = Algorithms.TextDetection(
-				width, height, regionCount1, regionIndex1, regions1, result1, componentList1, componentSizeLimit,
-				varianceTolerance: varianceTolerance);
+
+			var invalid0 = regionCount0 - valid0;
+			var invalid1 = regionCount1 - valid1;
 
 			large.RunAs(width, height, channels, "large.png");
 			//large.RunAsText(width, height, channels, "large.txt");
@@ -235,12 +263,12 @@ namespace Emphasis.ScreenCapture.Tests
 			//grayscale.ReplaceEquals(255, 0).RunAsText(width, height, 1, "gray.txt");
 
 			//gradient.RunAs(width, height, 1, "gradient.png");
-			//gradient.RunAsText(width, height, 1, "gradient.txt");
+			gradient.RunAsText(width, height, 1, "gradient.txt");
 
 			//angle.RunAsText(width, height, 1, "angle.txt");
 
 			//nms.RunAs(width, height, 1, "nms.png");
-			//nms.RunAsText(width, height, 1, "nms.txt");
+			nms.RunAsText(width, height, 1, "nms.txt");
 
 			swt0.RunAs(width, height, 1, "swt0.png");
 			swt0.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt0.txt");
@@ -262,157 +290,32 @@ namespace Emphasis.ScreenCapture.Tests
 			for (var i = 0; i < n; i++)
 			{
 				var color = components0[i];
-				if (color >= n || regionIndex0[color] == -1)
+				if (color >= n)
+				{
+					text0[i] = 255;
+					continue;
+				}
+
+				var ci = regionIndex0[color];
+				if (color >= n || ci == -1 || !componentList0[ci].IsValid())
 					text0[i] = 255;
 			}
 			for (var i = 0; i < n; i++)
 			{
 				var color = components1[i];
-				if (color >= n || regionIndex1[color] == -1)
+				if (color >= n)
+				{
 					text1[i] = 255;
+					continue;
+				}
+
+				var ci = regionIndex1[color];
+				if (color >= n || ci == -1 || !componentList1[ci].IsValid())
+					text0[i] = 255;
 			}
 
 			text0.RunAs(width, height, 1, "text0.png");
 			text1.RunAs(width, height, 1, "text1.png");
-
-			var rtree0 = new RBush<Point2D>();
-			var points = new List<Point2D>(valid0);
-			for (var i = 0; i < valid0; i++)
-			{
-				var color = regions0[Algorithms.GetComponentColorOffset(i, componentSizeLimit)];
-				var x0 = regions0[Algorithms.GetComponentMinXOffset(i, componentSizeLimit)];
-				var x1 = regions0[Algorithms.GetComponentMaxXOffset(i, componentSizeLimit)];
-				var y0 = regions0[Algorithms.GetComponentMinYOffset(i, componentSizeLimit)];
-				var y1 = regions0[Algorithms.GetComponentMaxYOffset(i, componentSizeLimit)];
-				var p = new Point2D(x0, x1, y0, y1, color);
-				points.Add(p);
-			}
-			rtree0.BulkLoad(points);
-
-			Span<int> srcColor = stackalloc int[channels];
-
-			// Merge components of the same color too close to each other
-			for (var i = 0; i < valid0; i++)
-			{
-				// The index of the component
-				var ci = result0[i];
-
-				var offset = Algorithms.GetComponentOffset(ci, componentSizeLimit);
-				var color = regions0[offset + Algorithms.ComponentColorOffset];
-				
-				for (var channel = 0; channel < channels; channel++)
-				{
-					srcColor[channel] = regions0[offset + Algorithms.ComponentChannel0Offset + channel];
-				}
-				
-				var x0 = regions0[Algorithms.GetComponentMinXOffset(ci, componentSizeLimit)];
-				var x1 = regions0[Algorithms.GetComponentMaxXOffset(ci, componentSizeLimit)];
-				var y0 = regions0[Algorithms.GetComponentMinYOffset(ci, componentSizeLimit)];
-				var y1 = regions0[Algorithms.GetComponentMaxYOffset(ci, componentSizeLimit)];
-
-				var cw = x1 - x0;
-				var ch = y1 - y0;
-
-				// Find all other component within a certain distance in horizontal direction
-				var dim = Math.Max(Math.Max(cw, ch), 10);
-				var nx0 = Math.Max(0, x0 - dim);
-				var nx1 = Math.Min(width - 1, x1 + dim);
-				var ny0 = Math.Max(0, y0 - dim);
-				var ny1 = Math.Min(height - 1, y1 + dim);
-
-				var near = rtree0.Search(new Envelope(nx0, ny0, nx1, ny1));
-
-				foreach (var p in near)
-				{
-					var xdist = 0;
-					if (p.X0 < x0 && p.X1 < x0)
-						xdist = x0 - p.X1;
-					else if (p.X0 > x1)
-						xdist = p.X0 - x1;
-
-					var ydist = 0;
-					if (p.Y0 < y0 && p.Y1 < y1)
-						ydist = y0 - p.Y1;
-					else if (p.Y0 > y1)
-						ydist = p.Y0 - y1;
-
-					if (xdist < 4 && ydist < 4)
-					{
-
-					}
-				}
-			}
-
-			// Horizontal lines
-			var hl0 = result0.Take(valid0).OrderBy(c => regions0[Algorithms.GetComponentMinXOffset(c, componentSizeLimit)]).ToArray();
-			var hl1 = result1.Take(valid1).OrderBy(c => regions1[Algorithms.GetComponentMinXOffset(c, componentSizeLimit)]).ToArray();
-
-			// Reverse indexing
-			var xl0 = new int[componentLimit];
-			var xl1 = new int[componentLimit];
-
-			for (var i = 0; i < valid0; i++)
-			{
-				var ci = hl0[i];
-				xl0[ci] = i;
-			}
-
-			for (var i = 0; i < valid1; i++)
-			{
-				var ci = hl1[i];
-				xl1[ci] = i;
-			}
-
-			// Vertical lines
-			var vl0 = result0.Take(valid0).OrderBy(c => regions0[Algorithms.GetComponentMinYOffset(c, componentSizeLimit)]).ToArray();
-			var vl1 = result1.Take(valid1).OrderBy(c => regions1[Algorithms.GetComponentMinYOffset(c, componentSizeLimit)]).ToArray();
-
-			// Reverse indexing
-			var yl0 = new int[componentLimit];
-			var yl1 = new int[componentLimit];
-
-			for (var i = 0; i < valid0; i++)
-			{
-				var ci = vl0[i];
-				yl0[ci] = i;
-			}
-
-			for (var i = 0; i < valid1; i++)
-			{
-				var ci = vl1[i];
-				yl1[ci] = i;
-			}
-
-			// Find horizontal lines (same y-position)
-			for (var i = 0; i < valid0; i++)
-			{
-				// The index of the component in x-order
-				var ci = hl0[i];
-				var count = regions0[Algorithms.GetComponentCountOffset(ci, componentSizeLimit)];
-				if (count < 40)
-					continue;
-
-				var color = regions0[Algorithms.GetComponentColorOffset(ci, componentSizeLimit)];
-				var x0 = regions0[Algorithms.GetComponentMinXOffset(ci, componentSizeLimit)];
-				var x1 = regions0[Algorithms.GetComponentMaxXOffset(ci, componentSizeLimit)];
-				var y0 = regions0[Algorithms.GetComponentMinYOffset(ci, componentSizeLimit)];
-				var y1 = regions0[Algorithms.GetComponentMaxYOffset(ci, componentSizeLimit)];
-				var cw = x1 - x0;
-				var ch = y1 - y0;
-
-				// The x0-order position of the component
-				var xi = xl0[ci];
-
-				// Find all other component within a certain distance in horizontal direction
-				var dim = Math.Max(Math.Max(cw, ch), 10);
-				var nx0 = Math.Max(0, x0 - dim * 2);
-				var nx1 = Math.Min(width - 1, x1 + dim * 2);
-				var ny0 = Math.Max(0, y0 - dim);
-				var ny1 = Math.Min(height - 1, y1 + dim);
-
-				var near = rtree0.Search(new Envelope(nx0, ny0, nx1, ny1));
-
-			}
 		}
 
 		[Test]

@@ -5,6 +5,7 @@ namespace Emphasis.ComputerVision
 	public unsafe struct Component
 	{
 		public int Color;
+		public int Validity;
 		public int Size;
 		public int SwtSize;
 		public int SwtSum;
@@ -31,6 +32,11 @@ namespace Emphasis.ComputerVision
 			X1 = int.MinValue;
 			Y0 = int.MaxValue;
 			Y1 = int.MinValue;
+		}
+
+		public bool IsValid()
+		{
+			return Validity == 0;
 		}
 	}
 }

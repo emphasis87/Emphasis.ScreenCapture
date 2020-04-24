@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
+using RBush;
 
 namespace Emphasis.ComputerVision
 {
@@ -1253,51 +1254,83 @@ namespace Emphasis.ComputerVision
 			return count;
 		}
 
-		public static (int valid, int invalid) TextDetection(
-			int width, 
-			int height, 
+		public static int TextDetectionFilter1(
 			int count, 
-			int[] regionIndex, 
-			int[] regions,
-			int[] result,
 			Component[] componentList,
-			int componentSizeLimit, 
-			float varianceTolerance = 0.5f)
+			float varianceTolerance = 0.5f,
+			float sizeRatioTolerance = 10)
 		{
 			var valid = 0;
-			var invalid = 0;
-
-			var n = height * width;
 			for (var ci = 0; ci < count; ci++)
 			{
-				var c = componentList[ci];
-				var color = c.Color;
-				var hasLowVariance = c.SwtVariance < varianceTolerance * c.SwtAverage;
-				var isSizeProportional = c.SizeRatio < 10;
-				var isSparse = c.DiameterToSwtMedianRatio < 10;
-				var isTall = c.Height > 10;
-				var isShort = c.Height < 100;
-				var isLarge = c.Size >= 10;
-				if (
-					hasLowVariance
-					&& isSizeProportional
-					//&& isSparse
-					//&& isSmall
-					//&& isTall
-					//&& isLarge
+				ref var c = ref componentList[ci];
+				
+				var hasLowVariance = 
+					c.SwtVariance < varianceTolerance * c.SwtAverage;
+				var isSizeProportional = 
+					c.SizeRatio < sizeRatioTolerance;
+				var isSmall =
+					c.Size < 10;
+
+				if (true
+					//isSmall 
+					//   || hasLowVariance 
+					//&& isSizeProportional
 					)
-				{
-					result[valid] = ci;
 					valid++;
-				}
 				else
-				{
-					regionIndex[color] = -1;
-					invalid++;
-				}
+					c.Validity = -1;
 			}
 
-			return (valid, invalid);
+			return valid;
+		}
+
+		public static void MergeComponents(
+			int width,
+			int height,
+			int count,
+			Component[] componentList,
+			RBush<Point2D> rtree)
+		{
+			for (var ci = 0; ci < count; ci++)
+			{
+				ref var c = ref componentList[ci];
+				if (!c.IsValid())
+					continue;
+
+				// Find all other component within a certain distance in horizontal direction
+				var dim = Math.Max(Math.Max(c.Width, c.Height), 10);
+				var nx0 = Math.Max(0, c.X0 - dim);
+				var nx1 = Math.Min(width - 1, c.X1 + dim);
+				var ny0 = Math.Max(0, c.Y0 - dim);
+				var ny1 = Math.Min(height - 1, c.Y1 + dim);
+
+				var near = rtree.Search(new Envelope(nx0, ny0, nx1, ny1));
+
+				var join = 0;
+				foreach (var p in near)
+				{
+					if (c.Color == p.Color)
+						continue;
+					
+					var xdist = 0;
+					if (p.X0 < c.X0 && p.X1 < c.X0)
+						xdist = c.X0 - p.X1;
+					else if (p.X0 > c.X1)
+						xdist = p.X0 - c.X1;
+
+					var ydist = 0;
+					if (p.Y0 < c.Y0 && p.Y1 < c.Y1)
+						ydist = c.Y0 - p.Y1;
+					else if (p.Y0 > c.Y1)
+						ydist = p.Y0 - c.Y1;
+
+					if (xdist < 4 && ydist < 4)
+					{
+						join++;
+					}
+				}
+			}
 		}
 
 		public static void AtomicMin(ref int location, int next)
