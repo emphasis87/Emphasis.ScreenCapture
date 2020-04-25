@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Threading;
 using RBush;
 
@@ -1285,6 +1286,39 @@ namespace Emphasis.ComputerVision
 			return valid;
 		}
 
+		public static void RemoveBoxes(
+			int width,
+			int height,
+			int count,
+			Component[] componentList,
+			RBush<Box2D> rtree)
+		{
+			for (var ci = 0; ci < count; ci++)
+			{
+				ref var c0 = ref componentList[ci];
+				if (!c0.IsValid())
+					continue;
+
+				var contains = 0;
+				var box = c0.BoundingBox();
+				var content = rtree.Search(box.Envelope).ToArray();
+				foreach (var p in content)
+				{
+					if (ci == p.Data)
+						continue;
+
+					ref var c1 = ref componentList[p.Data];
+					if (box.Contains(c1.BoundingBox()))
+						contains++;
+				}
+
+				if (contains > 2)
+				{
+					c0.Validity = 0;
+				}
+			}
+		}
+
 		public static void MergeComponents(
 			int width,
 			int height,
@@ -1294,41 +1328,46 @@ namespace Emphasis.ComputerVision
 		{
 			for (var ci = 0; ci < count; ci++)
 			{
-				ref var c = ref componentList[ci];
-				if (!c.IsValid())
+				ref var c0 = ref componentList[ci];
+				if (!c0.IsValid())
 					continue;
 
 				// Find all other component within a certain distance in horizontal direction
-				var dim = Math.Max(Math.Max(c.Width, c.Height), 10);
-				var nx0 = Math.Max(0, c.X0 - dim);
-				var nx1 = Math.Min(width - 1, c.X1 + dim);
-				var ny0 = Math.Max(0, c.Y0 - dim);
-				var ny1 = Math.Min(height - 1, c.Y1 + dim);
+				var dim = Math.Max(Math.Max(c0.Width, c0.Height), 10);
+				var nx0 = Math.Max(0, c0.X0 - dim);
+				var nx1 = Math.Min(width - 1, c0.X1 + dim);
+				var ny0 = Math.Max(0, c0.Y0 - dim);
+				var ny1 = Math.Min(height - 1, c0.Y1 + dim);
 
 				var near = rtree.Search(new Envelope(nx0, ny0, nx1, ny1));
 
 				var join = 0;
 				foreach (var p in near)
 				{
-					if (c.Color == p.Color)
+					if (ci == p.Data)
 						continue;
-					
-					var xdist = 0;
-					if (p.X0 < c.X0 && p.X1 < c.X0)
-						xdist = c.X0 - p.X1;
-					else if (p.X0 > c.X1)
-						xdist = p.X0 - c.X1;
 
-					var ydist = 0;
-					if (p.Y0 < c.Y0 && p.Y1 < c.Y1)
-						ydist = c.Y0 - p.Y1;
-					else if (p.Y0 > c.Y1)
-						ydist = p.Y0 - c.Y1;
+					ref var c1 = ref componentList[p.Data];
 
-					if (xdist < 4 && ydist < 4)
-					{
-						join++;
-					}
+					// Horizontal overlap
+					var dx = Math.Min(c0.X1, c1.X1) - Math.Max(c0.X0, c1.X0);
+					if (dx <= 0)
+						continue;
+
+					// Vertical proximity
+					var dv = c1.Height / 4;
+					var c1y0 = Math.Max(0, c1.Y0 - dv);
+					var c1y1 = Math.Min(height - 1, c1.Y1 + dv);
+					var dy = Math.Min(c0.Y1, c1y1) - Math.Max(c0.Y0, c1y0);
+					if (dy <= 0)
+						continue;
+
+					var mw = Math.Max(c0.Width, c1.Width);
+					var mh = Math.Max(c0.Height, c1.Height);
+
+					if (dx * 4 < mw || dy * 4 < mh)
+						continue;
+
 				}
 			}
 		}

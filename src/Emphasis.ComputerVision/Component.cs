@@ -38,5 +38,8 @@ namespace Emphasis.ComputerVision
 		{
 			return Validity == 0;
 		}
+
+		public Point2D LeftTop(int data = 0) => new Point2D(X0, Y0, data);
+		public Box2D BoundingBox(int data = 0) => new Box2D(X0, X1, Y0, Y1, data);
 	}
 }

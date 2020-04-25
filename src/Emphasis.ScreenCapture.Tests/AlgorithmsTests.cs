@@ -216,30 +216,36 @@ namespace Emphasis.ScreenCapture.Tests
 			*/
 
 			var rtree0 = new RBush<Point2D>();
+			var rtreeBox0 = new RBush<Box2D>();
 			var points0 = new List<Point2D>(regionCount0);
+			var boxes0 = new List<Box2D>(regionCount0);
 			for (var ci = 0; ci < regionCount0; ci++)
 			{
 				ref var c = ref componentList0[ci];
 				if (!c.IsValid())
 					continue;
 
-				var p = new Point2D(c.X0, c.X1, c.Y0, c.Y1, c.Color);
-				points0.Add(p);
+				points0.Add(c.LeftTop(ci));
+				boxes0.Add(c.BoundingBox(ci));
 			}
 			rtree0.BulkLoad(points0);
+			rtreeBox0.BulkLoad(boxes0);
 
 			var rtree1 = new RBush<Point2D>();
+			var rtreeBox1 = new RBush<Box2D>();
 			var points1 = new List<Point2D>(regionCount1);
-			for (var ci = 0; ci < regionCount1; ci++)
+			var boxes1 = new List<Box2D>(regionCount1);
+			for (var ci = 1; ci < regionCount1; ci++)
 			{
 				ref var c = ref componentList1[ci];
 				if (!c.IsValid())
 					continue;
 
-				var p = new Point2D(c.X0, c.X1, c.Y0, c.Y1, c.Color);
-				points1.Add(p);
+				points1.Add(c.LeftTop(ci));
+				boxes1.Add(c.BoundingBox(ci));
 			}
 			rtree1.BulkLoad(points1);
+			rtreeBox1.BulkLoad(boxes1);
 
 			Algorithms.MergeComponents(width, height, regionCount0, componentList0, rtree0);
 			Algorithms.MergeComponents(width, height, regionCount1, componentList1, rtree1);
@@ -316,6 +322,27 @@ namespace Emphasis.ScreenCapture.Tests
 
 			text0.RunAs(width, height, 1, "text0.png");
 			text1.RunAs(width, height, 1, "text1.png");
+		}
+
+		[Test]
+		public void RBush_Test()
+		{
+			var b0 = new Box2D(0, 10, 0, 10);
+			var b1 = new Box2D(0, 0, 0, 0);
+			var b2 = new Box2D(0, 1, 0, 1);
+			var b3 = new Box2D(10, 10, 10, 10);
+			var b4 = new Box2D(10, 11, 10, 11);
+			var b5 = new Box2D(5, 15, 5, 15);
+			var b6 = new Box2D(11, 11, 11, 11);
+
+			var rtree = new RBush<Box2D>();
+			rtree.BulkLoad(new[] {b0, b1, b2, b3, b4, b5, b6});
+
+			var content = rtree.Search(b0.Envelope).ToArray();
+
+			// Contains even partial matches
+			content.Should().Contain(new[] {b0, b1, b2, b3, b4, b5});
+			content.Should().NotContain(new[] {b6});
 		}
 
 		[Test]
