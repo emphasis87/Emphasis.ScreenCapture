@@ -81,13 +81,12 @@ namespace Emphasis.ScreenCapture.Helpers
 				for (var x = 0; x < width; x++)
 				{
 					var pixel = line.Slice(x * channels, channels);
+					sb.Append("|");
 					for (var i = 0; i < channels; i++)
 					{
 						var v = $"{pixel[i]}".PadLeft(len);
 						sb.Append($"{v} ");
 					}
-
-					sb.Append("| ");
 				}
 
 				yield return sb.ToString();

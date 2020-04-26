@@ -81,7 +81,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample11;
+			var sourceBitmap = Samples.sample13;
 
 			//Run("sample03.png");
 
@@ -166,99 +166,21 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount1 = Algorithms.ComponentAnalysis(
 				width, height, src, swt1, components1, regionIndex1, regions1, regionSwt0, componentList1, componentLimit, componentSizeLimit, sourceChannels: channels);
 
-			/*
-			if (swtConnectByColor)
-			{
-				// Compute color for each component
-				var avgColor0 = new int[regionCount0 * channels];
-				var avgColor1 = new int[regionCount1 * channels];
-				for (var r = 0; r < regionCount0; r++)
-				{
-					var swtCountOffset = Algorithms.GetComponentSwtCountOffset(r, componentSizeLimit);
-					var channelOffset = Algorithms.GetComponentChannel0Offset(r, componentSizeLimit);
-					for (var c = 0; c < channels; c++)
-					{
-						var color = regions0[channelOffset + c];
-						var swtCount = regions0[swtCountOffset] + 1;
-						avgColor0[r * channels + c] = color / swtCount;
-					}
-				}
-
-				for (var r = 0; r < regionCount1; r++)
-				{
-					var swtCountOffset = Algorithms.GetComponentSwtCountOffset(r, componentSizeLimit);
-					var channelOffset = Algorithms.GetComponentChannel0Offset(r, componentSizeLimit);
-					for (var c = 0; c < channels; c++)
-					{
-						var color = regions1[channelOffset + c];
-						var swtCount = regions1[swtCountOffset] + 1;
-						avgColor1[r * channels + c] = color / swtCount;
-					}
-				}
-
-				components0.RunAs(width, height, 1, "cc0-1st.png");
-				components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0-1nd.txt");
-
-				colorRounds0 += Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0,
-					components0, regionIndex0, avgColor0,
-					sourceChannels: 4, connectByColor: true);
-				colorRounds1 += Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1,
-					components1, regionIndex1, avgColor1,
-					sourceChannels: 4, connectByColor: true);
-
-				regionCount0 = Algorithms.ComponentAnalysis(
-					width, height, src, swt0, components0, regionIndex0, regions0, componentLimit, componentSizeLimit,
-					sourceChannels: channels);
-				regionCount1 = Algorithms.ComponentAnalysis(
-					width, height, src, swt1, components1, regionIndex1, regions1, componentLimit, componentSizeLimit,
-					sourceChannels: channels);
-			}
-			*/
-
-			var rtree0 = new RBush<Point2D>();
-			var rtreeBox0 = new RBush<Box2D>();
-			var points0 = new List<Point2D>(regionCount0);
-			var boxes0 = new List<Box2D>(regionCount0);
-			for (var ci = 0; ci < regionCount0; ci++)
-			{
-				ref var c = ref componentList0[ci];
-				if (!c.IsValid())
-					continue;
-
-				points0.Add(c.LeftTop(ci));
-				boxes0.Add(c.BoundingBox(ci));
-			}
-			rtree0.BulkLoad(points0);
-			rtreeBox0.BulkLoad(boxes0);
-
-			var rtree1 = new RBush<Point2D>();
-			var rtreeBox1 = new RBush<Box2D>();
-			var points1 = new List<Point2D>(regionCount1);
-			var boxes1 = new List<Box2D>(regionCount1);
-			for (var ci = 1; ci < regionCount1; ci++)
-			{
-				ref var c = ref componentList1[ci];
-				if (!c.IsValid())
-					continue;
-
-				points1.Add(c.LeftTop(ci));
-				boxes1.Add(c.BoundingBox(ci));
-			}
-			rtree1.BulkLoad(points1);
-			rtreeBox1.BulkLoad(boxes1);
-
-			Algorithms.MergeComponents(width, height, regionCount0, componentList0, rtree0);
-			Algorithms.MergeComponents(width, height, regionCount1, componentList1, rtree1);
-
 			// Filter components 1st pass
-			var valid0 = Algorithms.TextDetectionFilter1(regionCount0, componentList0,
-				varianceTolerance: varianceTolerance,
-				sizeRatioTolerance: sizeRatioTolerance);
-			var valid1 = Algorithms.TextDetectionFilter1(regionCount1, componentList1,
-				varianceTolerance: varianceTolerance);
+			var valid0 = Algorithms.PassiveFilter(regionCount0, componentList0);
+			var valid1 = Algorithms.PassiveFilter(regionCount1, componentList1);
 
 			var invalid0 = regionCount0 - valid0;
 			var invalid1 = regionCount1 - valid1;
+
+			//var rtree0 = Algorithms.ComponentRBush(regionCount0, componentList0);
+			//var rtree1 = Algorithms.ComponentRBush(regionCount1, componentList1);
+
+			//Algorithms.MergeComponents(width, height, regionCount0, componentList0, rtree0);
+			//Algorithms.MergeComponents(width, height, regionCount1, componentList1, rtree1);
+
+			//Algorithms.RemoveBoxes(width, height, regionCount0, componentList0, rtree0);
+			//Algorithms.RemoveBoxes(width, height, regionCount1, componentList1, rtree1);
 
 			large.RunAs(width, height, channels, "large.png");
 			//large.RunAsText(width, height, channels, "large.txt");
@@ -303,9 +225,16 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 
 				var ci = regionIndex0[color];
-				if (color >= n || ci == -1 || !componentList0[ci].IsValid())
+				if (color >= n || ci == -1)
+				{
 					text0[i] = 255;
+					continue;
+				}
+				ref var c = ref componentList0[ci];
+				if (!c.IsValid())
+					text0[i] = c.Validity;
 			}
+
 			for (var i = 0; i < n; i++)
 			{
 				var color = components1[i];
@@ -316,12 +245,20 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 
 				var ci = regionIndex1[color];
-				if (color >= n || ci == -1 || !componentList1[ci].IsValid())
-					text0[i] = 255;
+				if (color >= n || ci == -1)
+				{
+					text1[i] = 255;
+					continue;
+				}
+				ref var c = ref componentList1[ci];
+				if (!c.IsValid())
+					text1[i] = c.Validity;
 			}
 
 			text0.RunAs(width, height, 1, "text0.png");
+			text0.RunAsText(width, height, 1, "text0.txt");
 			text1.RunAs(width, height, 1, "text1.png");
+			text1.RunAsText(width, height, 1, "text1.txt");
 		}
 
 		[Test]

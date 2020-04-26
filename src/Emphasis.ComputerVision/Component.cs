@@ -41,5 +41,9 @@ namespace Emphasis.ComputerVision
 
 		public Point2D LeftTop(int data = 0) => new Point2D(X0, Y0, data);
 		public Box2D BoundingBox(int data = 0) => new Box2D(X0, X1, Y0, Y1, data);
+
+		public const int HasLowVariance = 1;
+		public const int IsSizeProportional = 1 << 1;
+		public const int IsDiameterSmall = 1 << 2;
 	}
 }

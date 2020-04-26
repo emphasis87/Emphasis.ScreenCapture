@@ -1286,6 +1286,88 @@ namespace Emphasis.ComputerVision
 			return valid;
 		}
 
+		public static int DefaultFilter(
+			int count,
+			Component[] componentList,
+			float varianceTolerance = 0.5f,
+			float sizeRatioTolerance = 10)
+		{
+			var valid = 0;
+			for (var ci = 0; ci < count; ci++)
+			{
+				ref var c = ref componentList[ci];
+
+				var hasLowVariance =
+					c.SwtVariance < varianceTolerance * c.SwtAverage;
+				var isSizeProportional =
+					c.SizeRatio < sizeRatioTolerance;
+				var isDiameterSmall =
+					c.DiameterToSwtMedianRatio < 10;
+
+
+				if (
+					hasLowVariance
+					&& isSizeProportional
+					&& isDiameterSmall
+				)
+					valid++;
+				else
+					c.Validity = -1;
+			}
+
+			return valid;
+		}
+
+		public static int PassiveFilter(
+			int count,
+			Component[] componentList,
+			float varianceTolerance = 2.0f,
+			float sizeRatioTolerance = 10)
+		{
+			var valid = 0;
+			for (var ci = 0; ci < count; ci++)
+			{
+				ref var c = ref componentList[ci];
+
+				var hasLowVariance =
+					c.SwtVariance < varianceTolerance * c.SwtAverage;
+				var isSizeProportional =
+					c.SizeRatio < sizeRatioTolerance;
+				var isDiameterSmall =
+					c.DiameterToSwtMedianRatio < 15;
+
+				if (!hasLowVariance)
+					c.Validity |= Component.HasLowVariance;
+				if (!isSizeProportional)
+					c.Validity |= Component.IsSizeProportional;
+				if (!isDiameterSmall)
+					c.Validity |= Component.IsDiameterSmall;
+
+				if (c.IsValid())
+					valid++;
+			}
+
+			return valid;
+		}
+
+		public static RBush<Box2D> ComponentRBush(
+			int count,
+			Component[] componentList)
+		{
+			var rtree = new RBush<Box2D>();
+			var boxes = new List<Box2D>(count);
+			for (var ci = 0; ci < count; ci++)
+			{
+				ref var c = ref componentList[ci];
+				if (!c.IsValid())
+					continue;
+
+				boxes.Add(c.BoundingBox(ci));
+			}
+			rtree.BulkLoad(boxes);
+			return rtree;
+		}
+
 		public static void RemoveBoxes(
 			int width,
 			int height,
@@ -1324,7 +1406,7 @@ namespace Emphasis.ComputerVision
 			int height,
 			int count,
 			Component[] componentList,
-			RBush<Point2D> rtree)
+			RBush<Box2D> rtree)
 		{
 			for (var ci = 0; ci < count; ci++)
 			{
