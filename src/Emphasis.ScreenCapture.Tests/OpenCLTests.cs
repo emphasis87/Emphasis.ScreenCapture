@@ -29,6 +29,7 @@ namespace Emphasis.ScreenCapture.Tests
 			foreach (var platform in ComputePlatform.Platforms)
 			{
 				Console.WriteLine($"Platform Name: {platform.Name}");
+				Console.WriteLine($"Platform Version: {platform.Version}");
 				Console.WriteLine($"Platform Vendor: {platform.Vendor}");
 				Console.WriteLine($"Platform Extensions: {platform.Extensions.Aggregate((x, y) => $"{x} {y}")}");
 
