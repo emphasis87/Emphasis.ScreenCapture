@@ -92,7 +92,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = sourceBitmap.Height;
 
 			var useLarge = true;
-			var swtEdgeOnColorChange = false;
+			var swtEdgeOnColorChange = true;
 			var swtEdgeColorTolerance = 50;
 			var swtConnectByColor = false;
 			var varianceTolerance = 2.0f;
@@ -255,9 +255,9 @@ namespace Emphasis.ScreenCapture.Tests
 					text1[i] = c.Validity;
 			}
 
-			text0.RunAs(width, height, 1, "text0.png");
+			text0.ReplaceGreaterOrEquals(1,255).RunAs(width, height, 1, "text0.png");
 			text0.RunAsText(width, height, 1, "text0.txt");
-			text1.RunAs(width, height, 1, "text1.png");
+			text1.ReplaceGreaterOrEquals(1, 255).RunAs(width, height, 1, "text1.png");
 			text1.RunAsText(width, height, 1, "text1.txt");
 		}
 
