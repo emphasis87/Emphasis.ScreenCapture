@@ -106,7 +106,48 @@ namespace Emphasis.ScreenCapture.Tests
 				width *= 2;
 				height *= 2;
 			}
+			var src = useLarge ? large : source;
+
+
 			var n = height * width;
+
+			var linePrefix = new int[n * channels];
+			Span<int> prefix = stackalloc int[channels];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					for (var c = 0; c < channels; c++)
+					{
+						var d = y * width * channels + x * channels + c;
+						var v = src[d];
+						var r = prefix[c] += v;
+						linePrefix[d] = r;
+					}
+				}
+			}
+
+			var bw = 9;
+			var box = new byte[n * channels];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var x1 = Math.Max(0, x - bw);
+					var x2 = Math.Min(width - 1, x + bw);
+					for (var c = 0; c < channels; c++)
+					{
+						var d = y * width * channels + x * channels + c;
+						var d1 = y * width * channels + x1 * channels + c;
+						var d2 = y * width * channels + x2 * channels + c;
+						var diff = linePrefix[d2] - linePrefix[d1];
+						var avg = diff / (x2 - x1);
+						box[d] = (byte) Math.Min(255, avg);
+					}
+				}
+			}
+
+			box.RunAs(width, height, channels, $"box{bw}.png");
 
 			var gauss = new byte[n * channels];
 			var grayscale = new byte[n];
@@ -124,8 +165,6 @@ namespace Emphasis.ScreenCapture.Tests
 			
 			Array.Fill(swt0, int.MaxValue);
 			Array.Fill(swt1, int.MaxValue);
-
-			var src = useLarge ? large : source;
 
 			Algorithms.Grayscale(width, height, src, grayscale);
 			Algorithms.Gauss(width, height, src, gauss);
