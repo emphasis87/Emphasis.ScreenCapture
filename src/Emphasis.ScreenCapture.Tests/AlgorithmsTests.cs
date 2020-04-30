@@ -115,6 +115,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Span<int> prefix = stackalloc int[channels];
 			for (var y = 0; y < height; y++)
 			{
+
 				for (var x = 0; x < width; x++)
 				{
 					for (var c = 0; c < channels; c++)
@@ -127,8 +128,10 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 			}
 
-			var bw = 9;
+			var bw = 15;
+			var bw2 = bw * 2 + 1;
 			var box = new byte[n * channels];
+			Span<int> di = stackalloc int[bw2];
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
@@ -138,10 +141,18 @@ namespace Emphasis.ScreenCapture.Tests
 					for (var c = 0; c < channels; c++)
 					{
 						var d = y * width * channels + x * channels + c;
-						var d1 = y * width * channels + x1 * channels + c;
-						var d2 = y * width * channels + x2 * channels + c;
-						var diff = linePrefix[d2] - linePrefix[d1];
-						var avg = diff / (x2 - x1);
+						var y1 = Math.Max(0, y - bw);
+						var y2 = Math.Min(height - 1, y + bw);
+						var sum = 0;
+						for (var yi = y1; yi <= y2; yi++)
+						{
+							var d1 = yi * width * channels + x1 * channels + c;
+							var d2 = yi * width * channels + x2 * channels + c;
+							var diff = linePrefix[d2] - linePrefix[d1];
+							sum += diff;
+						}
+
+						var avg = sum / ((y2 - y1) * (x2 - x1));
 						box[d] = (byte) Math.Min(255, avg);
 					}
 				}
