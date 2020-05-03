@@ -128,7 +128,8 @@ namespace Emphasis.ScreenCapture.Tests
 				}
 			}
 
-			var bw = 15;
+			var bw = 7;
+			bw *= 2;
 			var bw2 = bw * 2 + 1;
 			var box = new byte[n * channels];
 			Span<int> di = stackalloc int[bw2];

@@ -1,2 +1,4 @@
-# CsContrib.ScreenCapture
-Screen capture library using native APIs
+# Emphasis.ScreenCapture
+
+Screen capture library written in C# using native APIs
+
