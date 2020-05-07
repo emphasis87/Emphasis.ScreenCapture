@@ -35,6 +35,17 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public static void Background(int width, int height, byte[] source, byte[] grayscale, byte[] background)
+		{
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					
+				}
+			}
+		}
+
 		public static void Enlarge2Interpolated(int width, int height, byte[] source, byte[] destination, int channels = 4)
 		{
 			for (var y = 0; y < height - 1; y++)
