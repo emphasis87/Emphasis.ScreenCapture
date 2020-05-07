@@ -35,13 +35,34 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void Background(int width, int height, byte[] source, byte[] grayscale, byte[] background)
+		public static void GrayscaleEq(int width, int height, byte[] source, byte[] grayscale)
 		{
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
 				{
-					
+					var d = y * width + x;
+					var gs =
+						source[y * (width * 4) + x * 4 + 0] +
+						source[y * (width * 4) + x * 4 + 1] +
+						source[y * (width * 4) + x * 4 + 2];
+
+					var g = Math.Min(255, gs / 3);
+					grayscale[d] = (byte)g;
+				}
+			}
+		}
+
+		public static void Background(int width, int height, byte[] source, byte[] grayscale, byte[] background)
+		{
+			var ws = 5;
+			Span<int> window = stackalloc int[ws * ws * 2];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+
 				}
 			}
 		}
