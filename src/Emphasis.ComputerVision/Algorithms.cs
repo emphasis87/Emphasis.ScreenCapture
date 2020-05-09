@@ -53,6 +53,44 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public static void Sort(Span<int> source, Span<int> other)
+		{
+			var n = source.Length;
+			switch (n)
+			{
+				case 0:
+				case 1:
+					return;
+				case 2:
+				{
+					ref var a = ref source[0];
+					ref var b = ref source[1];
+					if (a > b)
+					{
+						var c = a;
+						a = b;
+						b = c;
+						var d = other[1];
+						other[1] = other[0];
+						other[0] = d;
+					}
+					return;
+				}
+			}
+
+			var n2 = n >> 1;
+			var s0 = source.Slice(0, n2);
+			var o0 = other.Slice(0, n2);
+			var s1 = source.Slice(n2, n - n2);
+			var o1 = other.Slice(n2, n - n2);
+			Sort(s0, o0);
+			Sort(s1, o1);
+			for (var i = 0; i < n; i++)
+			{
+
+			}
+		}
+
 		public static void Background(int width, int height, byte[] source, byte[] grayscale, byte[] background)
 		{
 			var ws = 5;
