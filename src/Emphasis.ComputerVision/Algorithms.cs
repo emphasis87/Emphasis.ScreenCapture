@@ -115,22 +115,23 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void Background(int width, int height, byte[] source, byte[] grayscale, byte[] background)
+		public static void Background(int width, int height, byte[] source, int sourceChannels, byte[] grayscale, byte[] background)
 		{
 			var ws = 5;
 			var ws2 = ws >> 1;
 			
 			Span<int> window = stackalloc int[ws * ws];
 			Span<int> indexes = stackalloc int[ws * ws];
+			Span<int> coordinates = stackalloc int[ws * ws * 2];
 			Span<int> windowBuffer = stackalloc int[ws * ws];
 			Span<int> indexesBuffer = stackalloc int[ws * ws];
+			Span<int> hist = stackalloc int[ws * ws];
 
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
 				{
 					var i = 0;
-					var d = y * width + x;
 					for (var yi = 0; yi < ws; yi++)
 					{
 						var yn = y + (yi - ws2);
@@ -144,17 +145,118 @@ namespace Emphasis.ComputerVision
 								continue;
 
 							var index = yn * width + xn;
-							indexes[i] = index;
 							window[i] = grayscale[index];
+							indexes[i] = i;
+							coordinates[2 * i] = yn;
+							coordinates[2 * i + 1] = xn;
 							i++;
 						}
 					}
 
 					Sort(window.Slice(0, i), indexes.Slice(0, i), windowBuffer, indexesBuffer);
 
+					var j0 = 0;
+					var j1 = 0;
 
+					hist.Fill(0);
+					var hmax = 0;
+					var hi = 0;
+
+					for (var k = 0; k < i; k++)
+					{
+						var g0 = window[k];
+						for (var j = j0; j < i; j++)
+						{
+							if (Math.Abs(window[j] - g0) < 50)
+								break;
+
+							j0 = j;
+						}
+
+						j1 = Math.Max(j0, j1);
+						for (var j = j1; j < i; j++)
+						{
+							if (Math.Abs(window[j] - g0) < 50)
+							{
+								j1 = j;
+								continue;
+							}
+							break;
+						}
+
+						var i1 = indexes[k];
+						var y1 = coordinates[2 * i1];
+						var x1 = coordinates[2 * i1 + 1];
+						var d1 = y1 * width * sourceChannels + x1 * sourceChannels;
+						if (k > 0)
+						{
+							var i2 = indexes[k - 1];
+							var y2 = coordinates[2 * i2];
+							var x2 = coordinates[2 * i2 + 1];
+							var d2 = y2 * width * sourceChannels + x2 * sourceChannels;
+							if (IsSameColorPerChannel(source, sourceChannels, d1, d2, 0))
+							{
+								hist[k] = hist[k - 1];
+								continue;
+							}
+						}
+
+						var h = 0;
+						for (var j = j0; j <= j1; j++)
+						{
+							if (j == k)
+							{
+								h++;
+								continue;
+							}
+
+							var i2 = indexes[j];
+							var y2 = coordinates[2 * i2];
+							var x2 = coordinates[2 * i2 + 1];
+							var d2 = y2 * width * sourceChannels + x2 * sourceChannels;
+							if (!IsSameColorPerChannel(source, sourceChannels, d1, d2, 30))
+								break;
+							
+							h++;
+						}
+
+						if (h > hmax)
+						{
+							hmax = h;
+							hi = k;
+
+							if (h > ws - ws2)
+								break;
+						}
+					}
+
+					var dc = y * width * sourceChannels + x * sourceChannels;
+
+					var i3 = indexes[hi];
+					var y3 = coordinates[2 * i3];
+					var x3 = coordinates[2 * i3 + 1];
+					var d3 = y3 * width * sourceChannels + x3 * sourceChannels;
+					for (var c = 0; c < sourceChannels; c++)
+					{
+						background[dc + c] = source[d3 + c];
+					}
 				}
 			}
+		}
+
+		public static bool IsSameColorPerChannel(byte[] source, int channels, int i1, int i2, int tolerance)
+		{
+			var isSameColor = true;
+			for (var c = 0; c < channels; c++)
+			{
+				if (Math.Abs(source[i1 + c] - source[i2 + c]) > tolerance)
+				{
+					isSameColor = false;
+					break;
+				}
+			}
+
+			return isSameColor;
 		}
 
 		public static void Enlarge2Interpolated(int width, int height, byte[] source, byte[] destination, int channels = 4)

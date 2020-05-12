@@ -77,7 +77,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.Grayscale(width,height, source, grayscale);
 
 			var background = new byte[n * channels];
-			Algorithms.Background(width, height, source, grayscale, background);
+			Algorithms.Background(width, height, source, channels, grayscale, background);
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			background.RunAs(width, height, channels, "background.png");
