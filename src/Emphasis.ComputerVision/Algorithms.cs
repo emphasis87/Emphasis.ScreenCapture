@@ -53,7 +53,7 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void Sort(Span<int> source, Span<int> other)
+		public static void Sort(Span<int> source, Span<int> other, Span<int> sourceBuffer, Span<int> otherBuffer)
 		{
 			var n = source.Length;
 			switch (n)
@@ -80,21 +80,50 @@ namespace Emphasis.ComputerVision
 
 			var n2 = n >> 1;
 			var s0 = source.Slice(0, n2);
-			var o0 = other.Slice(0, n2);
 			var s1 = source.Slice(n2, n - n2);
+			var o0 = other.Slice(0, n2);
 			var o1 = other.Slice(n2, n - n2);
-			Sort(s0, o0);
-			Sort(s1, o1);
+			var sb0 = sourceBuffer.Slice(0, n2);
+			var sb1 = sourceBuffer.Slice(n2, n - n2);
+			var ob0 = otherBuffer.Slice(0, n2);
+			var ob1 = otherBuffer.Slice(n2, n - n2);
+			
+			Sort(s0, o0, sb0, ob0);
+			Sort(s1, o1, sb1, ob1);
+			
+			s0.CopyTo(sb0);
+			s1.CopyTo(sb1);
+			o0.CopyTo(ob0);
+			o1.CopyTo(ob1);
+
+			var p0 = 0;
+			var p1 = 0;
 			for (var i = 0; i < n; i++)
 			{
-
+				if (sb0[p0] <= sb1[p1])
+				{
+					source[i] = sb0[p0];
+					other[i] = ob0[p0];
+					p0++;
+				}
+				else
+				{
+					source[i] = sb1[p1];
+					other[i] = ob1[p1];
+					p1++;
+				}
 			}
 		}
 
 		public static void Background(int width, int height, byte[] source, byte[] grayscale, byte[] background)
 		{
 			var ws = 5;
-			Span<int> window = stackalloc int[ws * ws * 2];
+			
+			Span<int> window = stackalloc int[ws * ws];
+			Span<int> indexes = stackalloc int[ws * ws];
+			Span<int> windowBuffer = stackalloc int[ws * ws];
+			Span<int> indexesBuffer = stackalloc int[ws * ws];
+
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++)
