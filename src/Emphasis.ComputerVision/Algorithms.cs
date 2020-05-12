@@ -118,7 +118,8 @@ namespace Emphasis.ComputerVision
 		public static void Background(int width, int height, byte[] source, int sourceChannels, byte[] grayscale, byte[] background)
 		{
 			var ws = 5;
-			var ws2 = ws >> 1;
+			var wa = ws >> 1;
+			var wb = ws - wa;
 			
 			Span<int> window = stackalloc int[ws * ws];
 			Span<int> indexes = stackalloc int[ws * ws];
@@ -134,13 +135,13 @@ namespace Emphasis.ComputerVision
 					var i = 0;
 					for (var yi = 0; yi < ws; yi++)
 					{
-						var yn = y + (yi - ws2);
+						var yn = y + (yi - wa);
 						if (yn < 0 || yn >= height)
 							continue;
 
 						for (var xi = 0; xi < ws; xi++)
 						{
-							var xn = x + (xi - ws2);
+							var xn = x + (xi - wa);
 							if (xn < 0 || xn >= width)
 								continue;
 
@@ -225,7 +226,7 @@ namespace Emphasis.ComputerVision
 							hmax = h;
 							hi = k;
 
-							if (h > ws - ws2)
+							if (h >= wb)
 								break;
 						}
 					}
