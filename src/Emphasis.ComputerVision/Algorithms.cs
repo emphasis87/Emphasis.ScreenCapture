@@ -100,7 +100,7 @@ namespace Emphasis.ComputerVision
 			var p1 = 0;
 			for (var i = 0; i < n; i++)
 			{
-				if (sb0[p0] <= sb1[p1])
+				if (p1 >= n - n2 || (p0 < n2 && sb0[p0] <= sb1[p1]))
 				{
 					source[i] = sb0[p0];
 					other[i] = ob0[p0];
@@ -118,6 +118,7 @@ namespace Emphasis.ComputerVision
 		public static void Background(int width, int height, byte[] source, byte[] grayscale, byte[] background)
 		{
 			var ws = 5;
+			var ws2 = ws >> 1;
 			
 			Span<int> window = stackalloc int[ws * ws];
 			Span<int> indexes = stackalloc int[ws * ws];
@@ -128,7 +129,29 @@ namespace Emphasis.ComputerVision
 			{
 				for (var x = 0; x < width; x++)
 				{
+					var i = 0;
 					var d = y * width + x;
+					for (var yi = 0; yi < ws; yi++)
+					{
+						var yn = y + (yi - ws2);
+						if (yn < 0 || yn >= height)
+							continue;
+
+						for (var xi = 0; xi < ws; xi++)
+						{
+							var xn = x + (xi - ws2);
+							if (xn < 0 || xn >= width)
+								continue;
+
+							var index = yn * width + xn;
+							indexes[i] = index;
+							window[i] = grayscale[index];
+							i++;
+						}
+					}
+
+					Sort(window.Slice(0, i), indexes.Slice(0, i), windowBuffer, indexesBuffer);
+
 
 				}
 			}
