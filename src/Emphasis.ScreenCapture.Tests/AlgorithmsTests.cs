@@ -62,11 +62,12 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void Background_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample05;
 
-			Run("sample03.png");
+			Run("sample05.png");
 
 			var source = sourceBitmap.ToBytes();
+
 			var channels = 4;
 
 			var width = sourceBitmap.Width;
@@ -74,13 +75,24 @@ namespace Emphasis.ScreenCapture.Tests
 			var n = width * height;
 
 			var grayscale = new byte[n];
-			Algorithms.Grayscale(width,height, source, grayscale);
+			Algorithms.GrayscaleEq(width,height, source, grayscale);
 
 			var background = new byte[n * channels];
 			Algorithms.Background(width, height, source, channels, grayscale, background);
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
+			grayscale.RunAsText(width, height, 1, "grayscale.txt");
+
+			source.RunAsText(width, height, channels, "source.txt");
+
 			background.RunAs(width, height, channels, "background.png");
+			background.RunAsText(width, height, channels, "background.txt");
+
+			var grayscaleBg = new byte[n];
+			Algorithms.GrayscaleEq(width, height, background, grayscaleBg);
+
+			grayscaleBg.RunAs(width, height, 1, "grayscaleBg.png");
+			grayscaleBg.RunAsText(width, height, 1, "grayscaleBg.txt");
 		}
 
 		[Test]

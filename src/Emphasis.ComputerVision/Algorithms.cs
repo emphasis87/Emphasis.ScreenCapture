@@ -120,6 +120,7 @@ namespace Emphasis.ComputerVision
 			var ws = 5;
 			var wa = ws >> 1;
 			var wb = ws - wa;
+			var ws2 = (ws * ws) >> 1;
 			
 			Span<int> window = stackalloc int[ws * ws];
 			Span<int> indexes = stackalloc int[ws * ws];
@@ -171,7 +172,7 @@ namespace Emphasis.ComputerVision
 							if (Math.Abs(window[j] - g0) < 50)
 								break;
 
-							j0 = j;
+							j0++;
 						}
 
 						j1 = Math.Max(j0, j1);
@@ -226,7 +227,7 @@ namespace Emphasis.ComputerVision
 							hmax = h;
 							hi = k;
 
-							if (h >= wb)
+							if (h > ws2)
 								break;
 						}
 					}
