@@ -117,7 +117,7 @@ namespace Emphasis.ComputerVision
 
 		public static void Background(int width, int height, byte[] source, int sourceChannels, byte[] grayscale, byte[] background)
 		{
-			var ws = 5;
+			var ws = 7;
 			var wa = ws >> 1;
 			var wb = ws - wa;
 			var ws2 = (ws * ws) >> 1;
@@ -166,15 +166,10 @@ namespace Emphasis.ComputerVision
 
 					for (var k = 0; k < i; k++)
 					{
+						if (j0 < k)
+							j0 = k;
+
 						var g0 = window[k];
-						for (var j = j0; j < i; j++)
-						{
-							if (Math.Abs(window[j] - g0) < 50)
-								break;
-
-							j0++;
-						}
-
 						j1 = Math.Max(j0, j1);
 						for (var j = j1; j < i; j++)
 						{
@@ -183,6 +178,7 @@ namespace Emphasis.ComputerVision
 								j1 = j;
 								continue;
 							}
+
 							break;
 						}
 
@@ -217,7 +213,7 @@ namespace Emphasis.ComputerVision
 							var x2 = coordinates[2 * i2 + 1];
 							var d2 = y2 * width * sourceChannels + x2 * sourceChannels;
 							if (!IsSameColorPerChannel(source, sourceChannels, d1, d2, 30))
-								break;
+								continue;
 							
 							h++;
 						}

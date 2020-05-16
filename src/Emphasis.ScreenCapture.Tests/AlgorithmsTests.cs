@@ -62,9 +62,9 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void Background_Test()
 		{
-			var sourceBitmap = Samples.sample05;
+			var sourceBitmap = Samples.sample03;
 
-			Run("sample05.png");
+			Run("sample03.png");
 
 			var source = sourceBitmap.ToBytes();
 
