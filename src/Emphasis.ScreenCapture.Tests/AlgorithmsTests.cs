@@ -78,7 +78,8 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.GrayscaleEq(width,height, source, grayscale);
 
 			var background = new byte[n * channels];
-			Algorithms.Background(width, height, source, channels, grayscale, background);
+			var backgroundSize = 7;
+			Algorithms.Background(width, height, source, channels, grayscale, background, backgroundSize);
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			grayscale.RunAsText(width, height, 1, "grayscale.txt");
@@ -93,6 +94,34 @@ namespace Emphasis.ScreenCapture.Tests
 
 			grayscaleBg.RunAs(width, height, 1, "grayscaleBg.png");
 			grayscaleBg.RunAsText(width, height, 1, "grayscaleBg.txt");
+		}
+
+		[Test]
+		public void BoxBlur_Test()
+		{
+			var sourceBitmap = Samples.sample03;
+
+			Run("sample03.png");
+
+			var source = sourceBitmap.ToBytes();
+
+			var channels = 4;
+
+			var width = sourceBitmap.Width;
+			var height = sourceBitmap.Height;
+			var n = width * height;
+
+			var linePrefixSums = new int[n * channels];
+			Algorithms.LinePrefixSum(width, height, source, channels, linePrefixSums);
+
+			var box = new byte[n * channels];
+			var boxSize = 5;
+			Algorithms.BoxBlur(width, height, linePrefixSums, channels, box, boxSize);
+
+			source.RunAsText(width, height, channels, "source.txt");
+
+			box.RunAs(width, height, channels, $"box{boxSize}.png");
+			box.RunAsText(width, height, channels, $"box{boxSize}.txt");
 		}
 
 		[Test]
@@ -142,61 +171,9 @@ namespace Emphasis.ScreenCapture.Tests
 				width *= 2;
 				height *= 2;
 			}
-			var src = useLarge ? large : source;
-
-
 			var n = height * width;
-
-			var linePrefix = new int[n * channels];
-			Span<int> prefix = stackalloc int[channels];
-			for (var y = 0; y < height; y++)
-			{
-
-				for (var x = 0; x < width; x++)
-				{
-					for (var c = 0; c < channels; c++)
-					{
-						var d = y * width * channels + x * channels + c;
-						var v = src[d];
-						var r = prefix[c] += v;
-						linePrefix[d] = r;
-					}
-				}
-			}
-
-			var bw = 7;
-			bw *= 2;
-			var bw2 = bw * 2 + 1;
-			var box = new byte[n * channels];
-			Span<int> di = stackalloc int[bw2];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var x1 = Math.Max(0, x - bw);
-					var x2 = Math.Min(width - 1, x + bw);
-					for (var c = 0; c < channels; c++)
-					{
-						var d = y * width * channels + x * channels + c;
-						var y1 = Math.Max(0, y - bw);
-						var y2 = Math.Min(height - 1, y + bw);
-						var sum = 0;
-						for (var yi = y1; yi <= y2; yi++)
-						{
-							var d1 = yi * width * channels + x1 * channels + c;
-							var d2 = yi * width * channels + x2 * channels + c;
-							var diff = linePrefix[d2] - linePrefix[d1];
-							sum += diff;
-						}
-
-						var avg = sum / ((y2 - y1) * (x2 - x1));
-						box[d] = (byte) Math.Min(255, avg);
-					}
-				}
-			}
-
-			box.RunAs(width, height, channels, $"box{bw}.png");
-
+			var src = useLarge ? large : source;
+			
 			var gauss = new byte[n * channels];
 			var grayscale = new byte[n];
 

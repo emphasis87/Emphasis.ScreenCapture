@@ -115,9 +115,56 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static void Background(int width, int height, byte[] source, int sourceChannels, byte[] grayscale, byte[] background)
+		public static void LinePrefixSum(int width, int height, byte[] source, int sourceChannels, int[] linePrefixSums)
 		{
-			var ws = 7;
+			Span<int> prefix = stackalloc int[sourceChannels];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					for (var c = 0; c < sourceChannels; c++)
+					{
+						var d = y * width * sourceChannels + x * sourceChannels + c;
+						var v = source[d];
+						var r = prefix[c] += v;
+						linePrefixSums[d] = r;
+					}
+				}
+			}
+		}
+
+		public static void BoxBlur(int width, int height, int[] linePrefixSums, int sourceChannels, byte[] box, int windowSize)
+		{
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var x1 = Math.Max(0, x - windowSize);
+					var x2 = Math.Min(width - 1, x + windowSize);
+					for (var c = 0; c < sourceChannels; c++)
+					{
+						var d = y * width * sourceChannels + x * sourceChannels + c;
+						var y1 = Math.Max(0, y - windowSize);
+						var y2 = Math.Min(height - 1, y + windowSize);
+						var sum = 0;
+						for (var yi = y1; yi <= y2; yi++)
+						{
+							var d1 = yi * width * sourceChannels + x1 * sourceChannels + c;
+							var d2 = yi * width * sourceChannels + x2 * sourceChannels + c;
+							var diff = linePrefixSums[d2] - linePrefixSums[d1];
+							sum += diff;
+						}
+
+						var avg = sum / ((y2 - y1) * (x2 - x1));
+						box[d] = (byte)Math.Min(255, avg);
+					}
+				}
+			}
+		}
+
+		public static void Background(int width, int height, byte[] source, int sourceChannels, byte[] grayscale, byte[] background, int windowSize)
+		{
+			var ws = windowSize;
 			var wa = ws >> 1;
 			var wb = ws - wa;
 			var ws2 = (ws * ws) >> 1;
