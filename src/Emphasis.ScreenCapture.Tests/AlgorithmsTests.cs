@@ -230,12 +230,20 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount1 = Algorithms.ComponentAnalysis(
 				width, height, src, swt1, components1, regionIndex1, regions1, regionSwt0, componentList1, componentLimit, componentSizeLimit, sourceChannels: channels);
 
-			// Filter components 1st pass
-			var valid0 = Algorithms.PassiveFilter(regionCount0, componentList0);
-			var valid1 = Algorithms.PassiveFilter(regionCount1, componentList1);
+			Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, regionIndex0,
+				sourceChannels: 4, connectByColor: true);
+			Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1, regionIndex1,
+				sourceChannels: 4, connectByColor: true);
 
-			var invalid0 = regionCount0 - valid0;
-			var invalid1 = regionCount1 - valid1;
+			// Filter components 1st pass
+			//var valid0 = Algorithms.PassiveFilter(regionCount0, componentList0);
+			//var valid1 = Algorithms.PassiveFilter(regionCount1, componentList1);
+
+			//var invalid0 = regionCount0 - valid0;
+			//var invalid1 = regionCount1 - valid1;
+
+			//Console.WriteLine($"Components BoW: {valid0}/{invalid0}");
+			//Console.WriteLine($"Components WoB: {valid1}/{invalid1}");
 
 			//var rtree0 = Algorithms.ComponentRBush(regionCount0, componentList0);
 			//var rtree1 = Algorithms.ComponentRBush(regionCount1, componentList1);
@@ -273,9 +281,6 @@ namespace Emphasis.ScreenCapture.Tests
 
 			components1.RunAs(width, height, 1, "cc1.png");
 			components1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
-
-			Console.WriteLine($"Components BoW: {valid0}/{invalid0}");
-			Console.WriteLine($"Components WoB: {valid1}/{invalid1}");
 
 			var text0 = new int[n];
 			var text1 = new int[n];
