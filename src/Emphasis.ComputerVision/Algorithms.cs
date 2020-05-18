@@ -239,7 +239,7 @@ namespace Emphasis.ComputerVision
 							var y2 = coordinates[2 * i2];
 							var x2 = coordinates[2 * i2 + 1];
 							var d2 = y2 * width * sourceChannels + x2 * sourceChannels;
-							if (IsSameColorPerChannel(source, sourceChannels, d1, d2, 0))
+							if (IsSameColor(source, sourceChannels, d1, d2, 0))
 							{
 								hist[k] = hist[k - 1];
 								continue;
@@ -259,7 +259,7 @@ namespace Emphasis.ComputerVision
 							var y2 = coordinates[2 * i2];
 							var x2 = coordinates[2 * i2 + 1];
 							var d2 = y2 * width * sourceChannels + x2 * sourceChannels;
-							if (!IsSameColorPerChannel(source, sourceChannels, d1, d2, 30))
+							if (!IsSameColor(source, sourceChannels, d1, d2, 30))
 								continue;
 							
 							h++;
@@ -289,12 +289,42 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static bool IsSameColorPerChannel(byte[] source, int channels, int i1, int i2, int tolerance)
+		public static bool IsSameColor(byte[] source, int channels, int i1, int i2, int channelTolerance)
 		{
 			var isSameColor = true;
 			for (var c = 0; c < channels; c++)
 			{
-				if (Math.Abs(source[i1 + c] - source[i2 + c]) > tolerance)
+				if (Math.Abs(source[i1 + c] - source[i2 + c]) > channelTolerance)
+				{
+					isSameColor = false;
+					break;
+				}
+			}
+
+			return isSameColor;
+		}
+
+		public static bool IsSameColor(Span<byte> pixel, byte[] other, int channels, int i1, int channelTolerance)
+		{
+			var isSameColor = true;
+			for (var c = 0; c < channels; c++)
+			{
+				if (Math.Abs(pixel[c] - other[i1 + c]) > channelTolerance)
+				{
+					isSameColor = false;
+					break;
+				}
+			}
+
+			return isSameColor;
+		}
+
+		public static bool IsSameColor(Span<byte> pixel, int[] other, int channels, int i1, int channelTolerance)
+		{
+			var isSameColor = true;
+			for (var c = 0; c < channels; c++)
+			{
+				if (Math.Abs(pixel[c] - other[i1 + c]) > channelTolerance)
 				{
 					isSameColor = false;
 					break;
@@ -992,8 +1022,6 @@ namespace Emphasis.ComputerVision
 			bool connectByColor = false,
 			int colorDifference = 50)
 		{
-			Algorithms.PrepareComponents(swt, components);
-
 			var n = height * width;
 			var rounds = 0;
 			var isComplete = false;
@@ -1055,8 +1083,6 @@ namespace Emphasis.ComputerVision
 			bool connectByColor = false,
 			int colorDifference = 50)
 		{
-			Algorithms.PrepareComponents(swt, components);
-
 			var n = height * width;
 			var rounds = 0;
 			var isColored = false;
@@ -1112,8 +1138,6 @@ namespace Emphasis.ComputerVision
 			bool connectByColor = false,
 			int colorDifference = 50)
 		{
-			Algorithms.PrepareComponents(swt, components);
-
 			var n = height * width;
 			var rounds = 0;
 
@@ -1260,11 +1284,6 @@ namespace Emphasis.ComputerVision
 					if (c0 == c1 || c1 >= n)
 						continue;
 
-					if (y0 == 34 && c1 == 9207)
-					{
-
-					}
-
 					var s1 = swt[d1];
 					if (s0 != int.MaxValue && s1 != int.MaxValue)
 					{
@@ -1286,18 +1305,8 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var colorDiff = 0;
-					var isOfSameColor = true;
-					for (var channel = 0; channel < sourceChannels; channel++)
-					{
-						var diff = Math.Abs(src[channel] - regionColor[index * 4 + channel]);
-						colorDiff += diff;
-						if (diff > colorTolerance)
-						{
-							isOfSameColor = false;
-							break;
-						}
-					}
-
+					var isOfSameColor = IsSameColor(src, regionColor, sourceChannels, index * 4, 30);
+					
 					if (isOfSameColor && colorDiff < minColorDiff)
 					{
 						minColorDiff = colorDiff;

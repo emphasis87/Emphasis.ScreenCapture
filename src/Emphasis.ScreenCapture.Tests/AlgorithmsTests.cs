@@ -204,6 +204,9 @@ namespace Emphasis.ScreenCapture.Tests
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 
+			Algorithms.PrepareComponents(swt0, components0);
+			Algorithms.PrepareComponents(swt1, components1);
+
 			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, null,
 				sourceChannels: 4, connectByColor: false);
 			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1, null,
@@ -498,6 +501,10 @@ namespace Emphasis.ScreenCapture.Tests
 			var components0 = new int[height * width];
 			var components1 = new int[height * width];
 			var components2 = new int[height * width];
+
+			Algorithms.PrepareComponents(values, components0);
+			Algorithms.PrepareComponents(values, components1);
+			Algorithms.PrepareComponents(values, components2);
 
 			var roundsWatershed = Algorithms.ColorComponentsWatershed(width, height, source, values, components0);
 			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(width, height, source, values, components1);
