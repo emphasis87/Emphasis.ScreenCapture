@@ -1010,48 +1010,6 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
-		public static int ColorComponentsWatershed(
-			int width,
-			int height,
-			byte[] source,
-			int[] swt,
-			int[] components,
-			int[] regionIndex = null,
-			int[] colors = null,
-			int sourceChannels = 4,
-			bool connectByColor = false,
-			int colorDifference = 50)
-		{
-			var n = height * width;
-			var rounds = 0;
-			var isComplete = false;
-			while (!isComplete)
-			{
-				rounds++;
-				isComplete = true;
-				for (var y = 0; y < height; y++)
-				{
-					for (var x = 0; x < width; x++)
-					{
-						var d = y * width + x;
-						var cn = ColorComponent(
-							width, height, n, source, swt, components, regionIndex, colors, x, y, d,
-							sourceChannels: sourceChannels,
-							connectByColor: connectByColor,
-							colorDifference: colorDifference);
-
-						if (cn != components[d])
-						{
-							components[d] = cn;
-							isComplete = false;
-						}
-					}
-				}
-			}
-
-			return rounds;
-		}
-
 		public static void PrepareComponents(int[] swt, int[] components)
 		{
 			var n = components.Length;
@@ -1071,17 +1029,51 @@ namespace Emphasis.ComputerVision
 			}
 		}
 
+		public static int ModOverflow(int i, int mod)
+		{
+			if (i >= mod)
+				i -= mod;
+			return i;
+		}
+
+		public static int ColorComponentsWatershed(
+			int width,
+			int height,
+			int[] swt,
+			int[] coloring)
+		{
+			var rounds = 0;
+			var isComplete = false;
+			while (!isComplete)
+			{
+				rounds++;
+				isComplete = true;
+				for (var y = 0; y < height; y++)
+				{
+					for (var x = 0; x < width; x++)
+					{
+						var d = y * width + x;
+						var cn = ColorComponentByStrokeWidth(
+							width, height, swt, coloring,
+							x, y, d);
+
+						if (cn != coloring[d])
+						{
+							coloring[d] = cn;
+							isComplete = false;
+						}
+					}
+				}
+			}
+
+			return rounds;
+		}
+
 		public static int ColorComponentsFixedPoint(
 			int width,
 			int height,
-			byte[] source,
 			int[] swt,
-			int[] components,
-			int[] regionIndex = null,
-			int[] colors = null,
-			int sourceChannels = 4,
-			bool connectByColor = false,
-			int colorDifference = 50)
+			int[] coloring)
 		{
 			var n = height * width;
 			var rounds = 0;
@@ -1095,21 +1087,19 @@ namespace Emphasis.ComputerVision
 					for (var x = 0; x < width; x++)
 					{
 						var d = y * width + x;
-						var c = components[d];
-						var cn = ColorComponent(
-							width, height, n, source, swt, components, regionIndex, colors, x, y, d,
-							sourceChannels: sourceChannels,
-							connectByColor: connectByColor,
-							colorDifference: colorDifference);
+						var c = coloring[d];
+						var cn = ColorComponentByStrokeWidth(
+							width, height, swt, coloring,
+							x, y, d);
 
 						if (cn  < c)
 						{
 							for (var i = 0; i < 4; i++)
 							{
-								cn = components[Mod1(cn, n)];
+								cn = coloring[ModOverflow(cn, n)];
 							}
 
-							components[d] = cn;
+							coloring[d] = cn;
 							isColored = false;
 						}
 					}
@@ -1119,67 +1109,44 @@ namespace Emphasis.ComputerVision
 			return rounds;
 		}
 
-		public static int Mod1(int i, int mod)
-		{
-			if (i >= mod)
-				i -= mod;
-			return i;
-		}
-
 		public static int ColorComponentsFixedPointBackPropagation(
 			int width,
 			int height,
-			byte[] source,
 			int[] swt,
-			int[] components,
-			int[] regionIndex = null,
-			int[] colors = null,
-			int sourceChannels = 4,
-			bool connectByColor = false,
-			int colorDifference = 50)
+			int[] coloring)
 		{
 			var n = height * width;
 			var rounds = 0;
 
-			var connectionType = new bool[]
+			var isColored = false;
+			while (!isColored)
 			{
-				false,
-			};
-
-			for (var ct = 0; ct < connectionType.Length; ct++)
-			{
-				var isColored = false;
-				while (!isColored)
+				rounds++;
+				isColored = true;
+				for (var y = 0; y < height; y++)
 				{
-					rounds++;
-					isColored = true;
-					for (var y = 0; y < height; y++)
+					for (var x = 0; x < width; x++)
 					{
-						for (var x = 0; x < width; x++)
+						var d = y * width + x;
+						var c0 = coloring[d];
+						var cn = ColorComponentByStrokeWidth(
+							width, height, swt, coloring, 
+							x, y, d);
+
+						if (cn >= c0)
+							continue;
+
+						for (var i = 0; i < 4; i++)
 						{
-							var d = y * width + x;
-							var c0 = components[d];
-							var cn = ColorComponent(
-								width, height, n, source, swt, components, regionIndex, colors, x, y, d,
-								sourceChannels: sourceChannels,
-								connectByColor: connectByColor,
-								colorDifference: colorDifference);
-
-							if (cn >= c0)
-								continue;
-
-							for (var i = 0; i < 4; i++)
-							{
-								var cq = components[Mod1(cn, n)];
-								cn = cq;
-							}
-
-							AtomicMin(ref components[Mod1(c0, n)], cn);
-							AtomicMin(ref components[d], cn);
-
-							components[d] = cn;
-							isColored = false;
+							var cq = coloring[ModOverflow(cn, n)];
+							cn = cq;
 						}
+
+						AtomicMin(ref coloring[ModOverflow(c0, n)], cn);
+						AtomicMin(ref coloring[d], cn);
+
+						coloring[d] = cn;
+						isColored = false;
 					}
 				}
 			}
@@ -1190,19 +1157,14 @@ namespace Emphasis.ComputerVision
 		public static int ColorComponentByStrokeWidth(
 			int width, 
 			int height,
-			int n,
-			byte[] source,
 			int[] swt,
-			int[] components,
-			int[] regionIndex,
-			int[] colors,
+			int[] coloring,
 			int x0, 
 			int y0,
-			int d,
-			int sourceChannels = 4)
+			int d)
 		{
 			var c = int.MaxValue;
-			var c0 = components[d];
+			var c0 = coloring[d];
 			var s0 = swt[d];
 
 			for (var y = -1; y <= 1; y++)
@@ -1220,7 +1182,7 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var d1 = y1 * width + x1;
-					var c1 = components[d1];
+					var c1 = coloring[d1];
 					var s1 = swt[d1];
 
 					if (s0 != int.MaxValue && s1 != int.MaxValue)
@@ -1236,23 +1198,70 @@ namespace Emphasis.ComputerVision
 			return Math.Min(c, c0);
 		}
 
+		public static int ColorComponentsFixedPointByColorSimilarity(
+			int width,
+			int height,
+			int[] swt,
+			int[] coloring,
+			byte[] source,
+			int[] regionIndex,
+			Component[] components,
+			int sourceChannels = 4,
+			int colorPerChannelTolerance = 30)
+		{
+			var n = height * width;
+			var rounds = 0;
+			var isColored = false;
+			while (!isColored)
+			{
+				rounds++;
+				isColored = true;
+				for (var y = 0; y < height; y++)
+				{
+					for (var x = 0; x < width; x++)
+					{
+						var d = y * width + x;
+						var c = coloring[d];
+						var cn = ColorComponentByColorSimilarity(
+							width, height, n, swt, coloring, source, sourceChannels, regionIndex, components,
+							x, y, d,
+							colorPerChannelTolerance: colorPerChannelTolerance);
+
+						if (cn < c)
+						{
+							// Fixed point: f(f(f(f(x))))
+							for (var i = 0; i < 4; i++)
+							{
+								cn = coloring[ModOverflow(cn, n)];
+							}
+
+							coloring[d] = cn;
+							isColored = false;
+						}
+					}
+				}
+			}
+
+			return rounds;
+		}
+
 		public static int ColorComponentByColorSimilarity(
 			int width,
 			int height,
 			int n,
-			byte[] source,
 			int[] swt,
-			int[] components,
+			int[] coloring,
+			byte[] source,
+			int sourceChannels,
 			int[] regionIndex,
-			int[] regionColor,
+			Component[] components,
 			int x0,
 			int y0,
 			int d,
-			int sourceChannels = 4,
-			int colorTolerance = 50)
+			int colorPerChannelTolerance = 30)
 		{
 			var c = int.MaxValue;
-			var c0 = components[d];
+			var c0 = coloring[d];
 			var s0 = swt[d];
 
 			Span<byte> src = stackalloc byte[sourceChannels];
@@ -1279,7 +1288,7 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var d1 = y1 * width + x1;
-					var c1 = components[d1];
+					var c1 = coloring[d1];
 
 					if (c0 == c1 || c1 >= n)
 						continue;
@@ -1316,33 +1325,6 @@ namespace Emphasis.ComputerVision
 			}
 
 			return Math.Min(c, c0);
-		}
-
-		public static int ColorComponent(
-			int width,
-			int height,
-			int n,
-			byte[] source,
-			int[] swt,
-			int[] components,
-			int[] regionIndex,
-			int[] colors,
-			int x0,
-			int y0,
-			int d,
-			int sourceChannels = 4,
-			int colorDifference = 50,
-			bool connectByColor = false)
-		{
-			if (connectByColor)
-				return ColorComponentByColorSimilarity(
-					width, height, n, source, swt, components, regionIndex, colors, x0, y0, d, 
-					sourceChannels: sourceChannels,
-					colorTolerance: colorDifference);
-
-			return ColorComponentByStrokeWidth(
-					width, height, n, source, swt, components, regionIndex, colors, x0, y0, d,
-					sourceChannels: sourceChannels);
 		}
 
 		public const int ComponentColorOffset = 0;

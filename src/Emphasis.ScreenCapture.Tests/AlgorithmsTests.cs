@@ -201,16 +201,16 @@ namespace Emphasis.ScreenCapture.Tests
 				colorDifference: swtEdgeColorTolerance,
 				useStrokeColor: swtEdgeOnColorChange);
 
-			var components0 = new int[height * width];
-			var components1 = new int[height * width];
+			var coloring0 = new int[height * width];
+			var coloring1 = new int[height * width];
 
-			Algorithms.PrepareComponents(swt0, components0);
-			Algorithms.PrepareComponents(swt1, components1);
+			Algorithms.PrepareComponents(swt0, coloring0);
+			Algorithms.PrepareComponents(swt1, coloring1);
 
-			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, null,
-				sourceChannels: 4, connectByColor: false);
-			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1, null,
-				sourceChannels: 4, connectByColor: false);
+			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(
+				width, height, swt0, coloring0);
+			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(
+				width, height, swt1, coloring1);
 
 			var regionIndex0 = new int[n];
 			var regionIndex1 = new int[n];
@@ -225,18 +225,18 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionSwt0 = new int[cn];
 			var regionSwt1 = new int[cn];
 
-			var componentList0 = new Component[componentLimit];
-			var componentList1 = new Component[componentLimit];
+			var components0 = new Component[componentLimit];
+			var components1 = new Component[componentLimit];
 
 			var regionCount0 = Algorithms.ComponentAnalysis(
-				width, height, src, swt0, components0, regionIndex0, regions0, regionSwt0, componentList0, componentLimit, componentSizeLimit, sourceChannels: channels);
+				width, height, src, swt0, coloring0, regionIndex0, regions0, regionSwt0, components0, componentLimit, componentSizeLimit, sourceChannels: channels);
 			var regionCount1 = Algorithms.ComponentAnalysis(
-				width, height, src, swt1, components1, regionIndex1, regions1, regionSwt0, componentList1, componentLimit, componentSizeLimit, sourceChannels: channels);
+				width, height, src, swt1, coloring1, regionIndex1, regions1, regionSwt0, components1, componentLimit, componentSizeLimit, sourceChannels: channels);
 
-			Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt0, components0, regionIndex0,
-				sourceChannels: 4, connectByColor: true);
-			Algorithms.ColorComponentsFixedPointBackPropagation(width, height, src, swt1, components1, regionIndex1,
-				sourceChannels: 4, connectByColor: true);
+			Algorithms.ColorComponentsFixedPointBackPropagation(
+				width, height, swt0, coloring0);
+			Algorithms.ColorComponentsFixedPointBackPropagation(
+				width, height, swt1, coloring1);
 
 			// Filter components 1st pass
 			//var valid0 = Algorithms.PassiveFilter(regionCount0, componentList0);
@@ -279,17 +279,17 @@ namespace Emphasis.ScreenCapture.Tests
 			swt1.RunAs(width, height, 1, "swt1.png");
 			swt1.ReplaceEquals(int.MaxValue, 0).MultiplyBy(10).RunAsText(width, height, 1, "swt1.txt");
 
-			components0.RunAs(width, height, 1, "cc0.png");
-			components0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0.txt");
+			coloring0.RunAs(width, height, 1, "cc0.png");
+			coloring0.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc0.txt");
 
-			components1.RunAs(width, height, 1, "cc1.png");
-			components1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
+			coloring1.RunAs(width, height, 1, "cc1.png");
+			coloring1.ReplaceGreaterOrEquals(n, 0).RunAsText(width, height, 1, "cc1.txt");
 
 			var text0 = new int[n];
 			var text1 = new int[n];
 			for (var i = 0; i < n; i++)
 			{
-				var color = components0[i];
+				var color = coloring0[i];
 				if (color >= n)
 				{
 					text0[i] = 255;
@@ -302,14 +302,14 @@ namespace Emphasis.ScreenCapture.Tests
 					text0[i] = 255;
 					continue;
 				}
-				ref var c = ref componentList0[ci];
+				ref var c = ref components0[ci];
 				if (!c.IsValid())
 					text0[i] = c.Validity;
 			}
 
 			for (var i = 0; i < n; i++)
 			{
-				var color = components1[i];
+				var color = coloring1[i];
 				if (color >= n)
 				{
 					text1[i] = 255;
@@ -322,7 +322,7 @@ namespace Emphasis.ScreenCapture.Tests
 					text1[i] = 255;
 					continue;
 				}
-				ref var c = ref componentList1[ci];
+				ref var c = ref components1[ci];
 				if (!c.IsValid())
 					text1[i] = c.Validity;
 			}
@@ -391,9 +391,10 @@ namespace Emphasis.ScreenCapture.Tests
 
 			swt.Length.Should().Be(width * height);
 
-			var components = new int [height * width];
+			var coloring = new int [height * width];
 			
-			var rounds = Algorithms.ColorComponentsFixedPoint(width, height, source, swt, components);
+			var rounds = Algorithms.ColorComponentsFixedPoint(
+				width, height, swt, coloring);
 
 			var r0 = height * width;
 			var result = new int[]
@@ -416,9 +417,9 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 			Algorithms.Dump(result, width, height);
-			Algorithms.Dump(components, width, height);
+			Algorithms.Dump(coloring, width, height);
 
-			components.Should().Equal(result);
+			coloring.Should().Equal(result);
 			Console.WriteLine($"Rounds: {rounds}");
 
 			var componentLimit = 1024;
@@ -430,7 +431,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var componentList = new Component[componentLimit];
 
 			var regionCount = Algorithms.ComponentAnalysis(
-				width, height, source, swt, components, regionIndex, regions, regionSwt, componentList, componentLimit, componentSizeLimit, sourceChannels: 1);
+				width, height, source, swt, coloring, regionIndex, regions, regionSwt, componentList, componentLimit, componentSizeLimit, sourceChannels: 1);
 
 			regionCount.Should().Be(3);
 			regionIndex[6].Should().Be(0);
@@ -470,7 +471,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = 10;
 			var n = height * width;
 
-			var values = new int[]
+			var swt = new int[]
 			{
 				max, max, max, max, max, max, max, max, max, max,
 				max,   1, max, max, max,   1, max, max,   1, max,
@@ -498,17 +499,20 @@ namespace Emphasis.ScreenCapture.Tests
 				255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
 			};
 
-			var components0 = new int[height * width];
-			var components1 = new int[height * width];
-			var components2 = new int[height * width];
+			var coloring0 = new int[height * width];
+			var coloring1 = new int[height * width];
+			var coloring2 = new int[height * width];
 
-			Algorithms.PrepareComponents(values, components0);
-			Algorithms.PrepareComponents(values, components1);
-			Algorithms.PrepareComponents(values, components2);
+			Algorithms.PrepareComponents(swt, coloring0);
+			Algorithms.PrepareComponents(swt, coloring1);
+			Algorithms.PrepareComponents(swt, coloring2);
 
-			var roundsWatershed = Algorithms.ColorComponentsWatershed(width, height, source, values, components0);
-			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(width, height, source, values, components1);
-			var roundsBackPropagation = Algorithms.ColorComponentsFixedPointBackPropagation(width, height, source, values, components2);
+			var roundsWatershed = Algorithms.ColorComponentsWatershed(
+				width, height, swt, coloring0);
+			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(
+				width, height, swt, coloring1);
+			var roundsBackPropagation = Algorithms.ColorComponentsFixedPointBackPropagation(
+				width, height, swt, coloring2);
 
 			var r0 = height * width;
 			var result = new int[]
@@ -527,17 +531,17 @@ namespace Emphasis.ScreenCapture.Tests
 
 			for (var i = 0; i < n; i++)
 			{
-				if (components0[i] >= n)
-					components0[i] = r0;
-				if (components1[i] >= n)
-					components1[i] = r0;
-				if (components2[i] >= n)
-					components2[i] = r0;
+				if (coloring0[i] >= n)
+					coloring0[i] = r0;
+				if (coloring1[i] >= n)
+					coloring1[i] = r0;
+				if (coloring2[i] >= n)
+					coloring2[i] = r0;
 			}
 
-			components0.Should().Equal(result);
-			components1.Should().Equal(result);
-			components2.Should().Equal(result);
+			coloring0.Should().Equal(result);
+			coloring1.Should().Equal(result);
+			coloring2.Should().Equal(result);
 
 			Console.WriteLine($"Rounds Watershed:       {roundsWatershed}");
 			Console.WriteLine($"Rounds FixedPoint:      {roundsFixedPoint}");
