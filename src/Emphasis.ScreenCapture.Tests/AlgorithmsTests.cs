@@ -233,10 +233,10 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount1 = Algorithms.ComponentAnalysis(
 				width, height, src, swt1, coloring1, regionIndex1, regions1, regionSwt0, components1, componentLimit, componentSizeLimit, sourceChannels: channels);
 
-			Algorithms.ColorComponentsFixedPointBackPropagation(
-				width, height, swt0, coloring0);
-			Algorithms.ColorComponentsFixedPointBackPropagation(
-				width, height, swt1, coloring1);
+			//Algorithms.ColorComponentsFixedPointBackPropagation(
+			//	width, height, swt0, coloring0);
+			//Algorithms.ColorComponentsFixedPointBackPropagation(
+			//	width, height, swt1, coloring1);
 
 			// Filter components 1st pass
 			//var valid0 = Algorithms.PassiveFilter(regionCount0, componentList0);

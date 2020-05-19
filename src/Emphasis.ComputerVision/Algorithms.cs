@@ -1167,18 +1167,18 @@ namespace Emphasis.ComputerVision
 			var c0 = coloring[d];
 			var s0 = swt[d];
 
-			for (var y = -1; y <= 1; y++)
+			for (var yi = -1; yi <= 1; yi++)
 			{
-				var y1 = y + y0;
+				var y1 = y0 + yi;
 				if (y1 < 0 || y1 >= height) 
 					continue;
 
-				for (var x = -1; x <= 1; x++)
+				for (var xi = -1; xi <= 1; xi++)
 				{
-					var x1 = x + x0;
+					var x1 = x0 + xi;
 					if (x1 < 0 || x1 >= width)
 						continue;
-					if (x == 0 && y == 0)
+					if (xi == 0 && yi == 0)
 						continue;
 
 					var d1 = y1 * width + x1;
@@ -1204,9 +1204,10 @@ namespace Emphasis.ComputerVision
 			int[] swt,
 			int[] coloring,
 			byte[] source,
-			int[] regionIndex,
+			byte[] background,
+			int channels,
+			int[] componentIndexByColoring,
 			Component[] components,
-			int sourceChannels = 4,
 			int colorPerChannelTolerance = 30)
 		{
 			var n = height * width;
@@ -1223,7 +1224,7 @@ namespace Emphasis.ComputerVision
 						var d = y * width + x;
 						var c = coloring[d];
 						var cn = ColorComponentByColorSimilarity(
-							width, height, n, swt, coloring, source, sourceChannels, regionIndex, components,
+							width, height, n, swt, coloring, source, background, channels, componentIndexByColoring, components,
 							x, y, d,
 							colorPerChannelTolerance: colorPerChannelTolerance);
 
@@ -1252,8 +1253,9 @@ namespace Emphasis.ComputerVision
 			int[] swt,
 			int[] coloring,
 			byte[] source,
-			int sourceChannels,
-			int[] regionIndex,
+			byte[] background,
+			int channels,
+			int[] componentIndexByColoring,
 			Component[] components,
 			int x0,
 			int y0,
@@ -1264,27 +1266,28 @@ namespace Emphasis.ComputerVision
 			var c0 = coloring[d];
 			var s0 = swt[d];
 
-			Span<byte> src = stackalloc byte[sourceChannels];
-			for (var channel = 0; channel < sourceChannels; channel++)
-			{
-				var ds = y0 * width * sourceChannels + x0 * sourceChannels + channel;
-				src[channel] = source[ds];
-			}
+			Span<byte> p0 = stackalloc byte[channels];
+			p0.PixelAt(source, channels, width, x0, y0);
+
+			Span<byte> b0 = stackalloc byte[channels];
+			b0.PixelAt(background, channels, width, x0, y0);
+
+			Span<byte> p1 = stackalloc byte[channels];
 
 			var minColorDiff = int.MaxValue;
 
-			for (var y = -1; y <= 1; y++)
+			for (var yi = -1; yi <= 1; yi++)
 			{
-				var y1 = y + y0;
+				var y1 = y0 + yi;
 				if (y1 < 0 || y1 >= height)
 					continue;
 
-				for (var x = -1; x <= 1; x++)
+				for (var xi = -1; xi <= 1; xi++)
 				{
-					var x1 = x + x0;
+					var x1 = x0 + xi;
 					if (x1 < 0 || x1 >= width)
 						continue;
-					if (x == 0 && y == 0)
+					if (xi == 0 && yi == 0)
 						continue;
 
 					var d1 = y1 * width + x1;
@@ -1294,6 +1297,7 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var s1 = swt[d1];
+					// Both pixels are stokes
 					if (s0 != int.MaxValue && s1 != int.MaxValue)
 					{
 						var smin = Math.Min(s0, s1);
@@ -1305,16 +1309,24 @@ namespace Emphasis.ComputerVision
 							continue;
 						}
 					}
+					// At least one pixel is a stoke
+					else if (s0 != int.MaxValue || s1 != int.MaxValue)
+					{
 
-					if (s0 == int.MaxValue && s1 == int.MaxValue)
-						continue;
+					}
+					// At least one pixel is already connected
+					else if (c0 < n || c1 < n)
+					{
 
-					var index = regionIndex[c1];
+					}
+
+					// TODO component merging
+					var index = componentIndexByColoring[c1];
 					if (index == -1)
 						continue;
 
 					var colorDiff = 0;
-					var isOfSameColor = IsSameColor(src, regionColor, sourceChannels, index * 4, 30);
+					var isOfSameColor = IsSameColor(p0, regionColor, channels, index * 4, 30);
 					
 					if (isOfSameColor && colorDiff < minColorDiff)
 					{
@@ -1325,6 +1337,13 @@ namespace Emphasis.ComputerVision
 			}
 
 			return Math.Min(c, c0);
+		}
+
+		public static void PixelAt(this Span<byte> pixel, byte[] source, int channels, int width, int x, int y)
+		{
+			var d = y * width * channels + x * channels;
+			for (var c = 0; c < channels; c++)
+				pixel[c] = source[d + c];
 		}
 
 		public const int ComponentColorOffset = 0;
