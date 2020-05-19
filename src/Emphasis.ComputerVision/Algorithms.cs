@@ -319,6 +319,21 @@ namespace Emphasis.ComputerVision
 			return isSameColor;
 		}
 
+		public static bool IsSameColor(Span<byte> p0, Span<byte> p1, int channels, int channelTolerance)
+		{
+			var isSameColor = true;
+			for (var c = 0; c < channels; c++)
+			{
+				if (Math.Abs(p0[c] - p1[c]) > channelTolerance)
+				{
+					isSameColor = false;
+					break;
+				}
+			}
+
+			return isSameColor;
+		}
+
 		public static bool IsSameColor(Span<byte> pixel, int[] other, int channels, int i1, int channelTolerance)
 		{
 			var isSameColor = true;
@@ -1175,10 +1190,11 @@ namespace Emphasis.ComputerVision
 
 				for (var xi = -1; xi <= 1; xi++)
 				{
+					if (xi == 0 && yi == 0)
+						continue;
+
 					var x1 = x0 + xi;
 					if (x1 < 0 || x1 >= width)
-						continue;
-					if (xi == 0 && yi == 0)
 						continue;
 
 					var d1 = y1 * width + x1;
@@ -1267,12 +1283,13 @@ namespace Emphasis.ComputerVision
 			var s0 = swt[d];
 
 			Span<byte> p0 = stackalloc byte[channels];
+			Span<byte> p1 = stackalloc byte[channels];
 			p0.PixelAt(source, channels, width, x0, y0);
 
 			Span<byte> b0 = stackalloc byte[channels];
 			b0.PixelAt(background, channels, width, x0, y0);
 
-			Span<byte> p1 = stackalloc byte[channels];
+			var isBackground = IsSameColor(p0, b0, channels, colorPerChannelTolerance);
 
 			var minColorDiff = int.MaxValue;
 
@@ -1284,15 +1301,17 @@ namespace Emphasis.ComputerVision
 
 				for (var xi = -1; xi <= 1; xi++)
 				{
+					if (xi == 0 && yi == 0)
+						continue;
+
 					var x1 = x0 + xi;
 					if (x1 < 0 || x1 >= width)
-						continue;
-					if (xi == 0 && yi == 0)
 						continue;
 
 					var d1 = y1 * width + x1;
 					var c1 = coloring[d1];
 
+					// The neighbor has the same color or is not connected
 					if (c0 == c1 || c1 >= n)
 						continue;
 
@@ -1309,16 +1328,13 @@ namespace Emphasis.ComputerVision
 							continue;
 						}
 					}
-					// At least one pixel is a stoke
-					else if (s0 != int.MaxValue || s1 != int.MaxValue)
-					{
 
-					}
-					// At least one pixel is already connected
-					else if (c0 < n || c1 < n)
-					{
+					// Do not connect background pixels to the component
+					if (isBackground)
+						continue;
 
-					}
+					p1.PixelAt(source, channels, width, x1, y1);
+					var isSameColor = IsSameColor(p0, p1, channels, colorPerChannelTolerance);
 
 					// TODO component merging
 					var index = componentIndexByColoring[c1];
