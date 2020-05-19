@@ -1335,6 +1335,8 @@ namespace Emphasis.ComputerVision
 
 					p1.PixelAt(source, channels, width, x1, y1);
 					var isSameColor = IsSameColor(p0, p1, channels, colorPerChannelTolerance);
+					if (!isSameColor)
+						continue;
 
 					// TODO component merging
 					var index = componentIndexByColoring[c1];
