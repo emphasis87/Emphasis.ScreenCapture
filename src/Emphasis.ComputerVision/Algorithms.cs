@@ -1364,65 +1364,6 @@ namespace Emphasis.ComputerVision
 				pixel[c] = source[d + c];
 		}
 
-		public const int ComponentColorOffset = 0;
-		public const int ComponentCountOffset = 1;
-		public const int ComponentCountSwtOffset = 2;
-		public const int ComponentSumSwtOffset = 3;
-		public const int ComponentMinXOffset = 4;
-		public const int ComponentMaxXOffset = 5;
-		public const int ComponentMinYOffset = 6;
-		public const int ComponentMaxYOffset = 7;
-		public const int ComponentChannel0Offset = 8;
-		public const int ComponentChannel1Offset = 9;
-		public const int ComponentChannel2Offset = 10;
-		public const int ComponentChannel3Offset = 11;
-		public const int ComponentItemsOffset = 12;
-
-		public static int GetComponentOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size);
-		}
-
-		public static int GetComponentChannel0Offset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentChannel0Offset;
-		}
-
-		public static int GetComponentColorOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentColorOffset;
-		}
-
-		public static int GetComponentSwtCountOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentCountSwtOffset;
-		}
-
-		public static int GetComponentCountOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentCountOffset;
-		}
-
-		public static int GetComponentMinXOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentMinXOffset;
-		}
-
-		public static int GetComponentMaxXOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentMaxXOffset;
-		}
-
-		public static int GetComponentMinYOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentMinYOffset;
-		}
-
-		public static int GetComponentMaxYOffset(int i, int size)
-		{
-			return i * (ComponentItemsOffset + size) + ComponentMaxYOffset;
-		}
-
 		public static int ComponentAnalysis(
 			int width, 
 			int height,

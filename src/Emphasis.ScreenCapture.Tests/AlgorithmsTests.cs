@@ -428,39 +428,43 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionIndex = new int[height * width];
 			var regions = new int[cn];
 			var regionSwt = new int[cn];
-			var componentList = new Component[componentLimit];
+			var components = new Component[componentLimit];
 
 			var regionCount = Algorithms.ComponentAnalysis(
-				width, height, source, swt, coloring, regionIndex, regions, regionSwt, componentList, componentLimit, componentSizeLimit, sourceChannels: 1);
+				width, height, source, swt, coloring, regionIndex, regions, regionSwt, components, componentLimit, componentSizeLimit, sourceChannels: 1);
 
 			regionCount.Should().Be(3);
 			regionIndex[6].Should().Be(0);
 			regionIndex[3].Should().Be(1);
 			regionIndex[56].Should().Be(2);
 
-			regions[Algorithms.ComponentCountOffset].Should().Be(25);
-			regions[Algorithms.ComponentCountSwtOffset].Should().Be(5);
-			regions[Algorithms.ComponentSumSwtOffset].Should().Be(6);
-			regions[Algorithms.ComponentMinXOffset].Should().Be(6);
-			regions[Algorithms.ComponentMaxXOffset].Should().Be(13);
-			regions[Algorithms.ComponentMinYOffset].Should().Be(0);
-			regions[Algorithms.ComponentMaxYOffset].Should().Be(1);
+			components[0].Color.Should().Be(6);
+			components[0].Size.Should().Be(25);
+			components[0].SwtSize.Should().Be(5);
+			components[0].SwtSum.Should().Be(6);
+			components[0].X0.Should().Be(6);
+			components[0].X1.Should().Be(13);
+			components[0].Y0.Should().Be(0);
+			components[0].Y1.Should().Be(1);
 
-			//regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(6, 11, 12, 13, 20, 25);
-			regions.AsSpan(Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(1, 1, 1, 1, 1, 1);
+			regions.AsSpan(0, componentSizeLimit).ToArray()
+				.Should().Equal(6, 11, 12, 13, 20, 25);
+			regionSwt.AsSpan(0, componentSizeLimit).ToArray()
+				.Should().Equal(1, 1, 1, 1, 1, 1);
 
-			var ci = componentSizeLimit + Algorithms.ComponentItemsOffset;
-			regions[ci + Algorithms.ComponentCountOffset].Should().Be(4); // count -2
-			regions[ci + Algorithms.ComponentCountSwtOffset].Should().Be(4); // swt count -2
-			regions[ci + Algorithms.ComponentSumSwtOffset].Should().Be(11); // sum
-			regions[ci + Algorithms.ComponentMinXOffset].Should().Be(2); // min x
-			regions[ci + Algorithms.ComponentMaxXOffset].Should().Be(5); // max x
-			regions[ci + Algorithms.ComponentMinYOffset].Should().Be(1); // min y
-			regions[ci + Algorithms.ComponentMaxYOffset].Should().Be(3); // max y
+			components[1].Color.Should().Be(3);
+			components[1].Size.Should().Be(4); // count -2
+			components[1].SwtSize.Should().Be(4); // swt count -2
+			components[1].SwtSum.Should().Be(11); // sum
+			components[1].X0.Should().Be(2); // min x
+			components[1].X1.Should().Be(5); // max x
+			components[1].Y0.Should().Be(1); // min y
+			components[1].Y1.Should().Be(3); // max y
 
-			//regions.AsSpan(ci + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray().Should().Equal(3, 16, 17, 18, 32, 47);
-			var reg1 = regions.AsSpan(ci + Algorithms.ComponentItemsOffset, componentSizeLimit).ToArray();
-			reg1.Should().Equal(2, 2, 1, 4, 2, 0);
+			regions.AsSpan(2 * componentSizeLimit, componentSizeLimit).ToArray()
+				.Should().Equal(3, 16, 17, 18, 32, 47);
+			regionSwt.AsSpan(2 * componentSizeLimit, componentSizeLimit).ToArray()
+				.Should().Equal(2, 2, 1, 4, 2, 0);
 		}
 
 		[Test]
