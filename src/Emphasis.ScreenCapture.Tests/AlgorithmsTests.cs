@@ -163,17 +163,28 @@ namespace Emphasis.ScreenCapture.Tests
 			var varianceTolerance = 2.0f;
 			var sizeRatioTolerance = 10;
 
-			var large = new byte[height * width * 4 * channels];
-			Algorithms.Enlarge2(width, height, source, large, channels);
+			var n = height * width;
+			var grayscaleEq = new byte[n];
+			var background = new byte[n * channels];
 
+			var bgWindowSize = 7;
+			Algorithms.GrayscaleEq(width, height, source, grayscaleEq);
+			Algorithms.Background(width, height, source, channels, grayscaleEq, background, bgWindowSize);
+
+			background.RunAs(width, height, channels, $"background{bgWindowSize}.png");
+
+			byte[] large = null;
 			if (useLarge)
 			{
+				large = new byte[n * 4 * channels];
+				Algorithms.Enlarge2(width, height, source, large, channels);
+
 				width *= 2;
 				height *= 2;
+				n = height * width;
 			}
-			var n = height * width;
 			var src = useLarge ? large : source;
-			
+
 			var gauss = new byte[n * channels];
 			var grayscale = new byte[n];
 
