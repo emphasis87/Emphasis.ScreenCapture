@@ -1386,50 +1386,50 @@ namespace Emphasis.ComputerVision
 			int height,
 			byte[] source,
 			int[] swt, 
-			int[] components, 
-			int[] regionIndex, 
-			int[] regions,
-			int[] regionSwt,
-			Component[] componentList,
-			int componentLimit, 
+			int[] coloring, 
+			int[] componentIndexByColoring, 
+			int[] componentItems,
+			int[] componentSwtItems,
+			Component[] components,
+			int componentsLimit, 
 			int componentSizeLimit,
 			int sourceChannels = 4)
 		{
-			Array.Fill(regionIndex, -1);
+			Array.Fill(componentIndexByColoring, -1);
 
-			for (var ci = 0; ci < componentLimit; ci++)
+			for (var ci = 0; ci < componentsLimit; ci++)
 			{
-				ref var c = ref componentList[ci];
+				ref var c = ref components[ci];
 				c.Initialize();
 			}
 
-			var n = components.Length;
+			var n = coloring.Length;
 			var count = -1;
 			var i = 0;
 			for (var y = 0; y < height; y++)
 			{
 				for (var x = 0; x < width; x++, i++)
 				{
-					var color = components[i];
+					var color = coloring[i];
 					if (color >= n)
 						continue;
 
 					if (color == i)
 						continue;
 
-					var ci = regionIndex[color];
+					var ci = componentIndexByColoring[color];
 					if (ci == -1)
 					{
 						ci = Interlocked.Increment(ref count);
-						if (ci >= componentLimit)
+						if (ci >= componentsLimit)
 							return count;
 
-						regionIndex[color] = ci;
-						ref var c0 = ref componentList[ci];
+						componentIndexByColoring[color] = ci;
+						ref var c0 = ref components[ci];
 						c0.Color = color;
 					}
 
-					ref var c = ref componentList[ci];
+					ref var c = ref components[ci];
 					var size = Interlocked.Increment(ref c.Size);
 					if (size >= componentSizeLimit)
 						continue;
@@ -1439,8 +1439,8 @@ namespace Emphasis.ComputerVision
 					if (s < int.MaxValue)
 					{
 						var swtSize = Interlocked.Increment(ref c.SwtSize);
-						regions[offset + swtSize] = i;
-						regionSwt[offset + swtSize] = s;
+						componentItems[offset + swtSize] = i;
+						componentSwtItems[offset + swtSize] = s;
 
 						Interlocked.Add(ref c.SwtSum, s);
 					}
@@ -1465,14 +1465,14 @@ namespace Emphasis.ComputerVision
 
 			for (var ci = 0; ci < count; ci++)
 			{
-				ref var c = ref componentList[ci];
+				ref var c = ref components[ci];
 				
 				// Add the first pixel of the component which is omitted
 				var size = c.Size += 1;
 				var swtSize = c.SwtSize += 1;
 				var offset = ci * componentSizeLimit;
-				var color = regions[offset] = c.Color;
-				var s = regionSwt[offset] = swt[color];
+				var color = componentItems[offset] = c.Color;
+				var s = componentSwtItems[offset] = swt[color];
 				c.SwtSum += s;
 
 				var w = c.Width = c.X1 - c.X0;
@@ -1483,9 +1483,9 @@ namespace Emphasis.ComputerVision
 				var diameter = c.Diameter = Hypot(w, h);
 				var swtAverage = c.SwtAverage = c.SwtSum / (float)swtSize;
 
-				Array.Sort(regionSwt, offset, swtSize);
+				Array.Sort(componentSwtItems, offset, swtSize);
 
-				var cs = regionSwt.AsSpan(offset, swtSize);
+				var cs = componentSwtItems.AsSpan(offset, swtSize);
 				var swtMedian = c.SwtMedian = cs[swtSize >> 1];
 				c.DiameterToSwtMedianRatio = diameter / swtMedian;
 				

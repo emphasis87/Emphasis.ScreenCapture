@@ -212,26 +212,26 @@ namespace Emphasis.ScreenCapture.Tests
 			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(
 				width, height, swt1, coloring1);
 
-			var regionIndex0 = new int[n];
-			var regionIndex1 = new int[n];
+			var componentIndexByColoring0 = new int[n];
+			var componentIndexByColoring1 = new int[n];
 
-			var componentLimit = 100000;
+			var componentsLimit = 100000;
 			var componentSizeLimit = 1024;
-			var cn = componentLimit * componentSizeLimit;
+			var cn = componentsLimit * componentSizeLimit;
 
-			var regions0 = new int[cn];
-			var regions1 = new int[cn];
+			var componentItems0 = new int[cn];
+			var componentItems1 = new int[cn];
 
-			var regionSwt0 = new int[cn];
-			var regionSwt1 = new int[cn];
+			var componentSwtItems0 = new int[cn];
+			var componentSwtItems1 = new int[cn];
 
-			var components0 = new Component[componentLimit];
-			var components1 = new Component[componentLimit];
+			var components0 = new Component[componentsLimit];
+			var components1 = new Component[componentsLimit];
 
 			var regionCount0 = Algorithms.ComponentAnalysis(
-				width, height, src, swt0, coloring0, regionIndex0, regions0, regionSwt0, components0, componentLimit, componentSizeLimit, sourceChannels: channels);
+				width, height, src, swt0, coloring0, componentIndexByColoring0, componentItems0, componentSwtItems0, components0, componentsLimit, componentSizeLimit, sourceChannels: channels);
 			var regionCount1 = Algorithms.ComponentAnalysis(
-				width, height, src, swt1, coloring1, regionIndex1, regions1, regionSwt0, components1, componentLimit, componentSizeLimit, sourceChannels: channels);
+				width, height, src, swt1, coloring1, componentIndexByColoring1, componentItems1, componentSwtItems0, components1, componentsLimit, componentSizeLimit, sourceChannels: channels);
 
 			//Algorithms.ColorComponentsFixedPointBackPropagation(
 			//	width, height, swt0, coloring0);
@@ -296,7 +296,7 @@ namespace Emphasis.ScreenCapture.Tests
 					continue;
 				}
 
-				var ci = regionIndex0[color];
+				var ci = componentIndexByColoring0[color];
 				if (color >= n || ci == -1)
 				{
 					text0[i] = 255;
@@ -316,7 +316,7 @@ namespace Emphasis.ScreenCapture.Tests
 					continue;
 				}
 
-				var ci = regionIndex1[color];
+				var ci = componentIndexByColoring1[color];
 				if (color >= n || ci == -1)
 				{
 					text1[i] = 255;
