@@ -334,6 +334,24 @@ namespace Emphasis.ComputerVision
 			return isSameColor;
 		}
 
+		public static bool IsSameColor(Span<byte> p0, Span<byte> p1, int channels, int channelTolerance, out int colorDifference)
+		{
+			var isSameColor = true;
+			colorDifference = 0;
+			for (var c = 0; c < channels; c++)
+			{
+				var diff = Math.Abs(p0[c] - p1[c]);
+				if (diff > channelTolerance)
+				{
+					isSameColor = false;
+					break;
+				}
+				colorDifference += diff;
+			}
+
+			return isSameColor;
+		}
+
 		public static bool IsSameColor(Span<byte> pixel, int[] other, int channels, int i1, int channelTolerance)
 		{
 			var isSameColor = true;
@@ -1291,7 +1309,8 @@ namespace Emphasis.ComputerVision
 
 			var isBackground = IsSameColor(p0, b0, channels, colorPerChannelTolerance);
 
-			var minColorDiff = int.MaxValue;
+			var colorDifference = int.MaxValue;
+			var cn = int.MaxValue;
 
 			for (var yi = -1; yi <= 1; yi++)
 			{
@@ -1316,7 +1335,7 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					var s1 = swt[d1];
-					// Both pixels are stokes
+					// Both pixels are strokes
 					if (s0 != int.MaxValue && s1 != int.MaxValue)
 					{
 						var smin = Math.Min(s0, s1);
@@ -1334,24 +1353,22 @@ namespace Emphasis.ComputerVision
 						continue;
 
 					p1.PixelAt(source, channels, width, x1, y1);
-					var isSameColor = IsSameColor(p0, p1, channels, colorPerChannelTolerance);
-					if (!isSameColor)
+					var isSameColor = IsSameColor(p0, p1, channels, colorPerChannelTolerance, out var colorDifference1);
+					if (!isSameColor || colorDifference < colorDifference1)
 						continue;
 
-					// TODO component merging
-					var index = componentIndexByColoring[c1];
-					if (index == -1)
-						continue;
-
-					var colorDiff = 0;
-					var isOfSameColor = IsSameColor(p0, regionColor, channels, index * 4, 30);
-					
-					if (isOfSameColor && colorDiff < minColorDiff)
-					{
-						minColorDiff = colorDiff;
-						c = Math.Min(c, c1);
-					}
+					colorDifference = colorDifference1;
+					c = Math.Min(c, c1);
+					cn = c1;
 				}
+			}
+
+			if (c < c0 && c == cn)
+			{
+				// Merge components
+				var ci0 = componentIndexByColoring[c0];
+				var ci1 = componentIndexByColoring[cn];
+				
 			}
 
 			return Math.Min(c, c0);
