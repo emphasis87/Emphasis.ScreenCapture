@@ -4,7 +4,8 @@ namespace Emphasis.ComputerVision
 {
 	public unsafe struct Component
 	{
-		public int Color;
+		public int Coloring;
+		public int ParentColoring;
 		public int Validity;
 		public int Size;
 		public int SwtSize;
@@ -28,6 +29,7 @@ namespace Emphasis.ComputerVision
 
 		public void Initialize()
 		{
+			ParentColoring = int.MaxValue;
 			X0 = int.MaxValue;
 			X1 = int.MinValue;
 			Y0 = int.MaxValue;

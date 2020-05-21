@@ -146,7 +146,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample13;
+			var sourceBitmap = Samples.sample03;
 
 			//Run("sample03.png");
 
@@ -244,10 +244,10 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionCount1 = Algorithms.ComponentAnalysis(
 				width, height, src, swt1, coloring1, componentIndexByColoring1, componentItems1, componentSwtItems0, components1, componentsLimit, componentSizeLimit, sourceChannels: channels);
 
-			//Algorithms.ColorComponentsFixedPointBackPropagation(
-			//	width, height, swt0, coloring0);
-			//Algorithms.ColorComponentsFixedPointBackPropagation(
-			//	width, height, swt1, coloring1);
+			Algorithms.ColorComponentsFixedPointByColorSimilarity(
+				width, height, swt0, coloring0, src, background, channels, componentIndexByColoring0, components0, 30, useLarge);
+			Algorithms.ColorComponentsFixedPointByColorSimilarity(
+				width, height, swt1, coloring1, src, background, channels, componentIndexByColoring1, components1, 30, useLarge);
 
 			// Filter components 1st pass
 			//var valid0 = Algorithms.PassiveFilter(regionCount0, componentList0);
@@ -449,7 +449,7 @@ namespace Emphasis.ScreenCapture.Tests
 			regionIndex[3].Should().Be(1);
 			regionIndex[56].Should().Be(2);
 
-			components[0].Color.Should().Be(6);
+			components[0].Coloring.Should().Be(6);
 			components[0].Size.Should().Be(25);
 			components[0].SwtSize.Should().Be(5);
 			components[0].SwtSum.Should().Be(6);
@@ -463,7 +463,7 @@ namespace Emphasis.ScreenCapture.Tests
 			regionSwt.AsSpan(0, componentSizeLimit).ToArray()
 				.Should().Equal(1, 1, 1, 1, 1, 1);
 
-			components[1].Color.Should().Be(3);
+			components[1].Coloring.Should().Be(3);
 			components[1].Size.Should().Be(4); // count -2
 			components[1].SwtSize.Should().Be(4); // swt count -2
 			components[1].SwtSum.Should().Be(11); // sum

@@ -1242,7 +1242,8 @@ namespace Emphasis.ComputerVision
 			int channels,
 			int[] componentIndexByColoring,
 			Component[] components,
-			int colorPerChannelTolerance = 30)
+			int colorPerChannelTolerance = 30,
+			bool isSourceEnlarged = false)
 		{
 			var n = height * width;
 			var rounds = 0;
@@ -1260,7 +1261,8 @@ namespace Emphasis.ComputerVision
 						var cn = ColorComponentByColorSimilarity(
 							width, height, n, swt, coloring, source, background, channels, componentIndexByColoring, components,
 							x, y, d,
-							colorPerChannelTolerance: colorPerChannelTolerance);
+							colorPerChannelTolerance: colorPerChannelTolerance,
+							isSourceEnlarged: isSourceEnlarged);
 
 						if (cn < c)
 						{
@@ -1294,7 +1296,8 @@ namespace Emphasis.ComputerVision
 			int x0,
 			int y0,
 			int d,
-			int colorPerChannelTolerance = 30)
+			int colorPerChannelTolerance = 30,
+			bool isSourceEnlarged = false)
 		{
 			var c = int.MaxValue;
 			var c0 = coloring[d];
@@ -1305,7 +1308,10 @@ namespace Emphasis.ComputerVision
 			p0.PixelAt(source, channels, width, x0, y0);
 
 			Span<byte> b0 = stackalloc byte[channels];
-			b0.PixelAt(background, channels, width, x0, y0);
+			if (isSourceEnlarged)
+				b0.PixelAt(background, channels, width >> 1,  x0 >> 1 , y0 >> 1);
+			else
+				b0.PixelAt(background, channels, width, x0, y0);
 
 			var isBackground = IsSameColor(p0, b0, channels, colorPerChannelTolerance);
 
@@ -1363,12 +1369,12 @@ namespace Emphasis.ComputerVision
 				}
 			}
 
-			if (c < c0 && c == cn)
+			if (c0 < n && c < c0 && c == cn)
 			{
 				// Merge components
 				var ci0 = componentIndexByColoring[c0];
-				var ci1 = componentIndexByColoring[cn];
-				
+				if (ci0 > 0)
+					AtomicMin(ref components[ci0].ParentColoring, c);
 			}
 
 			return Math.Min(c, c0);
@@ -1426,7 +1432,7 @@ namespace Emphasis.ComputerVision
 
 						componentIndexByColoring[color] = ci;
 						ref var c0 = ref components[ci];
-						c0.Color = color;
+						c0.Coloring = color;
 					}
 
 					ref var c = ref components[ci];
@@ -1471,7 +1477,7 @@ namespace Emphasis.ComputerVision
 				var size = c.Size += 1;
 				var swtSize = c.SwtSize += 1;
 				var offset = ci * componentSizeLimit;
-				var color = componentItems[offset] = c.Color;
+				var color = componentItems[offset] = c.Coloring;
 				var s = componentSwtItems[offset] = swt[color];
 				c.SwtSum += s;
 
