@@ -146,7 +146,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample03;
+			var sourceBitmap = Samples.sample04;
 
 			//Run("sample03.png");
 
@@ -156,7 +156,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
 
-			var useLarge = true;
+			var useLarge = false;
 			var swtEdgeOnColorChange = true;
 			var swtEdgeColorTolerance = 50;
 			var swtConnectByColor = false;
@@ -171,7 +171,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.GrayscaleEq(width, height, source, grayscaleEq);
 			Algorithms.Background(width, height, source, channels, grayscaleEq, background, bgWindowSize);
 
-			background.RunAs(width, height, channels, $"background{bgWindowSize}.png");
+			//background.RunAs(width, height, channels, $"background{bgWindowSize}.png");
 
 			byte[] large = null;
 			if (useLarge)
@@ -268,8 +268,11 @@ namespace Emphasis.ScreenCapture.Tests
 			//Algorithms.RemoveBoxes(width, height, regionCount0, componentList0, rtree0);
 			//Algorithms.RemoveBoxes(width, height, regionCount1, componentList1, rtree1);
 
-			large.RunAs(width, height, channels, "large.png");
-			//large.RunAsText(width, height, channels, "large.txt");
+			if (useLarge)
+			{
+				large.RunAs(width, height, channels, "large.png");
+				//large.RunAsText(width, height, channels, "large.txt");
+			}
 
 			//gauss.RunAs(width, height, channels, "gauss.png");
 
