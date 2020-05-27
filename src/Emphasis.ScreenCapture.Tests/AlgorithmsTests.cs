@@ -146,9 +146,7 @@ namespace Emphasis.ScreenCapture.Tests
 		[Test]
 		public void NonMaximumSuppression_Test()
 		{
-			var sourceBitmap = Samples.sample04;
-
-			//Run("sample03.png");
+			var sourceBitmap = Samples.sample03;
 
 			var source = sourceBitmap.ToBytes();
 			var channels = 4;
@@ -156,7 +154,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var width = sourceBitmap.Width;
 			var height = sourceBitmap.Height;
 
-			var useLarge = false;
+			var useLarge = true;
 			var swtEdgeOnColorChange = true;
 			var swtEdgeColorTolerance = 50;
 			var swtConnectByColor = false;
@@ -171,6 +169,7 @@ namespace Emphasis.ScreenCapture.Tests
 			Algorithms.GrayscaleEq(width, height, source, grayscaleEq);
 			Algorithms.Background(width, height, source, channels, grayscaleEq, background, bgWindowSize);
 
+			source.RunAs(width, height, channels, $"source.png");
 			//background.RunAs(width, height, channels, $"background{bgWindowSize}.png");
 
 			byte[] large = null;
