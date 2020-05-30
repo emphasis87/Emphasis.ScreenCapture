@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using RBush;
+﻿using RBush;
 
-namespace Emphasis.ComputerVision
+namespace Emphasis.ComputerVision.Primitives
 {
 	public class Point2D : ISpatialData
 	{

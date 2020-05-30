@@ -9,4 +9,8 @@
     <PackageReference Include="RBush" Version="2.0.41" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Algorithms\" />
+  </ItemGroup>
+
 </Project>

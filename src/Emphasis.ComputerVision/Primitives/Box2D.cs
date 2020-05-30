@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using RBush;
 
-namespace Emphasis.ComputerVision
+namespace Emphasis.ComputerVision.Primitives
 {
 	public class Box2D : ISpatialData
 	{

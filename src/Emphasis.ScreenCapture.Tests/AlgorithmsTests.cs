@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Emphasis.ComputerVision;
+using Emphasis.ComputerVision.Primitives;
 using Emphasis.OpenCL.Extensions;
 using Emphasis.ScreenCapture.Helpers;
 using FluentAssertions;

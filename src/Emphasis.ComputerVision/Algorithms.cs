@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading;
+using Emphasis.ComputerVision.Primitives;
 using RBush;
 
 namespace Emphasis.ComputerVision

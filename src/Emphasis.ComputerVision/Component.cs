@@ -1,4 +1,5 @@
 ﻿using System;
+using Emphasis.ComputerVision.Primitives;
 
 namespace Emphasis.ComputerVision
 {
