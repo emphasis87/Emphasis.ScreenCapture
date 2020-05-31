@@ -145,7 +145,7 @@ namespace Emphasis.ScreenCapture.Tests
                         for (int y = 0; y < height; y++)
                         {
                             // Copy a single line 
-                            Utilities.CopyMemory(destPtr, sourcePtr, width * 4);
+                            SharpDX.Utilities.CopyMemory(destPtr, sourcePtr, width * 4);
 
                             // Advance pointers
                             sourcePtr = IntPtr.Add(sourcePtr, mapSource.RowPitch);

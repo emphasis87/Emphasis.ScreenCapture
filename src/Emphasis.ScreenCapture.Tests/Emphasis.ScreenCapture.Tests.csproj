@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="BenchmarkDotNet.Annotations" Version="0.12.1" />
     <PackageReference Include="Cloo.clSharp" Version="1.0.1" />
     <PackageReference Include="Emgu.CV" Version="4.2.0.3662" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.2.0.3662" />
