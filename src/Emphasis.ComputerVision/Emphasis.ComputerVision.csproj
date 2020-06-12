@@ -6,11 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RBush" Version="2.0.41" />
+    <Compile Remove="Algorithms\**" />
+    <EmbeddedResource Remove="Algorithms\**" />
+    <None Remove="Algorithms\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Algorithms\" />
+    <PackageReference Include="RBush" Version="2.0.41" />
   </ItemGroup>
 
 </Project>
