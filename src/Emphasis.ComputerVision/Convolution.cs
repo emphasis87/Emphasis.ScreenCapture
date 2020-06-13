@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Emphasis.ComputerVision
 {
-	public static partial class Algorithms
+	public static partial class Algorithms1
 	{
 		public static void Convolution2D(Dimensions2D dimensions, Range2D range, byte[] source, byte[] result)
 		{

@@ -8,7 +8,7 @@ using RBush;
 
 namespace Emphasis.ComputerVision
 {
-	public static partial class Algorithms
+	public static partial class UnoptimizedAlgorithms
 	{
 		private static readonly float[] GrayscaleMask = 
 		{ 

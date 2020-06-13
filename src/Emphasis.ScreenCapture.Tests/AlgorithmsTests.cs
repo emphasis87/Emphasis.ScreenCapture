@@ -29,7 +29,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = sourceBitmap.Height;
 
 			var result = new byte[source.Length];
-			Algorithms.Gauss(width, height, source, result);
+			UnoptimizedAlgorithms.Gauss(width, height, source, result);
 
 			Run("sample02.png");
 
@@ -51,7 +51,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var dx = new float[height * width];
 			var dy = new float[height * width];
 
-			Algorithms.Sobel3(width, height, source, dx, dy, gradient, angle, neighbors);
+			UnoptimizedAlgorithms.Sobel3(width, height, source, dx, dy, gradient, angle, neighbors);
 
 			Run("sample00.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
@@ -76,11 +76,11 @@ namespace Emphasis.ScreenCapture.Tests
 			var n = width * height;
 
 			var grayscale = new byte[n];
-			Algorithms.GrayscaleEq(width,height, source, grayscale);
+			UnoptimizedAlgorithms.GrayscaleEq(width,height, source, grayscale);
 
 			var background = new byte[n * channels];
 			var backgroundSize = 7;
-			Algorithms.Background(width, height, source, channels, grayscale, background, backgroundSize);
+			UnoptimizedAlgorithms.Background(width, height, source, channels, grayscale, background, backgroundSize);
 
 			grayscale.RunAs(width, height, 1, "grayscale.png");
 			grayscale.RunAsText(width, height, 1, "grayscale.txt");
@@ -91,7 +91,7 @@ namespace Emphasis.ScreenCapture.Tests
 			background.RunAsText(width, height, channels, "background.txt");
 
 			var grayscaleBg = new byte[n];
-			Algorithms.GrayscaleEq(width, height, background, grayscaleBg);
+			UnoptimizedAlgorithms.GrayscaleEq(width, height, background, grayscaleBg);
 
 			grayscaleBg.RunAs(width, height, 1, "grayscaleBg.png");
 			grayscaleBg.RunAsText(width, height, 1, "grayscaleBg.txt");
@@ -113,11 +113,11 @@ namespace Emphasis.ScreenCapture.Tests
 			var n = width * height;
 
 			var linePrefixSums = new int[n * channels];
-			Algorithms.LinePrefixSum(width, height, source, channels, linePrefixSums);
+			UnoptimizedAlgorithms.LinePrefixSum(width, height, source, channels, linePrefixSums);
 
 			var box = new byte[n * channels];
 			var boxSize = 5;
-			Algorithms.BoxBlur(width, height, linePrefixSums, channels, box, boxSize);
+			UnoptimizedAlgorithms.BoxBlur(width, height, linePrefixSums, channels, box, boxSize);
 
 			source.RunAsText(width, height, channels, "source.txt");
 
@@ -139,7 +139,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var height = sourceBitmap.Height;
 
 			var large = new byte[height * width * 4 * channels];
-			Algorithms.Enlarge2(width, height, source, large, channels);
+			UnoptimizedAlgorithms.Enlarge2(width, height, source, large, channels);
 
 			large.RunAs(width * 2, height * 2, channels, "large.png");
 		}
@@ -167,8 +167,8 @@ namespace Emphasis.ScreenCapture.Tests
 			var background = new byte[n * channels];
 
 			var bgWindowSize = 7;
-			Algorithms.GrayscaleEq(width, height, source, grayscaleEq);
-			Algorithms.Background(width, height, source, channels, grayscaleEq, background, bgWindowSize);
+			UnoptimizedAlgorithms.GrayscaleEq(width, height, source, grayscaleEq);
+			UnoptimizedAlgorithms.Background(width, height, source, channels, grayscaleEq, background, bgWindowSize);
 
 			source.RunAs(width, height, channels, $"source.png");
 			//background.RunAs(width, height, channels, $"background{bgWindowSize}.png");
@@ -177,7 +177,7 @@ namespace Emphasis.ScreenCapture.Tests
 			if (useLarge)
 			{
 				large = new byte[n * 4 * channels];
-				Algorithms.Enlarge2(width, height, source, large, channels);
+				UnoptimizedAlgorithms.Enlarge2(width, height, source, large, channels);
 
 				width *= 2;
 				height *= 2;
@@ -202,11 +202,11 @@ namespace Emphasis.ScreenCapture.Tests
 			Array.Fill(swt0, int.MaxValue);
 			Array.Fill(swt1, int.MaxValue);
 
-			Algorithms.Grayscale(width, height, src, grayscale);
-			Algorithms.Gauss(width, height, src, gauss);
-			Algorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
-			Algorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp0, cmp1);
-			Algorithms.StrokeWidthTransform(width, height, src, gradient, nms, angle, dx, dy, swt0, swt1,
+			UnoptimizedAlgorithms.Grayscale(width, height, src, grayscale);
+			UnoptimizedAlgorithms.Gauss(width, height, src, gauss);
+			UnoptimizedAlgorithms.Sobel3(width, height, gauss,  dx, dy, gradient, angle, neighbors);
+			UnoptimizedAlgorithms.NonMaximumSuppression(width, height, gradient, angle, neighbors, nms, cmp0, cmp1);
+			UnoptimizedAlgorithms.StrokeWidthTransform(width, height, src, gradient, nms, angle, dx, dy, swt0, swt1,
 				sourceChannels: 4,
 				rayLength: 30,
 				colorDifference: swtEdgeColorTolerance,
@@ -215,12 +215,12 @@ namespace Emphasis.ScreenCapture.Tests
 			var coloring0 = new int[height * width];
 			var coloring1 = new int[height * width];
 
-			Algorithms.PrepareComponents(swt0, coloring0);
-			Algorithms.PrepareComponents(swt1, coloring1);
+			UnoptimizedAlgorithms.PrepareComponents(swt0, coloring0);
+			UnoptimizedAlgorithms.PrepareComponents(swt1, coloring1);
 
-			var colorRounds0 = Algorithms.ColorComponentsFixedPointBackPropagation(
+			var colorRounds0 = UnoptimizedAlgorithms.ColorComponentsFixedPointBackPropagation(
 				width, height, swt0, coloring0);
-			var colorRounds1 = Algorithms.ColorComponentsFixedPointBackPropagation(
+			var colorRounds1 = UnoptimizedAlgorithms.ColorComponentsFixedPointBackPropagation(
 				width, height, swt1, coloring1);
 
 			var componentIndexByColoring0 = new int[n];
@@ -239,14 +239,14 @@ namespace Emphasis.ScreenCapture.Tests
 			var components0 = new Component[componentsLimit];
 			var components1 = new Component[componentsLimit];
 
-			var regionCount0 = Algorithms.ComponentAnalysis(
+			var regionCount0 = UnoptimizedAlgorithms.ComponentAnalysis(
 				width, height, src, swt0, coloring0, componentIndexByColoring0, componentItems0, componentSwtItems0, components0, componentsLimit, componentSizeLimit, sourceChannels: channels);
-			var regionCount1 = Algorithms.ComponentAnalysis(
+			var regionCount1 = UnoptimizedAlgorithms.ComponentAnalysis(
 				width, height, src, swt1, coloring1, componentIndexByColoring1, componentItems1, componentSwtItems0, components1, componentsLimit, componentSizeLimit, sourceChannels: channels);
 
-			Algorithms.ColorComponentsFixedPointByColorSimilarity(
+			UnoptimizedAlgorithms.ColorComponentsFixedPointByColorSimilarity(
 				width, height, swt0, coloring0, src, background, channels, componentIndexByColoring0, components0, 30, useLarge);
-			Algorithms.ColorComponentsFixedPointByColorSimilarity(
+			UnoptimizedAlgorithms.ColorComponentsFixedPointByColorSimilarity(
 				width, height, swt1, coloring1, src, background, channels, componentIndexByColoring1, components1, 30, useLarge);
 
 			// Filter components 1st pass
@@ -407,7 +407,7 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var coloring = new int [height * width];
 			
-			var rounds = Algorithms.ColorComponentsFixedPoint(
+			var rounds = UnoptimizedAlgorithms.ColorComponentsFixedPoint(
 				width, height, swt, coloring);
 
 			var r0 = height * width;
@@ -430,8 +430,8 @@ namespace Emphasis.ScreenCapture.Tests
 					result[i] = n + i;
 			}
 
-			Algorithms.Dump(result, width, height);
-			Algorithms.Dump(coloring, width, height);
+			UnoptimizedAlgorithms.Dump(result, width, height);
+			UnoptimizedAlgorithms.Dump(coloring, width, height);
 
 			coloring.Should().Equal(result);
 			Console.WriteLine($"Rounds: {rounds}");
@@ -444,7 +444,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var regionSwt = new int[cn];
 			var components = new Component[componentLimit];
 
-			var regionCount = Algorithms.ComponentAnalysis(
+			var regionCount = UnoptimizedAlgorithms.ComponentAnalysis(
 				width, height, source, swt, coloring, regionIndex, regions, regionSwt, components, componentLimit, componentSizeLimit, sourceChannels: 1);
 
 			regionCount.Should().Be(3);
@@ -521,15 +521,15 @@ namespace Emphasis.ScreenCapture.Tests
 			var coloring1 = new int[height * width];
 			var coloring2 = new int[height * width];
 
-			Algorithms.PrepareComponents(swt, coloring0);
-			Algorithms.PrepareComponents(swt, coloring1);
-			Algorithms.PrepareComponents(swt, coloring2);
+			UnoptimizedAlgorithms.PrepareComponents(swt, coloring0);
+			UnoptimizedAlgorithms.PrepareComponents(swt, coloring1);
+			UnoptimizedAlgorithms.PrepareComponents(swt, coloring2);
 
-			var roundsWatershed = Algorithms.ColorComponentsWatershed(
+			var roundsWatershed = UnoptimizedAlgorithms.ColorComponentsWatershed(
 				width, height, swt, coloring0);
-			var roundsFixedPoint = Algorithms.ColorComponentsFixedPoint(
+			var roundsFixedPoint = UnoptimizedAlgorithms.ColorComponentsFixedPoint(
 				width, height, swt, coloring1);
-			var roundsBackPropagation = Algorithms.ColorComponentsFixedPointBackPropagation(
+			var roundsBackPropagation = UnoptimizedAlgorithms.ColorComponentsFixedPointBackPropagation(
 				width, height, swt, coloring2);
 
 			var r0 = height * width;
@@ -669,7 +669,7 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			for (var i = 0.0f; i <= 360.0f; i++)
 			{
-				var n = Algorithms.GradientNeighbors(i);
+				var n = UnoptimizedAlgorithms.GradientNeighbors(i);
 
 				if (i < 11.25f || i > 348.75f)
 				{
