@@ -8,6 +8,13 @@
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.DxgiTests.Screen_Capture&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=3f3e3a58_002D3657_002D4ed4_002D8c22_002D025f8004d030/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="NonMaximumSuppression_Test #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.AlgorithmsTests.NonMaximumSuppression_Test&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.AlgorithmsTests.Gauss_Test&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.AlgorithmsTests.Sobel_Test&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7d61653e_002D9f8f_002D48b2_002D90ec_002D67ae3729bac0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="NonMaximumSuppression_Test #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.AlgorithmsTests.NonMaximumSuppression_Test&lt;/TestId&gt;&#xD;
