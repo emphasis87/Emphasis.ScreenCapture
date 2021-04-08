@@ -4,6 +4,7 @@ using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emphasis.ScreenCapture.Helpers;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
 
@@ -42,18 +43,19 @@ namespace Emphasis.ScreenCapture.Tests
 			//	canny = image.Canny(50, 20, 5, false);
 			//}
 
+			var n = 10000;
 			var sw = new Stopwatch();
 			using (var gray = new UMat())
 			{
 				CvInvoke.CvtColor(image, gray, ColorConversion.Bgra2Gray);
 				sw.Start();
-				for (var i = 0; i < 1; i++)
+				for (var i = 0; i < n; i++)
 				{
 					CvInvoke.CvtColor(image, gray, ColorConversion.Bgra2Gray);
 				}
 			}
 			sw.Stop();
-			Console.WriteLine(sw.ElapsedMilliseconds);
+			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
 
 			//var laplace = image.Laplace(3);
 			//var sobel = image.Sobel(1, 1, 5);
@@ -71,7 +73,7 @@ namespace Emphasis.ScreenCapture.Tests
 			//Run("sample13.png");
 			//result.RunAs(width, height, 1, "canny.png");
 
-			
+
 		}
 	}
 }
