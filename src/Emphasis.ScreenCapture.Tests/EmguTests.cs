@@ -13,7 +13,7 @@ namespace Emphasis.ScreenCapture.Tests
 	public class EmguTests
 	{
 		[Test]
-		public void Canny()
+		public void Grayscale()
 		{
 			var sourceBitmap = Samples.sample13;
 
@@ -36,13 +36,7 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 			
 			var image = new Image<Bgra, byte>(data);
-
-			//Image<Gray, byte> canny = null;
-			//for (var i = 0; i < 1; i++)
-			//{
-			//	canny = image.Canny(50, 20, 5, false);
-			//}
-
+			
 			var n = 10000;
 			var sw = new Stopwatch();
 			using (var gray = new UMat())
@@ -56,24 +50,57 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 			sw.Stop();
 			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+		}
 
-			//var laplace = image.Laplace(3);
-			//var sobel = image.Sobel(1, 1, 5);
+		[Test]
+		public void Canny()
+		{
+			var sourceBitmap = Samples.sample13;
 
-			//var result = new float[height * width];
-			//for (var y = 0; y < height; y++)
-			//{
-			//	for (var x = 0; x < width; x++)
-			//	{
-			//		var d = y * width + x;
-			//		result[d] = canny.Data[y, x, 0];
-			//	}
-			//}
+			var source = sourceBitmap.ToBytes();
 
-			//Run("sample13.png");
-			//result.RunAs(width, height, 1, "canny.png");
+			var width = sourceBitmap.Width;
+			var height = sourceBitmap.Height;
 
+			var data = new byte[height, width, 4];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * (width * 4) + x * 4;
+					for (var c = 0; c < 4; c++)
+					{
+						data[y, x, c] = source[d + c];
+					}
+				}
+			}
 
+			var image = new Image<Bgra, byte>(data);
+
+			var canny = image.Canny(50, 20, 5, false);
+			
+			var n = 2000;
+			var sw = new Stopwatch();
+			sw.Start();
+			for (var i = 0; i < n; i++)
+			{
+				image.Canny(50, 30, 5, false);
+			}
+			sw.Stop();
+			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+			
+			var result = new float[height * width];
+			for (var y = 0; y < height; y++)
+			{
+				for (var x = 0; x < width; x++)
+				{
+					var d = y * width + x;
+					result[d] = canny.Data[y, x, 0];
+				}
+			}
+
+			Run("sample13.png");
+			result.RunAs(width, height, 1, "canny.png");
 		}
 	}
 }
