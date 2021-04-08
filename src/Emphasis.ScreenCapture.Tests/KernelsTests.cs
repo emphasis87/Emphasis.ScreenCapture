@@ -10,6 +10,7 @@ using Emphasis.OpenCL.Helpers;
 using Emphasis.ScreenCapture.Helpers;
 using Emphasis.ScreenCapture.OpenCL;
 using Emphasis.TextDetection;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
 
@@ -43,15 +44,27 @@ namespace Emphasis.ScreenCapture.Tests
 			var grayscale = new byte[height * width];
 			using var grayscaleBuffer = context.CreateBuffer(grayscale);
 
+			var n = 10000;
 			var events = new List<ComputeEventBase>();
 			var sw = new Stopwatch();
 			sw.Start();
 
-			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
+			for (var i = 0; i < n; i++)
+			{
+				kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, null);
+				// events management introduces overhead 1.7x
+				//kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
+			}
+
+			var queue = computeManager.GetQueue(device);
+			queue.Finish();
 
 			await events.WaitForEvents();
 			sw.Stop();
-			Console.WriteLine(sw.ElapsedMilliseconds);
+
+			kernels.Dispose();
+
+			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
 
 			var result = grayscale.ToBitmap(width, height, 1);
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
