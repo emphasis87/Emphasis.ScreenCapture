@@ -76,7 +76,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var input = new Matrix<byte>(w, h, 4, source);
 			var output = new Matrix<byte>(w, h, 1, result);
 
-			var n = 10000;
+			var n = 2000;
 			var sw = new Stopwatch();
 			sw.Start();
 			for (var i = 0; i < n; i++)

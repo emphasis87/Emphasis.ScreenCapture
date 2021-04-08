@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Cloo;
 using Emphasis.OpenCL;
@@ -61,6 +62,14 @@ namespace Emphasis.ScreenCapture.Tests
 
 			await events.WaitForEvents();
 			sw.Stop();
+
+			// somehow this is only required on my laptop, maybe cpu/gpu memory structure
+			GCHandle pinned = GCHandle.Alloc(grayscale, GCHandleType.Pinned);
+			IntPtr address = pinned.AddrOfPinnedObject();
+
+			queue.Read(grayscaleBuffer, true, 0, width * height, address, null);
+
+			pinned.Free();
 
 			kernels.Dispose();
 
