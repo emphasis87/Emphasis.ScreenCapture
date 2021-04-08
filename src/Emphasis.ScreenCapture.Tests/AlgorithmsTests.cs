@@ -10,6 +10,7 @@ using Emphasis.ComputerVision.Primitives;
 using Emphasis.OpenCL.Extensions;
 using Emphasis.ScreenCapture.Helpers;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using RBush;
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
@@ -75,14 +76,15 @@ namespace Emphasis.ScreenCapture.Tests
 			var input = new Matrix<byte>(w, h, 4, source);
 			var output = new Matrix<byte>(w, h, 1, result);
 
+			var n = 10000;
 			var sw = new Stopwatch();
 			sw.Start();
-			for (var i = 0; i < 1; i++)
+			for (var i = 0; i < n; i++)
 			{
 				await Emphasis.ComputerVision.Core.Algorithms.Grayscale(input, output);
 			}
 			sw.Stop();
-			Console.WriteLine(sw.ElapsedMilliseconds);
+			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
 
 			result.RunAs(w, h, 1, "grayscale.png");
 		}

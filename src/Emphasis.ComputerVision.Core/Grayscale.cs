@@ -37,8 +37,6 @@ namespace Emphasis.ComputerVision.Core
 
 			await Task.WhenAll(tasks);
 
-			Console.WriteLine(Vector<float>.Count);
-
 			void Execute(int i)
 			{
 				var a = input.Data.Span;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Emphasis.OpenCL.Helpers;
 using Emphasis.ScreenCapture.Helpers;
 using Emphasis.ScreenCapture.OpenCL;
 using Emphasis.TextDetection;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using static Emphasis.ScreenCapture.Helpers.DebugHelper;
 
@@ -46,9 +48,17 @@ namespace Emphasis.ScreenCapture.Tests
 			kernel.SetMemoryArgument(0, memory);
 			kernel.SetMemoryArgument(1, resultBuffer);
 
-			queue.Execute(kernel, null, new long[] {width, height}, null, null);
+			var n = 10000;
+			var sw = new Stopwatch();
+			sw.Start();
+			for (var i = 0; i < n; i++)
+			{
+				queue.Execute(kernel, null, new long[] {width, height}, null, null);
+			}
 
 			queue.Finish();
+			sw.Stop();
+			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
 
 			var result = target.ToBitmap(width, height, 1);
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
