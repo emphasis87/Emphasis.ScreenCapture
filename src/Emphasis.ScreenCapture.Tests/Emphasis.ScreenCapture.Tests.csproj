@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Emphasis.ComputerVision.Core\Emphasis.ComputerVision.Core.csproj" />
     <ProjectReference Include="..\Emphasis.ComputerVision\Emphasis.ComputerVision.csproj" />
     <ProjectReference Include="..\Emphasis.OpenCL\Emphasis.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
@@ -189,6 +190,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="sample12.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="sample13.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

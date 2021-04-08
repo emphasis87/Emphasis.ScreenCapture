@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using Emgu.CV;
-using Emgu.CV.Structure;
 using Emphasis.ComputerVision;
 using Emphasis.ComputerVision.Primitives;
 using Emphasis.OpenCL.Extensions;
@@ -61,6 +60,61 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public async Task GrayscaleTest()
+		{
+			var sourceBitmap = Samples.sample13;
+
+			Run("sample13.png");
+
+			var source = sourceBitmap.ToBytes();
+
+			var w = sourceBitmap.Width;
+			var h = sourceBitmap.Height;
+
+			var result = new byte[h * w];
+			var input = new Matrix<byte>(w, h, 4, source);
+			var output = new Matrix<byte>(w, h, 1, result);
+
+			var sw = new Stopwatch();
+			sw.Start();
+			for (var i = 0; i < 1; i++)
+			{
+				await Emphasis.ComputerVision.Core.Algorithms.Grayscale(input, output);
+			}
+			sw.Stop();
+			Console.WriteLine(sw.ElapsedMilliseconds);
+
+			result.RunAs(w, h, 1, "grayscale.png");
+		}
+
+		[Test]
+		public void Grayscale_Test()
+		{
+			var sourceBitmap = Samples.sample13;
+
+			Run("sample13.png");
+
+			var source = sourceBitmap.ToBytes();
+			
+			var w = sourceBitmap.Width;
+			var h = sourceBitmap.Height;
+			var n = w * h;
+
+			var grayscale = new byte[n];
+
+			var sw = new Stopwatch();
+			sw.Start();
+			for (var i = 0; i < 1; i++)
+			{
+				UnoptimizedAlgorithms.Grayscale(w, h, source, grayscale);
+			}
+			sw.Stop();
+			Console.WriteLine(sw.ElapsedMilliseconds);
+
+			grayscale.RunAs(w, h, 1, "grayscale.png");
+		}
+
+		[Test]
 		public void Background_Test()
 		{
 			var sourceBitmap = Samples.sample03;
@@ -76,7 +130,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var n = width * height;
 
 			var grayscale = new byte[n];
-			UnoptimizedAlgorithms.GrayscaleEq(width,height, source, grayscale);
+			UnoptimizedAlgorithms.Grayscale(width,height, source, grayscale);
 
 			var background = new byte[n * channels];
 			var backgroundSize = 7;
@@ -568,49 +622,7 @@ namespace Emphasis.ScreenCapture.Tests
 			roundsFixedPoint.Should().BeLessThan(roundsWatershed);
 			roundsBackPropagation.Should().BeLessThan(roundsFixedPoint);
 		}
-
-		[Test]
-		public void Canny()
-		{
-			var sourceBitmap = Samples.sample03;
-
-			var source = sourceBitmap.ToBytes();
-
-			var width = sourceBitmap.Width;
-			var height = sourceBitmap.Height;
-
-			var data = new byte[height, width, 4];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * (width * 4) + x * 4;
-					for (var c = 0; c < 4; c++)
-					{
-						data[y, x, c] = source[d + c];
-					}
-				}
-			}
-
-			var image = new Image<Bgra, byte>(data);
-			var canny = image.Canny(50, 20, 5, false);
-			//var laplace = image.Laplace(3);
-			//var sobel = image.Sobel(1, 1, 5);
-
-			var result = new float[height * width];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * width + x;
-					result[d] = canny.Data[y, x, 0];
-				}
-			}
-
-			Run("sample03.png");
-			result.RunAs(width, height, 1, "canny.png");
-		}
-
+		
 		[Test]
 		public void Line_Test()
 		{

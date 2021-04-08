@@ -12,9 +12,11 @@ namespace Emphasis.ComputerVision.Tests
 	{
 		public static void Main(string[] args)
 		{
-			BenchmarkSwitcher
+			var benchmarks = BenchmarkSwitcher
 				.FromAssembly(typeof(Program).Assembly)
 				.Run();
+
+			
 		}
 	}
 }
