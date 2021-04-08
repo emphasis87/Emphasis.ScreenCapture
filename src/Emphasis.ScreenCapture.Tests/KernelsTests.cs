@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,7 +25,8 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var screen = manager.GetScreens().First();
 
-			using var capture = await manager.Capture(screen).FirstAsync();
+			var captures = manager.Capture(screen);
+			using var capture = await captures.FirstAsync();
 			var width = capture.Width;
 			var height = capture.Height;
 			var globalWorkSize = new long[] {width, height};
@@ -42,9 +44,14 @@ namespace Emphasis.ScreenCapture.Tests
 			using var grayscaleBuffer = context.CreateBuffer(grayscale);
 
 			var events = new List<ComputeEventBase>();
+			var sw = new Stopwatch();
+			sw.Start();
+
 			kernels.EnqueueGrayscale(device, globalWorkSize, image, grayscaleBuffer, events);
 
 			await events.WaitForEvents();
+			sw.Stop();
+			Console.WriteLine(sw.ElapsedMilliseconds);
 
 			var result = grayscale.ToBitmap(width, height, 1);
 			var resultPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "grayscale.png"));
