@@ -56,6 +56,9 @@ namespace Emphasis.ScreenCapture.Tests
 			Run("sample00.png");
 			gradient.RunAs(width, height, 1, "sobel_gradient.png");
 
+			dx.RunAs(width, height, 1, "sobel_dx.png");
+			dy.RunAs(width, height, 1, "sobel_dy.png");
+
 			//source.RunAsText(width, height, 4, "sample00.txt");
 			//gradient.RunAsText(width, height, 1, "sobel_gradient.txt");
 		}
