@@ -21,6 +21,7 @@
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.KernelsTests.Can_EnqueueThreshold&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.ComputeMemoryDispatcherTests.Can_Dispatch&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Grayscale&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.MSER&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=7d61653e_002D9f8f_002D48b2_002D90ec_002D67ae3729bac0/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="NonMaximumSuppression_Test #3" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
