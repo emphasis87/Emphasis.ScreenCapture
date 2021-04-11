@@ -61,25 +61,27 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var w = sourceBitmap.Width;
 			var h = sourceBitmap.Height;
-			
-			var src = new UMat();
+
+			using var src = new UMat();
 
 			var srcMat = sourceBitmap.ToMat();
 			srcMat.CopyTo(src);
 
 			var n = 10000;
 			var sw = new Stopwatch();
-			using (var gray = new UMat())
+			using var gray = new UMat();
+
+			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+			sw.Start();
+			for (var i = 0; i < n; i++)
 			{
 				CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
-				sw.Start();
-				for (var i = 0; i < n; i++)
-				{
-					CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
-				}
 			}
+
 			sw.Stop();
 			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+
+			gray.Bytes.RunAs(w, h, 1, "gray.png");
 		}
 
 		[Test]
@@ -87,50 +89,32 @@ namespace Emphasis.ScreenCapture.Tests
 		{
 			var sourceBitmap = Samples.sample13;
 
-			var source = sourceBitmap.ToBytes();
+			var w = sourceBitmap.Width;
+			var h = sourceBitmap.Height;
 
-			var width = sourceBitmap.Width;
-			var height = sourceBitmap.Height;
+			using var src = new UMat();
 
-			var data = new byte[height, width, 4];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * (width * 4) + x * 4;
-					for (var c = 0; c < 4; c++)
-					{
-						data[y, x, c] = source[d + c];
-					}
-				}
-			}
+			var srcMat = sourceBitmap.ToMat();
+			srcMat.CopyTo(src);
 
-			var image = new Image<Bgra, byte>(data);
+			using var dest = new UMat();
+			using var gray = new UMat();
 
-			var canny = image.Canny(50, 20, 5, false);
+			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+			CvInvoke.Canny(gray, dest, 100, 40);
 			
 			var n = 2000;
 			var sw = new Stopwatch();
 			sw.Start();
 			for (var i = 0; i < n; i++)
 			{
-				image.Canny(50, 30, 5, false);
+				CvInvoke.Canny(gray, dest, 100, 40);
 			}
 			sw.Stop();
 			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
-			
-			var result = new float[height * width];
-			for (var y = 0; y < height; y++)
-			{
-				for (var x = 0; x < width; x++)
-				{
-					var d = y * width + x;
-					result[d] = canny.Data[y, x, 0];
-				}
-			}
 
 			Run("sample13.png");
-			result.RunAs(width, height, 1, "canny.png");
+			dest.Bytes.RunAs(w, h, 1, "canny.png");
 		}
 
 		[Test]
