@@ -55,6 +55,34 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public void Grayscale_UMat()
+		{
+			var sourceBitmap = Samples.sample13;
+
+			var w = sourceBitmap.Width;
+			var h = sourceBitmap.Height;
+			
+			var src = new UMat();
+
+			var srcMat = sourceBitmap.ToMat();
+			srcMat.CopyTo(src);
+
+			var n = 10000;
+			var sw = new Stopwatch();
+			using (var gray = new UMat())
+			{
+				CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+				sw.Start();
+				for (var i = 0; i < n; i++)
+				{
+					CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+				}
+			}
+			sw.Stop();
+			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+		}
+
+		[Test]
 		public void Canny()
 		{
 			var sourceBitmap = Samples.sample13;
