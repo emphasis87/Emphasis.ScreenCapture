@@ -105,7 +105,7 @@ namespace Emphasis.ScreenCapture.Tests
 			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
 			CvInvoke.Canny(gray, dest1, 100, 40);
 			
-			var n = 10000;
+			var n = 1000;
 			var sw = new Stopwatch();
 			sw.Start();
 
@@ -129,8 +129,56 @@ namespace Emphasis.ScreenCapture.Tests
 
 			Run("sample13.png");
 			dest1.Bytes.RunAs(w, h, 1, "canny.png");
+		}
 
+		[Test]
+		public void Resize_Canny()
+		{
+			var sourceBitmap = Samples.sample13;
+
+			var w = sourceBitmap.Width;
+			var h = sourceBitmap.Height;
+
+			using var src = new UMat();
+
+			var srcMat = sourceBitmap.ToMat();
+			srcMat.CopyTo(src);
+
+			using var gray = new UMat();
+			using var resized = new UMat();
+			using var canny = new UMat();
+
+			CvInvoke.CvtColor(src, gray, ColorConversion.Bgra2Gray);
+			CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
+			CvInvoke.Canny(resized, canny, 100, 40);
+
+			var n = 2000;
+			var sw = new Stopwatch();
+			sw.Start();
+
+			var exCount = 0;
+			for (var i = 0; i < n; i++)
+			{
+				try
+				{
+					CvInvoke.Resize(gray, resized, new Size(w * 2, h * 2));
+					CvInvoke.Canny(resized, canny, 100, 40);
+				}
+				catch (Exception ex)
+				{
+					exCount++;
+				}
+			}
 			
+			sw.Stop();
+
+			Console.WriteLine((int)(sw.Elapsed.TotalMicroseconds() / n));
+			Console.WriteLine($"Exceptions {exCount}");
+
+			Run("sample13.png");
+
+			canny.Save("canny.png");
+			Run("canny.png");
 		}
 
 		[Test]
@@ -197,7 +245,7 @@ namespace Emphasis.ScreenCapture.Tests
 			
 			var sw = new Stopwatch();
 			sw.Start();
-
+			
 			var n = 100;
 			for(var i = 0; i < n; i++)
 				detector.DetectRegions(gray, msers, bboxes);

@@ -3,6 +3,11 @@
   &lt;Assembly Path="C:\Program Files\dotnet\shared\Microsoft.NETCore.App\3.1.1\System.Linq.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\emphasis\.nuget\packages\microsoft.diagnostics.tracing.traceevent\2.0.49\lib\netstandard2.0\Microsoft.Diagnostics.Tracing.TraceEvent.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=20546d50_002Dfad3_002D4858_002Daf3b_002D7b5889c9b9c6/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="MSER" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.MSER&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
 	
 	
 	
@@ -28,6 +33,9 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=e0ae4068_002Df9d4_002D4ae4_002D804d_002D3f661699df1f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Resize_Canny #4" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Canny&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.MSER&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Resize_Canny&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Resize_MSER&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
