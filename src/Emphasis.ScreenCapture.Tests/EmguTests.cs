@@ -56,6 +56,52 @@ namespace Emphasis.ScreenCapture.Tests
 		}
 
 		[Test]
+		public void Sobel()
+		{
+			var sourceBitmap = Samples.sample13;
+
+			var w = sourceBitmap.Width;
+			var h = sourceBitmap.Height;
+
+			using var src = new UMat();
+
+			var srcMat = sourceBitmap.ToMat();
+			srcMat.CopyTo(src);
+
+			var n = 10000;
+			var sw = new Stopwatch();
+			using var gray = new UMat();
+
+			using var blurred = new UMat();
+			using var grad_x = new UMat();
+			using var grad_y = new UMat();
+
+			CvInvoke.GaussianBlur(src, blurred, new Size(3, 3), 0, 0, BorderType.Default);
+			CvInvoke.CvtColor(blurred, gray, ColorConversion.Bgra2Gray);
+			CvInvoke.Sobel(gray, grad_x, DepthType.Cv16S, 1, 0);
+			CvInvoke.Sobel(gray, grad_y, DepthType.Cv16S, 0, 1);
+
+			sw.Start();
+			for (var i = 0; i < n; i++)
+			{
+				CvInvoke.GaussianBlur(src, blurred, new Size(3, 3), 0, 0, BorderType.Default);
+				CvInvoke.CvtColor(blurred, gray, ColorConversion.Bgra2Gray);
+				CvInvoke.Sobel(gray, grad_x, DepthType.Cv16S, 1, 0);
+				CvInvoke.Sobel(gray, grad_y, DepthType.Cv16S, 0, 1);
+			}
+
+			sw.Stop();
+			Console.WriteLine(sw.Elapsed.TotalMicroseconds() / n);
+
+			grad_x.Save("grad_x.png");
+			grad_y.Save("grad_y.png");
+
+			Run("sample13.png");
+			Run("grad_x.png");
+			Run("grad_y.png");
+		}
+
+		[Test]
 		public void Grayscale_UMat()
 		{
 			var sourceBitmap = Samples.sample13;

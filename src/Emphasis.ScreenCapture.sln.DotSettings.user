@@ -36,6 +36,7 @@
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.MSER&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Resize_Canny&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Resize_MSER&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;NUnit3x::41C31144-25CC-4CCD-B755-7DC9A2F97598::.NETCoreApp,Version=v3.1::Emphasis.ScreenCapture.Tests.EmguTests.Sobel&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
