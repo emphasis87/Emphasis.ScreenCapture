@@ -17,8 +17,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 			SlicePitch = slicePitch;
 		}
 
-		public bool IsEmpty => DataPointer == IntPtr.Zero && RowPitch == 0 && SlicePitch == 0;
-
+		#region IDisposable, ICancelable
 		public bool IsDisposed => _disposable.IsDisposed;
 		private readonly CompositeDisposable _disposable = new CompositeDisposable();
 
@@ -36,5 +35,6 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 		{
 			_disposable.Remove(disposable);
 		}
+		#endregion
 	}
 }

@@ -19,13 +19,25 @@ using Resource = SharpDX.DXGI.Resource;
 
 namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
-	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod, IScreenCaptureBitmapFactory
+	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod, IScreenCaptureBitmapFactory, IScreenProvider
 	{
 
 	}
 
 	public class DxgiScreenCaptureMethod : IDxgiScreenCaptureMethod
 	{
+		public IScreen[] GetScreens()
+		{
+			using var factory = new Factory1();
+			var adapters = factory.Adapters1;
+			var screens =
+				adapters.SelectMany(adapter =>
+					adapter.Outputs.Select(output =>
+						(IScreen)new Screen(adapter.Description.DeviceId, output.Description.DeviceName))
+				).ToArray();
+			return screens;
+		}
+
 		public async Task<IScreenCapture> Capture(IScreen screen, CancellationToken cancellationToken = default)
 		{
 			var stream = CaptureStream(screen, cancellationToken);
@@ -196,17 +208,11 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 		public void Add([NotNull] IDisposable disposable)
 		{
-			if (IsDisposed)
-				throw new ObjectDisposedException($"{GetType()} instance is already disposed.");
-
 			_disposable.Add(disposable);
 		}
 
 		public void Remove([NotNull] IDisposable disposable)
 		{
-			if (IsDisposed)
-				throw new ObjectDisposedException($"{GetType()} instance is already disposed.");
-
 			_disposable.Remove(disposable);
 		}
 		#endregion

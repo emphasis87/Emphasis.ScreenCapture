@@ -29,10 +29,10 @@ namespace Emphasis.ScreenCapture
 			int height)
 		{
 			Screen = screen;
+			Method = method;
 			Timestamp = timestamp;
 			Width = width;
 			Height = height;
-			Method = method;
 		}
 
 		#region IDisposable, ICancelable
@@ -46,17 +46,11 @@ namespace Emphasis.ScreenCapture
 
 		public void Add([NotNull] IDisposable disposable)
 		{
-			if (IsDisposed) 
-				throw new ObjectDisposedException($"{GetType()} instance is already disposed.");
-			
 			_disposable.Add(disposable);
 		}
 
 		public void Remove([NotNull] IDisposable disposable)
 		{
-			if (IsDisposed)
-				throw new ObjectDisposedException($"{GetType()} instance is already disposed.");
-
 			_disposable.Remove(disposable);
 		}
 		#endregion
