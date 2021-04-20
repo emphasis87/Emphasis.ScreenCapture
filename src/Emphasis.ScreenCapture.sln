@@ -25,6 +25,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ComputerVision.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ScreenCapture.Common", "Emphasis.ScreenCapture.Common\Emphasis.ScreenCapture.Common.csproj", "{ABD6498A-FF74-4B05-9315-C24A8980F567}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ScreenCapture.Windows.DXGI", "Emphasis.ScreenCapture.Windows.DXGI\Emphasis.ScreenCapture.Windows.DXGI.csproj", "{535D2647-A152-4678-9EC6-271113E87588}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{7E494C55-973D-4E95-BD9E-BCC6D0E79D89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,9 +79,16 @@ Global
 		{ABD6498A-FF74-4B05-9315-C24A8980F567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABD6498A-FF74-4B05-9315-C24A8980F567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABD6498A-FF74-4B05-9315-C24A8980F567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{535D2647-A152-4678-9EC6-271113E87588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{535D2647-A152-4678-9EC6-271113E87588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{535D2647-A152-4678-9EC6-271113E87588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{535D2647-A152-4678-9EC6-271113E87588}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{41C31144-25CC-4CCD-B755-7DC9A2F97598} = {7E494C55-973D-4E95-BD9E-BCC6D0E79D89}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {403BF554-2884-4050-996C-144B9DE4143F}
