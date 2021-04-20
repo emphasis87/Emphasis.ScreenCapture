@@ -7,13 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture", "E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.Tests", "Emphasis.ScreenCapture.Tests\Emphasis.ScreenCapture.Tests.csproj", "{41C31144-25CC-4CCD-B755-7DC9A2F97598}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.OpenCL", "Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj", "{17C5CCF0-B385-4613-B84A-8443CF2C2E15}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.Common", "Emphasis.ScreenCapture.Common\Emphasis.ScreenCapture.Common.csproj", "{ABD6498A-FF74-4B05-9315-C24A8980F567}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{7E494C55-973D-4E95-BD9E-BCC6D0E79D89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ScreenCapture.Runtime.Windows.DXGI", "Emphasis.ScreenCapture.Runtime.Windows.DXGI\Emphasis.ScreenCapture.Runtime.Windows.DXGI.csproj", "{C3DA6286-1650-4CB1-946E-00FE086D6C29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.Runtime.Windows.DXGI", "Emphasis.ScreenCapture.Runtime.Windows.DXGI\Emphasis.ScreenCapture.Runtime.Windows.DXGI.csproj", "{C90ACA41-8EDE-40C7-81F6-FDB298ABF4DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,18 +27,14 @@ Global
 		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41C31144-25CC-4CCD-B755-7DC9A2F97598}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17C5CCF0-B385-4613-B84A-8443CF2C2E15}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ABD6498A-FF74-4B05-9315-C24A8980F567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ABD6498A-FF74-4B05-9315-C24A8980F567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABD6498A-FF74-4B05-9315-C24A8980F567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABD6498A-FF74-4B05-9315-C24A8980F567}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C3DA6286-1650-4CB1-946E-00FE086D6C29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3DA6286-1650-4CB1-946E-00FE086D6C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3DA6286-1650-4CB1-946E-00FE086D6C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3DA6286-1650-4CB1-946E-00FE086D6C29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C90ACA41-8EDE-40C7-81F6-FDB298ABF4DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C90ACA41-8EDE-40C7-81F6-FDB298ABF4DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C90ACA41-8EDE-40C7-81F6-FDB298ABF4DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C90ACA41-8EDE-40C7-81F6-FDB298ABF4DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

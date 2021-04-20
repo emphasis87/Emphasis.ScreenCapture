@@ -9,10 +9,6 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
     <PackageReference Include="BenchmarkDotNet.Annotations" Version="0.12.1" />
-    <PackageReference Include="Cloo.clSharp" Version="1.0.1" />
-    <PackageReference Include="Emgu.CV" Version="4.5.1.4349" />
-    <PackageReference Include="Emgu.CV.Bitmap" Version="4.5.1.4349" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.1.4349" />
     <PackageReference Include="FluentAssertions" Version="5.10.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
@@ -20,15 +16,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RBush" Version="2.0.41" />
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
-    <PackageReference Include="System.Resources.Extensions" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
   </ItemGroup>
 

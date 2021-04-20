@@ -5,12 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Windows\Gdi\**" />
-    <EmbeddedResource Remove="Windows\Gdi\**" />
-    <None Remove="Windows\Gdi\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
