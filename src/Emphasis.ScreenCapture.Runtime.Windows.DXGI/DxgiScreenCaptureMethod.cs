@@ -16,7 +16,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 using Rectangle = SharpDX.Rectangle;
 using Resource = SharpDX.DXGI.Resource;
 
-namespace Emphasis.ScreenCapture.Windows.Dxgi
+namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
 	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod
 	{

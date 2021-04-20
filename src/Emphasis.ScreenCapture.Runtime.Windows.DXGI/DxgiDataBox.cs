@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 
-namespace Emphasis.ScreenCapture.Windows.Dxgi
+namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
 	public class DxgiDataBox : IDisposable, ICancelable
 	{

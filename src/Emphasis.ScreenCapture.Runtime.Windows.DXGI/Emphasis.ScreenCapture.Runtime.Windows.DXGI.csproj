@@ -2,7 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>Emphasis.ScreenCapture</RootNamespace>
+    <RootNamespace>Emphasis.ScreenCapture.Runtime.Windows.DXGI</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
+    <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Common\Emphasis.ScreenCapture.Common.csproj" />
+  </ItemGroup>
 
 </Project>

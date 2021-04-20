@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
 
-namespace Emphasis.ScreenCapture.Windows.Dxgi
+namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
 	public class DxgiScreenCapture : ScreenCapture
 	{
