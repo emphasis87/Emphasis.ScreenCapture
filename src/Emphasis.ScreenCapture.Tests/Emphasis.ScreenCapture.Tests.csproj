@@ -28,38 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Emphasis.ComputerVision.Core\Emphasis.ComputerVision.Core.csproj" />
-    <ProjectReference Include="..\Emphasis.ComputerVision\Emphasis.ComputerVision.csproj" />
-    <ProjectReference Include="..\Emphasis.OpenCL\Emphasis.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
-    <ProjectReference Include="..\Emphasis.TextDetection\Emphasis.TextDetection.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Samples.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Samples.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Samples.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Samples.Designer.cs</LastGenOutput>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="sample00.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="sample01.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="sample02.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -167,31 +141,16 @@
     <None Update="sample03.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="sample04.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="sample05.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="sample06.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="sample07.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="sample08.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="sample09.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="sample10.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="sample11.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="sample12.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="sample13.png">
