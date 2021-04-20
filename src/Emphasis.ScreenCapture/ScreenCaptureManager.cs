@@ -11,19 +11,19 @@ namespace Emphasis.ScreenCapture
 {
 	public class ScreenCaptureManager
 	{
-		public Screen[] GetScreens()
+		public IScreen[] GetScreens()
 		{
 			using var factory = new Factory1();
 			var adapters = factory.Adapters1;
 			var screens =
 				adapters.SelectMany(adapter =>
 					adapter.Outputs.Select(output =>
-						new Screen(adapter.Description.DeviceId, output.Description.DeviceName))
+						(IScreen)new Screen(adapter.Description.DeviceId, output.Description.DeviceName))
 				).ToArray();
 			return screens;
 		}
 
-		public async IAsyncEnumerable<Screen[]> GetScreenChanges(
+		public async IAsyncEnumerable<IScreen[]> GetScreenChanges(
 			TimeSpan? pollingInterval = null,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
@@ -52,7 +52,7 @@ namespace Emphasis.ScreenCapture
 			}
 		}
 
-		public async IAsyncEnumerable<ScreenCapture> CaptureAll(
+		public async IAsyncEnumerable<IScreenCapture> CaptureAll(
 			IScreenCaptureMethodSelector selector = default,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
@@ -87,8 +87,8 @@ namespace Emphasis.ScreenCapture
 			}
 		}
 
-		public async IAsyncEnumerable<ScreenCapture> Capture(
-			Screen screen,
+		public async IAsyncEnumerable<IScreenCapture> Capture(
+			IScreen screen,
 			IScreenCaptureMethodSelector selector = default,
 			[EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{

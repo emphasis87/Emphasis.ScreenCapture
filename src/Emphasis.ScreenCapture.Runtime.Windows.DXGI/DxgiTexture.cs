@@ -4,13 +4,13 @@ using System.Reactive.Disposables;
 
 namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
-	public class DxgiDataBox : IDisposable, ICancelable
+	public class DxgiTexture : IDisposable, ICancelable
 	{
 		public IntPtr DataPointer;
 		public int RowPitch;
 		public int SlicePitch;
 
-		public DxgiDataBox(IntPtr dataPointer, int rowPitch, int slicePitch)
+		public DxgiTexture(IntPtr dataPointer, int rowPitch, int slicePitch)
 		{
 			DataPointer = dataPointer;
 			RowPitch = rowPitch;

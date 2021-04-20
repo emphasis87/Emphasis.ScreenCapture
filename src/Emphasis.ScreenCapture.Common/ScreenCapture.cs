@@ -13,7 +13,7 @@ namespace Emphasis.ScreenCapture
 		void Remove([NotNull] IDisposable disposable);
 	}
 
-	public class ScreenCapture : IDisposable, ICancelable
+	public class ScreenCapture : IScreenCapture
 	{
 		public IScreen Screen { get; }
 		public IScreenCaptureMethod Method { get; }

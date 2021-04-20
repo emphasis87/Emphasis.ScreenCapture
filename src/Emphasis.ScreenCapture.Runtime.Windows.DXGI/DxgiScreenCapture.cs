@@ -14,18 +14,19 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 		public Resource ScreenResource { get; }
 		public OutputDuplicateFrameInformation FrameInformation { get; }
 
-		public DxgiScreenCapture([NotNull] Screen screen,
+		public DxgiScreenCapture(
+			[NotNull] IScreen screen,
+			[NotNull] IScreenCaptureMethod method,
 			DateTime time,
 			int width,
 			int height,
-			[NotNull] IScreenCaptureMethod method,
 			[NotNull] Adapter1 adapter,
 			[NotNull] Output1 output,
 			[NotNull] Device device,
 			[NotNull] OutputDuplication outputDuplication,
 			[NotNull] Resource screenResource,
 			[NotNull] OutputDuplicateFrameInformation frameInformation)
-			: base(screen, time, width, height, method)
+			: base(screen, method, time, width, height)
 		{
 			Adapter = adapter;
 			Output = output;

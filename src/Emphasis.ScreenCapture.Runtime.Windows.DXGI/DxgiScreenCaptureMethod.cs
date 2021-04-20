@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -18,18 +19,20 @@ using Resource = SharpDX.DXGI.Resource;
 
 namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
-	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod
+	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod, IScreenCaptureBitmapFactory
 	{
-		Task<Bitmap> ToBitmap(DxgiScreenCapture capture);
-		Task<DxgiDataBox> MapTexture(DxgiScreenCapture capture);
 
 	}
 
 	public class DxgiScreenCaptureMethod : IDxgiScreenCaptureMethod
 	{
-		public async IAsyncEnumerable<ScreenCapture> Capture(
-			Screen screen,
-			[EnumeratorCancellation] CancellationToken cancellationToken = default)
+		public async Task<IScreenCapture> Capture(IScreen screen, CancellationToken cancellationToken = default)
+		{
+			var stream = CaptureStream(screen, cancellationToken);
+			return await stream.FirstOrDefaultAsync(cancellationToken);
+		}
+
+		public async IAsyncEnumerable<IScreenCapture> CaptureStream(IScreen screen, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
 			using var factory = new Factory1();
 			using var adapter = factory.Adapters1.FirstOrDefault(x => x.Description.DeviceId == screen.AdapterId);
@@ -48,30 +51,37 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 			var width = bounds.Width;
 			var height = bounds.Height;
 
-			IDisposable cleanup = null;
-			DxgiScreenCapture capture = null;
+			OutputDuplicateFrameInformation frameInformation = default;
+			Resource screenResource = default;
+			DxgiScreenCapture capture = default;
+			CompositeDisposable cleanup = default;
+			var result = Result.Ok;
+			
 			while (!cancellationToken.IsCancellationRequested)
 			{
-				OutputDuplicateFrameInformation frameInformation = default;
-				Resource screenResource = default;
+				cleanup = new CompositeDisposable();
+
 				try
 				{
-					var result = await Task.Run(() => 
-					outputDuplication.TryAcquireNextFrame(1000, out frameInformation, out screenResource), cancellationToken);
+					result = await Task.Run(() =>
+							outputDuplication.TryAcquireNextFrame(1000, out frameInformation, out screenResource),
+						cancellationToken);
 
-					cleanup = new CompositeDisposable(
-					new[] { screenResource, Disposable.Create(outputDuplication.ReleaseFrame) }.Where(x => x != null));
-				
+					if (screenResource != null)
+						cleanup.Add(screenResource);
+
+					cleanup.Add(Disposable.Create(outputDuplication.ReleaseFrame));
+
 					if (frameInformation.AccumulatedFrames == 0)
 					{
-						cleanup.Dispose();
+						Cleanup();
 						continue;
 					}
 
 					if (result != Result.Ok)
-						yield break;
+						break;
 
-					capture = new DxgiScreenCapture(screen, DateTime.Now, width, height, this, adapter, output1,
+					capture = new DxgiScreenCapture(screen, this, DateTime.Now, width, height, adapter, output1,
 						device, outputDuplication, screenResource, frameInformation);
 
 					capture.Add(cleanup);
@@ -81,13 +91,57 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 				}
 				finally
 				{
-					cleanup?.Dispose();
-					capture?.Dispose();
+					Cleanup();
 				}
+			}
+
+			Cleanup();
+
+			if (result != Result.Ok)
+				throw new ScreenCaptureException($"{typeof(OutputDuplication)}.{nameof(OutputDuplication.TryAcquireNextFrame)} returned error: {result}.");
+
+			void Cleanup()
+			{
+				cleanup?.Dispose();
+				capture?.Dispose();
 			}
 		}
 
-		public async Task<DxgiDataBox> MapTexture(DxgiScreenCapture capture)
+		public async Task<Bitmap> ToBitmap(IScreenCapture capture)
+		{
+			if (!(capture is DxgiScreenCapture dxgiCapture))
+				throw new ArgumentOutOfRangeException(nameof(capture), $"Only {typeof(DxgiScreenCapture)} is supported.");
+
+			var width = dxgiCapture.Width;
+			var height = dxgiCapture.Height;
+
+			using var texture = await MapTexture(dxgiCapture);
+
+			// Create Drawing.Bitmap
+			var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+			var boundsRect = new System.Drawing.Rectangle(0, 0, width, height);
+
+			// Copy pixels from screen capture Texture to GDI bitmap
+			var mapTarget = bitmap.LockBits(boundsRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
+			var sourcePtr = texture.DataPointer;
+			var targetPtr = mapTarget.Scan0;
+			for (var y = 0; y < height; y++)
+			{
+				// Copy a single line 
+				Utilities.CopyMemory(targetPtr, sourcePtr, width * 4);
+
+				// Advance pointers
+				sourcePtr = IntPtr.Add(sourcePtr, texture.RowPitch);
+				targetPtr = IntPtr.Add(targetPtr, mapTarget.Stride);
+			}
+
+			// Release source and dest locks
+			bitmap.UnlockBits(mapTarget);
+
+			return bitmap;
+		}
+
+		private async Task<DxgiTexture> MapTexture(DxgiScreenCapture capture)
 		{
 			var width = capture.Width;
 			var height = capture.Height;
@@ -121,71 +175,40 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 			var data = await Task.Run(() =>
 				device.ImmediateContext.MapSubresource(targetTexture, 0, MapMode.Read, MapFlags.None));
 
-			var result = new DxgiDataBox(data.DataPointer, data.RowPitch, data.SlicePitch);
+			var result = new DxgiTexture(data.DataPointer, data.RowPitch, data.SlicePitch);
 
 			result.Add(
 				new CompositeDisposable(
-					Disposable.Create(() =>
-						device.ImmediateContext.UnmapSubresource(targetTexture, 0)),
+					Disposable.Create(() => device.ImmediateContext.UnmapSubresource(targetTexture, 0)),
 					targetTexture));
 
 			return result;
 		}
 
-		public async Task<Bitmap> ToBitmap(DxgiScreenCapture capture)
+		#region IDisposable, ICancelable
+		public bool IsDisposed => _disposable.IsDisposed;
+		private readonly CompositeDisposable _disposable = new CompositeDisposable();
+
+		public void Dispose()
 		{
-			var width = capture.Width;
-			var height = capture.Height;
-
-			using var texture = await MapTexture(capture);
-
-			// Create Drawing.Bitmap
-			var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-			var boundsRect = new System.Drawing.Rectangle(0, 0, width, height);
-
-			// Copy pixels from screen capture Texture to GDI bitmap
-			var mapTarget = bitmap.LockBits(boundsRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-			var sourcePtr = texture.DataPointer;
-			var targetPtr = mapTarget.Scan0;
-			for (var y = 0; y < height; y++)
-			{
-				// Copy a single line 
-				Utilities.CopyMemory(targetPtr, sourcePtr, width * 4);
-
-				// Advance pointers
-				sourcePtr = IntPtr.Add(sourcePtr, texture.RowPitch);
-				targetPtr = IntPtr.Add(targetPtr, mapTarget.Stride);
-			}
-
-			// Release source and dest locks
-			bitmap.UnlockBits(mapTarget);
-
-			return bitmap;
+			_disposable.Dispose();
 		}
 
-		public async Task<byte[]> ToBytes(DxgiScreenCapture capture)
+		public void Add([NotNull] IDisposable disposable)
 		{
-			var width = capture.Width;
-			var height = capture.Height;
+			if (IsDisposed)
+				throw new ObjectDisposedException($"{GetType()} instance is already disposed.");
 
-			using var texture = await MapTexture(capture);
-			var sourcePointer = texture.DataPointer;
-
-			var target = new byte[height * width * 4];
-			var targetHandle = GCHandle.Alloc(target, GCHandleType.Pinned);
-			var targetPointer = targetHandle.AddrOfPinnedObject();
-
-			for (var y = 0; y < height; y++)
-			{
-				Utilities.CopyMemory(targetPointer, sourcePointer, width * 4);
-
-				sourcePointer = IntPtr.Add(sourcePointer, texture.RowPitch);
-				targetPointer = IntPtr.Add(targetPointer, width * 4);
-			}
-
-			targetHandle.Free();
-
-			return target;
+			_disposable.Add(disposable);
 		}
+
+		public void Remove([NotNull] IDisposable disposable)
+		{
+			if (IsDisposed)
+				throw new ObjectDisposedException($"{GetType()} instance is already disposed.");
+
+			_disposable.Remove(disposable);
+		}
+		#endregion
 	}
 }
