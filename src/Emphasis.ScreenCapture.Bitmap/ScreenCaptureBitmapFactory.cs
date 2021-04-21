@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Emphasis.ScreenCapture
 {
-	public interface IScreenCaptureBitmapFactory : IScreenCaptureMethod
+	public interface IScreenCaptureBitmapFactory
 	{
 		Task<Bitmap> ToBitmap(IScreenCapture capture);
 	}
