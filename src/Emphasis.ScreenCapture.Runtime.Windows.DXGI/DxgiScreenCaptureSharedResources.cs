@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,10 +8,13 @@ using Device = SharpDX.Direct3D11.Device;
 
 namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
-	internal class DxgiScreenCaptureSharedResources
+	internal class DxgiScreenCaptureSharedResources : ICancelable
 	{
 		private int _streams;
 		private int _captures;
+		private bool _hasChanged;
+		private ValueTask _dispose;
+
 		private readonly CompositeDisposable _disposable = new CompositeDisposable();
 
 		public Factory1 Factory { get; }
@@ -48,6 +52,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 		public void AddReference()
 		{
 			Interlocked.Increment(ref _captures);
+			_hasChanged = true;
 		}
 
 		public void RemoveReference()
@@ -58,31 +63,58 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 			var streams = Volatile.Read(ref _streams);
 			if (streams == 0)
-				_ = Dispose();
+			{
+				if (_dispose.IsCompleted)
+					_dispose = DisposeDelayed();
+			}
 		}
 
 		public void Acquire()
 		{
 			Interlocked.Increment(ref _streams);
+			_hasChanged = true;
 		}
 
 		public void Release()
 		{
-			Interlocked.Decrement(ref _streams);
+			var streams = Interlocked.Decrement(ref _streams);
+			if (streams != 0)
+				return;
 
 			var captures = Volatile.Read(ref _captures);
 			if (captures == 0)
-				_ = Dispose();
+			{
+				if (_dispose.IsCompleted)
+					_dispose = DisposeDelayed();
+			}
 		}
 
-		private async ValueTask Dispose()
+		private async ValueTask DisposeDelayed()
 		{
+			_hasChanged = false;
+
 			// Keep the shared resource in use for the next 1s in case it will be needed
 			await Task.Delay(1000);
 
+			if (_hasChanged)
+				return;
+			
 			var streams = Volatile.Read(ref _streams);
-			if (streams == 0)
-				_disposable.Dispose();
+			if (streams != 0)
+				return;
+
+			var captures = Volatile.Read(ref _captures);
+			if (captures != 0)
+				return;
+		
+			Dispose();
+		}
+
+		public bool IsDisposed => _disposable.IsDisposed;
+
+		public void Dispose()
+		{
+			_disposable.Dispose();
 		}
 	}
 }

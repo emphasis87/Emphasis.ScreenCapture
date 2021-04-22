@@ -38,7 +38,12 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 		private DxgiScreenCaptureSharedResources GetSharedResources(IScreen screen)
 		{
 			var provider = _sharedResources.GetOrAdd(screen, new Lazy<DxgiScreenCaptureSharedResources>(() => CreateSharedResources(screen)));
-			return provider.Value;
+			var sharedResource = provider.Value;
+			if (!sharedResource.IsDisposed) 
+				return sharedResource;
+
+			_sharedResources.TryRemove(screen, out _);
+			return GetSharedResources(screen);
 		}
 
 		private DxgiScreenCaptureSharedResources CreateSharedResources(IScreen screen)
@@ -62,7 +67,11 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 		public async IAsyncEnumerable<IScreenCapture> CaptureStream(IScreen screen, [EnumeratorCancellation] CancellationToken cancellationToken = default)
 		{
-			var sharedResources = GetSharedResources(screen);
+			var sharedResources = Enumerable.Range(0, 10)
+				.Select(x => GetSharedResources(screen))
+				.First(x => !x.IsDisposed);
+
+			sharedResources.Acquire();
 
 			var bounds = (Rectangle)sharedResources.Output.Description.DesktopBounds;
 			var width = bounds.Width;
@@ -72,7 +81,6 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 			try
 			{
-				sharedResources.Acquire();
 				while (!cancellationToken.IsCancellationRequested)
 				{
 					// Previous frame must be released prior to acquiring the next frame

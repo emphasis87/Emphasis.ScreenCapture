@@ -32,6 +32,8 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 			ScreenResource = screenResource;
 			FrameInformation = frameInformation;
 			
+			Add(ScreenResource);
+
 			SharedResources.AddReference();
 		}
 

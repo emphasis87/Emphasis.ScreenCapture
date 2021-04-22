@@ -9,6 +9,7 @@ using static Emphasis.ScreenCapture.Tests.TestHelper;
 
 namespace Emphasis.ScreenCapture.Tests
 {
+	[NonParallelizable]
 	public class ScreenCaptureManagerTests
 	{
 		[Test]

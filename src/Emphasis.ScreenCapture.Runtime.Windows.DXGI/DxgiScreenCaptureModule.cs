@@ -6,19 +6,34 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
 	public class DxgiScreenCaptureModule : IScreenCaptureModule
 	{
-		public void Configure(IServiceCollection services)
+		private static readonly DxgiScreenCaptureModule Instance = new DxgiScreenCaptureModule();
+
+		private IServiceCollection _services;
+
+		private IServiceCollection CreateServices()
 		{
 			var screens = new DxgiScreenProvider();
 			var capture = new DxgiScreenCaptureMethod(this);
 			var exporter = new DxgiScreenCaptureExporter();
-			
-			var local = new ServiceCollection();
-			local.AddSingleton<IScreenProvider>(screens);
-			local.AddSingleton<IScreenCaptureMethod>(capture);
-			local.AddSingleton<IScreenCaptureBitmapFactory>(exporter);
+
+			var services = new ServiceCollection();
+			services.AddSingleton<IScreenProvider>(screens);
+			services.AddSingleton<IScreenCaptureMethod>(capture);
+			services.AddSingleton<IScreenCaptureBitmapFactory>(exporter);
+
+			return services;
+		}
+
+		public void Configure(IServiceCollection services)
+		{
+			IServiceCollection local;
+			lock (Instance)
+			{
+				local = Instance._services ??=
+					Instance._services = CreateServices();
+			}
 
 			services.Add(local);
-
 			ServiceProvider = local.BuildServiceProvider();
 		}
 
