@@ -14,6 +14,7 @@
       This package provides the functionality for loading available runtime packages.
       See Emphasis.ScreenCapture.Runtime.* packages for available functionality.
     </Description>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>

@@ -15,6 +15,7 @@
 	  This package extends the general functionality with exporting screen capture as a System.Drawing.Bitmap.
 	  See Emphasis.ScreenCapture.Runtime.* packages for available functionality.
 	</Description>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
