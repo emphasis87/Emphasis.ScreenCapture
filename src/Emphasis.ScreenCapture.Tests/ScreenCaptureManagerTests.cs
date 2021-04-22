@@ -22,6 +22,8 @@ namespace Emphasis.ScreenCapture.Tests
 			{
 				screen.AdapterId.Should().NotBe(0);
 				screen.OutputName.Should().NotBeNullOrEmpty();
+
+				Console.WriteLine($"{screen.AdapterId} {screen.OutputName}");
 			}
 		}
 
