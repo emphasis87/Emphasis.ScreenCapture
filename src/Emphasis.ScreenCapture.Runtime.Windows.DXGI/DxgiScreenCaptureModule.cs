@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
@@ -6,12 +8,21 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 	{
 		public void Configure(IServiceCollection services)
 		{
-			var method = new DxgiScreenCaptureMethod();
-			services.AddSingleton<IScreenProvider>(method);
-			services.AddSingleton<IScreenCaptureMethod>(method);
-
+			var screens = new DxgiScreenProvider();
+			var capture = new DxgiScreenCaptureMethod(this);
 			var exporter = new DxgiScreenCaptureExporter();
-			services.AddSingleton<IScreenCaptureBitmapFactory>(exporter);
+			
+			var local = new ServiceCollection();
+			local.AddSingleton<IScreenProvider>(screens);
+			local.AddSingleton<IScreenCaptureMethod>(capture);
+			local.AddSingleton<IScreenCaptureBitmapFactory>(exporter);
+
+			services.Add(local);
+
+			ServiceProvider = local.BuildServiceProvider();
 		}
+
+		public IServiceProvider ServiceProvider { get; private set; }
+		public int Priority => 0;
 	}
 }

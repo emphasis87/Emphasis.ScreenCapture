@@ -1,40 +1,32 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using SharpDX;
-using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
-using MapFlags = SharpDX.Direct3D11.MapFlags;
 using Rectangle = SharpDX.Rectangle;
-using Resource = SharpDX.DXGI.Resource;
 
 namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
-	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod, IScreenProvider
+	public interface IDxgiScreenCaptureMethod : IScreenCaptureMethod
 	{
 
 	}
 
 	public class DxgiScreenCaptureMethod : IDxgiScreenCaptureMethod
 	{
-		public IScreen[] GetScreens()
+		private readonly IScreenCaptureModule _module;
+
+		private readonly ConcurrentDictionary<IScreen, Lazy<DxgiScreenCaptureSharedResources>> _sharedResources =
+			new ConcurrentDictionary<IScreen, Lazy<DxgiScreenCaptureSharedResources>>();
+
+		public DxgiScreenCaptureMethod(IScreenCaptureModule module)
 		{
-			using var factory = new Factory1();
-			var adapters = factory.Adapters1;
-			var screens =
-				adapters.SelectMany(adapter =>
-					adapter.Outputs.Select(output =>
-						(IScreen)new Screen(adapter.Description.DeviceId, output.Description.DeviceName))
-				).ToArray();
-			return screens;
+			_module = module;
 		}
 
 		public async Task<IScreenCapture> Capture(IScreen screen, CancellationToken cancellationToken = default)
@@ -43,78 +35,79 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 			return await stream.FirstOrDefaultAsync(cancellationToken);
 		}
 
-		public async IAsyncEnumerable<IScreenCapture> CaptureStream(IScreen screen, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+		private DxgiScreenCaptureSharedResources GetSharedResources(IScreen screen)
 		{
-			using var factory = new Factory1();
-			using var adapter = factory.Adapters1.FirstOrDefault(x => x.Description.DeviceId == screen.AdapterId);
+			var provider = _sharedResources.GetOrAdd(screen, new Lazy<DxgiScreenCaptureSharedResources>(() => CreateSharedResources(screen)));
+			return provider.Value;
+		}
+
+		private DxgiScreenCaptureSharedResources CreateSharedResources(IScreen screen)
+		{
+			var factory = new Factory1();
+			var adapter = factory.Adapters1.FirstOrDefault(x => x.Description.DeviceId == screen.AdapterId);
 			if (adapter == null)
 				throw new ArgumentOutOfRangeException(nameof(screen), screen.AdapterId, $"Unable to find an adapter width the id: {screen.AdapterId}.");
-			
-			using var output = adapter.Outputs.FirstOrDefault(x => x.Description.DeviceName == screen.OutputName);
+
+			var output = adapter.Outputs.FirstOrDefault(x => x.Description.DeviceName == screen.OutputName);
 			if (output == null)
 				throw new ArgumentOutOfRangeException(nameof(screen), screen.OutputName, $"Unable to find an output with the name: {screen.OutputName}.");
 
-			using var device = new Device(adapter);
-			using var output1 = output.QueryInterface<Output1>();
-			using var outputDuplication = output1.DuplicateOutput(device);
+			var device = new Device(adapter);
+			var output1 = output.QueryInterface<Output1>();
+			var outputDuplication = output1.DuplicateOutput(device);
 
-			var bounds = (Rectangle)output.Description.DesktopBounds;
+			var sharedResources = new DxgiScreenCaptureSharedResources(factory, adapter, output, device, output1, outputDuplication);
+			return sharedResources;
+		}
+
+		public async IAsyncEnumerable<IScreenCapture> CaptureStream(IScreen screen, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+		{
+			var sharedResources = GetSharedResources(screen);
+
+			var bounds = (Rectangle)sharedResources.Output.Description.DesktopBounds;
 			var width = bounds.Width;
 			var height = bounds.Height;
 
-			OutputDuplicateFrameInformation frameInformation = default;
-			Resource screenResource = default;
-			DxgiScreenCapture capture = default;
-			CompositeDisposable cleanup = default;
-			var result = Result.Ok;
-			
-			while (!cancellationToken.IsCancellationRequested)
-			{
-				cleanup = new CompositeDisposable();
+			var outputDuplication = sharedResources.OutputDuplication;
 
-				try
+			try
+			{
+				sharedResources.Acquire();
+				while (!cancellationToken.IsCancellationRequested)
 				{
-					result = await Task.Run(() =>
-							outputDuplication.TryAcquireNextFrame(1000, out frameInformation, out screenResource),
+					// Previous frame must be released prior to acquiring the next frame
+					if (sharedResources.IsFrameAcquired)
+						throw new ScreenCaptureException($"Previous {typeof(DxgiScreenCapture)} must be disposed prior to acquiring the next frame.");
+					
+					// Acquire the next frame
+					var (result, frameInformation, screenResource) = await Task.Run(() =>
+						{
+							var err = outputDuplication.TryAcquireNextFrame(1000, out var fi, out var sr);
+							return (err, fi, sr);
+						},
 						cancellationToken);
 
-					if (screenResource != null)
-						cleanup.Add(screenResource);
-
-					cleanup.Add(Disposable.Create(outputDuplication.ReleaseFrame));
+					if (result != Result.Ok)
+					{
+						screenResource?.Dispose();
+						throw new ScreenCaptureException($"{typeof(OutputDuplication)}.{nameof(OutputDuplication.TryAcquireNextFrame)} returned error: {result}.");
+					}
 
 					if (frameInformation.AccumulatedFrames == 0)
 					{
-						Cleanup();
+						outputDuplication.ReleaseFrame();
 						continue;
 					}
 
-					if (result != Result.Ok)
-						break;
-
-					capture = new DxgiScreenCapture(screen, this, DateTime.Now, width, height, adapter, output1,
-						device, outputDuplication, screenResource, frameInformation);
-
-					capture.Add(cleanup);
+					var capture = new DxgiScreenCapture(screen, _module, DateTime.Now, width, height,
+						sharedResources, screenResource, frameInformation);
 
 					yield return capture;
-
-				}
-				finally
-				{
-					Cleanup();
 				}
 			}
-
-			Cleanup();
-
-			if (result != Result.Ok)
-				throw new ScreenCaptureException($"{typeof(OutputDuplication)}.{nameof(OutputDuplication.TryAcquireNextFrame)} returned error: {result}.");
-
-			void Cleanup()
+			finally
 			{
-				cleanup?.Dispose();
-				capture?.Dispose();
+				sharedResources.Release();
 			}
 		}
 	}

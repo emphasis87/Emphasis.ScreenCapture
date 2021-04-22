@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Emphasis.ScreenCapture
 {
@@ -11,15 +12,14 @@ namespace Emphasis.ScreenCapture
 
 	public static class ScreenCaptureBitmapExtensions
 	{
-		public static Task<Bitmap> ToBitmap(IScreenCapture capture)
+		public static Task<Bitmap> ToBitmap(this IScreenCapture capture)
 		{
-			var method = capture.Method;
-			return method switch
-			{
-				null => throw new ArgumentNullException(nameof(capture.Method), "Screen capture method is null."),
-				IScreenCaptureBitmapFactory factory => factory.ToBitmap(capture),
-				_ => throw new NotSupportedException($"{method.GetType()} does not support {typeof(IScreenCaptureBitmapFactory)}.")
-			};
+			var module = capture.Module;
+			var services = module.ServiceProvider 
+				?? throw new ArgumentNullException(nameof(IScreenCaptureModule.ServiceProvider), "ServiceProvider is null.");
+			var factory = services.GetService<IScreenCaptureBitmapFactory>()
+				?? throw new NotSupportedException($"{module.GetType()} does not support {typeof(IScreenCaptureBitmapFactory)}.");
+			return factory.ToBitmap(capture);
 		}
 	}
 }

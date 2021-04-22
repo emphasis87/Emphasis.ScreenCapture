@@ -7,7 +7,7 @@ namespace Emphasis.ScreenCapture
 	public interface IScreenCapture : IDisposable, ICancelable
 	{
 		public IScreen Screen { get; }
-		public IScreenCaptureMethod Method { get; }
+		public IScreenCaptureModule Module { get; }
 
 		void Add([NotNull] IDisposable disposable);
 		void Remove([NotNull] IDisposable disposable);
@@ -16,20 +16,20 @@ namespace Emphasis.ScreenCapture
 	public class ScreenCapture : IScreenCapture
 	{
 		public IScreen Screen { get; }
-		public IScreenCaptureMethod Method { get; }
+		public IScreenCaptureModule Module { get; }
 		public DateTime Timestamp { get; }
 		public int Width { get; }
 		public int Height { get; }
 
 		public ScreenCapture(
 			[NotNull] IScreen screen,
-			[NotNull] IScreenCaptureMethod method,
+			[NotNull] IScreenCaptureModule module,
 			DateTime timestamp,
 			int width,
 			int height)
 		{
-			Screen = screen;
-			Method = method;
+			Screen = screen ?? throw new ArgumentNullException(nameof(screen));
+			Module = module ?? throw new ArgumentNullException(nameof(module));
 			Timestamp = timestamp;
 			Width = width;
 			Height = height;
@@ -39,7 +39,7 @@ namespace Emphasis.ScreenCapture
 		public bool IsDisposed => _disposable.IsDisposed;
 		private readonly CompositeDisposable _disposable = new CompositeDisposable();
 
-		public void Dispose()
+		public virtual void Dispose()
 		{
 			_disposable.Dispose();
 		}

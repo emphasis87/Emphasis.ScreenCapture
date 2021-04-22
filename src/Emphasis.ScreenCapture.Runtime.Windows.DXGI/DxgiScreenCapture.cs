@@ -7,33 +7,41 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
 	public class DxgiScreenCapture : ScreenCapture
 	{
-		public Adapter1 Adapter { get; }
-		public Output1 Output { get; }
-		public Device Device { get; }
-		public OutputDuplication OutputDuplication { get; }
+		internal DxgiScreenCaptureSharedResources SharedResources { get; }
+
+		public Adapter1 Adapter => SharedResources.Adapter;
+		public Output1 Output => SharedResources.Output1;
+		public Device Device => SharedResources.Device;
+		public OutputDuplication OutputDuplication => SharedResources.OutputDuplication;
+
 		public Resource ScreenResource { get; }
 		public OutputDuplicateFrameInformation FrameInformation { get; }
 
-		public DxgiScreenCapture(
+		internal DxgiScreenCapture(
 			[NotNull] IScreen screen,
-			[NotNull] IScreenCaptureMethod method,
+			[NotNull] IScreenCaptureModule module,
 			DateTime time,
 			int width,
 			int height,
-			[NotNull] Adapter1 adapter,
-			[NotNull] Output1 output,
-			[NotNull] Device device,
-			[NotNull] OutputDuplication outputDuplication,
+			[NotNull] DxgiScreenCaptureSharedResources resources,
 			[NotNull] Resource screenResource,
 			[NotNull] OutputDuplicateFrameInformation frameInformation)
-			: base(screen, method, time, width, height)
+			: base(screen, module, time, width, height)
 		{
-			Adapter = adapter;
-			Output = output;
-			Device = device;
-			OutputDuplication = outputDuplication;
+			SharedResources = resources;
 			ScreenResource = screenResource;
 			FrameInformation = frameInformation;
+			
+			SharedResources.AddReference();
+		}
+
+		public override void Dispose()
+		{
+			OutputDuplication.ReleaseFrame();
+
+			base.Dispose();
+			
+			SharedResources.RemoveReference();
 		}
 	}
 }
