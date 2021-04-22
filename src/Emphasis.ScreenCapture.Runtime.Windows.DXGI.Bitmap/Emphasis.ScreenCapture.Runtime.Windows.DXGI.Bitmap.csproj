@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+	<RootNamespace>Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap</RootNamespace>
     <Product>Emphasis.ScreenCapture</Product>
     <Authors>Luboš Hemala</Authors>
-    <PackageId>Emphasis.ScreenCapture</PackageId>
+    <PackageId>Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap</PackageId>
     <PackageProjectUrl>https://github.com/emphasis87/Emphasis.ScreenCapture</PackageProjectUrl>
-    <PackageTags>Screen Capture</PackageTags>
+    <PackageTags>Screen Capture; Bitmap</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>1.0.0</Version>
     <Description>
       Emphasis.ScreenCapture is an extensible system for screen capturing.
-      This package provides the functionality for loading available runtime packages.
-      See Emphasis.ScreenCapture.Runtime.* packages for available functionality.
+      This package provides a runtime for exporting to a System.Drawing.Bitmap based on Windows DXGI API.
     </Description>
   </PropertyGroup>
 
@@ -21,7 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Emphasis.ScreenCapture.Common\Emphasis.ScreenCapture.Common.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Bitmap\Emphasis.ScreenCapture.Bitmap.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI\Emphasis.ScreenCapture.Runtime.Windows.DXGI.csproj" />
   </ItemGroup>
 
 </Project>

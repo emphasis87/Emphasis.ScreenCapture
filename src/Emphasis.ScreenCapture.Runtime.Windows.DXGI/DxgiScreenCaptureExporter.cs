@@ -1,51 +1,18 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Threading.Tasks;
-using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 
 namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
-	public class DxgiScreenCaptureExporter : IScreenCaptureBitmapFactory
+	public interface IDxgiScreenCaptureExporter
 	{
-		public async Task<Bitmap> ToBitmap(IScreenCapture capture)
-		{
-			if (!(capture is DxgiScreenCapture dxgiCapture))
-				throw new ArgumentOutOfRangeException(nameof(capture), $"Only {typeof(DxgiScreenCapture)} is supported.");
+		Task<DxgiTexture> MapTexture(DxgiScreenCapture capture);
+	}
 
-			var width = dxgiCapture.Width;
-			var height = dxgiCapture.Height;
-
-			using var texture = await MapTexture(dxgiCapture);
-
-			// Create Drawing.Bitmap
-			var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-			var boundsRect = new System.Drawing.Rectangle(0, 0, width, height);
-
-			// Copy pixels from screen capture Texture to GDI bitmap
-			var mapTarget = bitmap.LockBits(boundsRect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
-			var sourcePtr = texture.DataPointer;
-			var targetPtr = mapTarget.Scan0;
-			for (var y = 0; y < height; y++)
-			{
-				// Copy a single line 
-				Utilities.CopyMemory(targetPtr, sourcePtr, width * 4);
-
-				// Advance pointers
-				sourcePtr = IntPtr.Add(sourcePtr, texture.RowPitch);
-				targetPtr = IntPtr.Add(targetPtr, mapTarget.Stride);
-			}
-
-			// Release source and dest locks
-			bitmap.UnlockBits(mapTarget);
-
-			return bitmap;
-		}
-
-		internal static async Task<DxgiTexture> MapTexture(DxgiScreenCapture capture)
+	public class DxgiScreenCaptureExporter : IDxgiScreenCaptureExporter
+	{
+		public async Task<DxgiTexture> MapTexture(DxgiScreenCapture capture)
 		{
 			var width = capture.Width;
 			var height = capture.Height;

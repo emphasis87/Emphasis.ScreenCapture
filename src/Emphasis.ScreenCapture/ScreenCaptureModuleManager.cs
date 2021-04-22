@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Emphasis.ScreenCapture
 {
-	internal class ScreenCaptureModuleLoader
+	public class ScreenCaptureModuleManager
 	{
 		private readonly object _gate = new object();
 		private IServiceProvider _serviceProvider;
@@ -86,7 +86,8 @@ namespace Emphasis.ScreenCapture
 						modules.Add(module);
 					}
 
-					foreach (var module in modules.OrderBy(x => x.Priority))
+					var orderedModules = modules.OrderBy(x => x.Priority).ToList();
+					foreach (var module in orderedModules)
 					{
 						module.Configure(services);
 					}
@@ -94,6 +95,11 @@ namespace Emphasis.ScreenCapture
 					serviceProvider = services.BuildServiceProvider();
 
 					Volatile.Write(ref _serviceProvider, serviceProvider);
+
+					foreach (var module in orderedModules)
+					{
+						module.Configure(serviceProvider);
+					}
 
 					return serviceProvider;
 				}

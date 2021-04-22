@@ -3,6 +3,17 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Emphasis.ScreenCapture.Runtime.Windows.DXGI</RootNamespace>
+    <Product>Emphasis.ScreenCapture</Product>
+    <Authors>Luboš Hemala</Authors>
+    <PackageId>Emphasis.ScreenCapture.Runtime.Windows.DXGI</PackageId>
+    <PackageProjectUrl>https://github.com/emphasis87/Emphasis.ScreenCapture</PackageProjectUrl>
+    <PackageTags>Screen Capture</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>1.0.0</Version>
+    <Description>
+      Emphasis.ScreenCapture is an extensible system for screen capturing.
+      This package provides a runtime based on Windows DXGI API.
+    </Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +22,6 @@
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />
     <PackageReference Include="SharpDX.DXGI" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
-    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>

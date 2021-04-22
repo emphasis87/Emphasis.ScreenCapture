@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reactive.Disposables;
 using SharpDX.DXGI;
 using Device = SharpDX.Direct3D11.Device;
 
@@ -19,31 +20,27 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 		internal DxgiScreenCapture(
 			[NotNull] IScreen screen,
-			[NotNull] IScreenCaptureModule module,
+			[NotNull] IServiceProvider serviceProvider,
 			DateTime time,
 			int width,
 			int height,
 			[NotNull] DxgiScreenCaptureSharedResources resources,
 			[NotNull] Resource screenResource,
 			[NotNull] OutputDuplicateFrameInformation frameInformation)
-			: base(screen, module, time, width, height)
+			: base(screen, serviceProvider, time, width, height)
 		{
 			SharedResources = resources;
 			ScreenResource = screenResource;
 			FrameInformation = frameInformation;
 			
-			Add(ScreenResource);
+			Add(Disposable.Create(() =>
+			{
+				ScreenResource.Dispose();
+				OutputDuplication.ReleaseFrame();
+				SharedResources.RemoveReference();
+			}));
 
 			SharedResources.AddReference();
-		}
-
-		public override void Dispose()
-		{
-			OutputDuplication.ReleaseFrame();
-
-			base.Dispose();
-			
-			SharedResources.RemoveReference();
 		}
 	}
 }

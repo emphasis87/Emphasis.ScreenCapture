@@ -3,6 +3,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>Emphasis.ScreenCapture</RootNamespace>
+	<Product>Emphasis.ScreenCapture</Product>
+	<Authors>Luboš Hemala</Authors>
+	<PackageId>Emphasis.ScreenCapture.Bitmap</PackageId>
+	<PackageProjectUrl>https://github.com/emphasis87/Emphasis.ScreenCapture</PackageProjectUrl>
+	<PackageTags>Screen Capture; Bitmap</PackageTags>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<Version>1.0.0</Version>
+	<Description>
+	  Emphasis.ScreenCapture is an extensible system for screen capturing.
+	  This package extends the general functionality with exporting screen capture as a System.Drawing.Bitmap.
+	  See Emphasis.ScreenCapture.Runtime.* packages for available functionality.
+	</Description>
   </PropertyGroup>
 
   <ItemGroup>

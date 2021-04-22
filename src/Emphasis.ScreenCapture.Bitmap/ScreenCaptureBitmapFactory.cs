@@ -14,11 +14,10 @@ namespace Emphasis.ScreenCapture
 	{
 		public static Task<Bitmap> ToBitmap(this IScreenCapture capture)
 		{
-			var module = capture.Module;
-			var services = module.ServiceProvider 
-				?? throw new ArgumentNullException(nameof(IScreenCaptureModule.ServiceProvider), "ServiceProvider is null.");
-			var factory = services.GetService<IScreenCaptureBitmapFactory>()
-				?? throw new NotSupportedException($"{module.GetType()} does not support {typeof(IScreenCaptureBitmapFactory)}.");
+			var serviceProvider = capture.ServiceProvider
+				?? throw new ArgumentNullException(nameof(capture.ServiceProvider), $"{nameof(capture.ServiceProvider)} is null.");
+			var factory = serviceProvider.GetService<IScreenCaptureBitmapFactory>()
+				?? throw new NotSupportedException($"{capture.GetType()} does not support {typeof(IScreenCaptureBitmapFactory)}.");
 			return factory.ToBitmap(capture);
 		}
 	}

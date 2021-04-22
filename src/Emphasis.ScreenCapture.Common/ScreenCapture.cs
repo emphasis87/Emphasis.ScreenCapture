@@ -7,7 +7,7 @@ namespace Emphasis.ScreenCapture
 	public interface IScreenCapture : IDisposable, ICancelable
 	{
 		public IScreen Screen { get; }
-		public IScreenCaptureModule Module { get; }
+		public IServiceProvider ServiceProvider { get; }
 
 		void Add([NotNull] IDisposable disposable);
 		void Remove([NotNull] IDisposable disposable);
@@ -16,20 +16,20 @@ namespace Emphasis.ScreenCapture
 	public class ScreenCapture : IScreenCapture
 	{
 		public IScreen Screen { get; }
-		public IScreenCaptureModule Module { get; }
+		public IServiceProvider ServiceProvider { get; }
 		public DateTime Timestamp { get; }
 		public int Width { get; }
 		public int Height { get; }
 
 		public ScreenCapture(
 			[NotNull] IScreen screen,
-			[NotNull] IScreenCaptureModule module,
+			[NotNull] IServiceProvider serviceProvider,
 			DateTime timestamp,
 			int width,
 			int height)
 		{
 			Screen = screen ?? throw new ArgumentNullException(nameof(screen));
-			Module = module ?? throw new ArgumentNullException(nameof(module));
+			ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 			Timestamp = timestamp;
 			Width = width;
 			Height = height;
