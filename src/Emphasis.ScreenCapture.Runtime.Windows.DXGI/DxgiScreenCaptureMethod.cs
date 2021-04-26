@@ -94,6 +94,13 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 							return (err, fi, sr);
 						},
 						cancellationToken);
+					
+					if (result == ResultCode.WaitTimeout)
+					{
+						// https://docs.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-error
+						// The time-out interval elapsed before the next desktop frame was available.
+						continue;
+					}
 
 					if (result != Result.Ok)
 					{

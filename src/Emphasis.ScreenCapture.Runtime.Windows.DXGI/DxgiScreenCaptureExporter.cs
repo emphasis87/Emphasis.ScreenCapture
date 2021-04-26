@@ -36,23 +36,30 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 			var targetTexture = new Texture2D(device, textureDescription);
 
 			// Copy resource into memory that can be accessed by the CPU
-			using (var sourceTexture = screenResource.QueryInterface<Texture2D>())
+			var sourceTexture = screenResource.QueryInterface<Texture2D>();
+			try
 			{
 				await Task.Run(() =>
 					device.ImmediateContext.CopyResource(sourceTexture, targetTexture));
+
+				// Get the desktop capture texture
+				var data = await Task.Run(() =>
+					device.ImmediateContext.MapSubresource(targetTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None));
+
+				var result = new DxgiTexture(data.DataPointer, data.RowPitch, data.SlicePitch);
+
+				result.Add(Disposable.Create(() =>
+				{
+					device.ImmediateContext.UnmapSubresource(targetTexture, 0);
+					targetTexture.Dispose();
+				}));
+
+				return result;
 			}
-
-			// Get the desktop capture texture
-			var data = await Task.Run(() =>
-				device.ImmediateContext.MapSubresource(targetTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None));
-
-			var result = new DxgiTexture(data.DataPointer, data.RowPitch, data.SlicePitch);
-
-			result.Add(Disposable.Create(() => 
-				device.ImmediateContext.UnmapSubresource(targetTexture, 0)));
-			result.Add(targetTexture);
-
-			return result;
+			finally
+			{
+				sourceTexture.Dispose();
+			}
 		}
 	}
 }

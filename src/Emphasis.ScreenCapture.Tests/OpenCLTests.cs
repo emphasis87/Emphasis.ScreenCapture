@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -7,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using SharpDX;
 using Silk.NET.OpenCL;
@@ -19,11 +22,9 @@ namespace Emphasis.ScreenCapture.Tests
 	public class OpenCLTests
 	{
 		private static nuint Size<T>(int count) => (nuint)(Marshal.SizeOf<T>() * count);
-		private static nuint Size<T>(nint count) => (nuint)(Marshal.SizeOf<T>() * count);
-		private static nuint Size<T>(nuint count) => (nuint)(Marshal.SizeOf<T>() * (uint)count);
 
 		[Test]
-		public async Task CreateImage()
+		public async Task CreateImage_CopyHostPtr()
 		{
 			var manager = new ScreenCaptureManager();
 			var screen = manager.GetScreens().FirstOrDefault();
@@ -48,30 +49,45 @@ namespace Emphasis.ScreenCapture.Tests
 				err.Should().Be(0);
 			}
 
-			using var capture = await manager.Capture(screen);
-			var imageId = await capture.CreateImage(contextId);
-
 			var queueId = api.CreateCommandQueue(contextId, deviceId, default, out err);
 			err.Should().Be(0);
 
-			var bitmap = CreateBitmap(api, queueId, imageId);
+			var captureStream = manager.CaptureStream(screen).GetAsyncEnumerator();
+			if (!await captureStream.MoveNextAsync())
+				throw new AssertionException("Unable to capture screen.");
+
+			var capture = captureStream.Current;
+			var image = await capture.CreateImage(contextId, queueId);
+
+			image.IsAcquiringRequired.Should().BeFalse();
 			
+			var bitmap = CreateBitmap(api, queueId, image.ImageId);
+
+			api.ReleaseMemObject(image.ImageId);
+			capture.Dispose();
+
 			Run(bitmap, "screen.png");
 
 			bitmap.Dispose();
-			
-			api.ReleaseContext(contextId);
-			api.ReleaseMemObject(imageId);
-		}
 
+			// Benchmark
+			await CreateImage_benchmark(captureStream, api, contextId, queueId);
+
+			api.ReleaseCommandQueue(queueId);
+			api.ReleaseContext(contextId);
+		}
+		
 		[Test]
 		public async Task CreateImage_with_KHR_D3D11_sharing()
 		{
 			var manager = new ScreenCaptureManager();
 			var screen = manager.GetScreens().FirstOrDefault();
 			
-			using var capture = await manager.Capture(screen);
+			var captureStream = manager.CaptureStream(screen).GetAsyncEnumerator();
+			if (!await captureStream.MoveNextAsync())
+				throw new AssertionException("Unable to capture screen.");
 
+			var capture = captureStream.Current;
 			if (capture is not DxgiScreenCapture dxgiCapture)
 				throw new AssertionException("Dxgi screen capture is required.");
 
@@ -109,26 +125,65 @@ namespace Emphasis.ScreenCapture.Tests
 				{
 					(nint)CLEnum.ContextPlatform, platformId,
 					(nint)KHR.ContextD3D11DeviceKhr, dxgiCapture.Device.NativePointer,
+					(nint)CLEnum.ContextInteropUserSync, (nint)CLEnum.False,
 					0
 				};
 				contextId = api.CreateContext(props, 1, &deviceId, Notify, null, &err);
 				err.Should().Be(0);
 			}
 
-			
-			var imageId = await capture.CreateImage(contextId);
-
 			var queueId = api.CreateCommandQueue(contextId, deviceId, default, out err);
 			err.Should().Be(0);
+			
+			var image = await capture.CreateImage(contextId, queueId);
+			var imageId = image.ImageId;
+
+			image.IsAcquiringRequired.Should().BeTrue();
+			image.AcquireObject(null, out _);
 
 			var bitmap = CreateBitmap(api, queueId, imageId);
 
+			image.ReleaseObject(null, out _);
+			
+			api.ReleaseMemObject(imageId);
+			capture.Dispose();
+			
 			Run(bitmap, "screen.png");
 
 			bitmap.Dispose();
 
+			// Benchmark
+			await CreateImage_benchmark(captureStream, api, contextId, queueId);
+
+			api.ReleaseCommandQueue(queueId);
 			api.ReleaseContext(contextId);
-			api.ReleaseMemObject(imageId);
+		}
+
+		private static async Task CreateImage_benchmark(IAsyncEnumerator<IScreenCapture> captureStream, CL api, nint contextId, nint queueId)
+		{
+			var sw = new Stopwatch();
+			var n = 100;
+			for (var i = 0; i < n; i++)
+			{
+				if (!await captureStream.MoveNextAsync())
+					throw new AssertionException("Unable to capture screen.");
+
+				var capture2 = captureStream.Current;
+				
+				sw.Start();
+				var image2 = await capture2.CreateImage(contextId, queueId);
+				if (image2.IsAcquiringRequired)
+				{
+					image2.AcquireObject(null, out _);
+					image2.ReleaseObject(null, out _);
+				}
+				
+				api.ReleaseMemObject(image2.ImageId);
+				capture2.Dispose();
+				sw.Stop();
+			}
+			
+			Console.WriteLine($"Average: {(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 		}
 
 		private unsafe Bitmap CreateBitmap(CL api, nint queueId, nint imageId)
@@ -162,7 +217,7 @@ namespace Emphasis.ScreenCapture.Tests
 			var channelType = imageFormat[1];
 			
 			var pixelFormat = default(PixelFormat);
-			if (channelOrder == (int)CLEnum.Bgra && channelType == (int)CLEnum.UnsignedInt8)
+			if (channelOrder == (int)CLEnum.Bgra && (channelType == (int)CLEnum.UnsignedInt8 || channelType == (int)CLEnum.UnormInt8))
 			{
 				pixelFormat = PixelFormat.Format32bppArgb;
 			}

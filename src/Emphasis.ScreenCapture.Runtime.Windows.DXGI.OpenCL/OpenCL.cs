@@ -9,6 +9,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 	internal class OclContextInfo
 	{
 		public bool IsSupportingD3D11Sharing { get; set; }
+		public bool InteropUserSync { get; set; }
 		public nint D3D11DeviceId { get; set; }
 		public nint PlatformId { get; set; }
 		public nint[] Devices { get; set; }
@@ -19,6 +20,8 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 		public bool IsSupportingD3D11Sharing { get; set; }
 		public OclDelegates.clGetDeviceIDsFromD3D11 GetDeviceIDs { get; set; }
 		public OclDelegates.clCreateFromD3D11Texture2D CreateFromTexture2D { get; set; }
+		public OclDelegates.clEnqueueAcquireD3D11Objects EnqueueAcquireD3D11Objects { get; set; }
+		public OclDelegates.clEnqueueReleaseD3D11Objects EnqueueReleaseD3D11Objects { get; set; }
 	}
 
 	internal static class OclDelegates
@@ -38,5 +41,21 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 			nint resource,
 			uint subResource,
 			int* errCode);
+
+		public unsafe delegate int clEnqueueAcquireD3D11Objects(
+			nint commandQueue,
+			uint numObjects,
+			nint* memObjects,
+			uint numEventsInWaitList,
+			nint* eventWaitList,
+			nint* @event);
+
+		public unsafe delegate int clEnqueueReleaseD3D11Objects(
+			nint commandQueue,
+			uint numObjects,
+			nint* memObjects,
+			uint numEventsInWaitList,
+			nint* eventWaitList,
+			nint* @event);
 	}
 }

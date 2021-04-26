@@ -6,13 +6,7 @@ namespace Emphasis.ScreenCapture
 {
 	public interface IScreenCaptureOclImageFactory
 	{
-		Task<nint> CreateImage(IScreenCapture capture, nint contextId);
-		Task<nint> CreateOrCopyToImage(IScreenCapture capture, nint clContext, nint clImage);
-		Task<nint> CopyToImage(IScreenCapture capture, nint clContext, nint clImage);
-
-		nint CreateImage(IScreenCapture capture, nint contextId, nint clEvent);
-		nint CreateOrCopyToImage(IScreenCapture capture, nint clContext, nint clImage, nint clEvent);
-		nint CopyToImage(IScreenCapture capture, nint clContext, nint clImage, nint clEvent);
+		Task<IOclImage> CreateImage(IScreenCapture capture, nint contextId, nint queueId);
 	}
 
 	public static class ScreenCaptureOclExtensions
@@ -26,40 +20,10 @@ namespace Emphasis.ScreenCapture
 			return factory;
 		}
 
-		public static Task<nint> CreateImage(this IScreenCapture capture, nint clContext)
+		public static Task<IOclImage> CreateImage(this IScreenCapture capture, nint contextId, nint queueId)
 		{
 			var factory = GetFactory(capture);
-			return factory.CreateImage(capture, clContext);
-		}
-
-		public static Task<nint> CreateOrCopyToImage(this IScreenCapture capture, nint clContext, nint clImage)
-		{
-			var factory = GetFactory(capture);
-			return factory.CreateOrCopyToImage(capture, clContext, clImage);
-		}
-
-		public static Task<nint> CopyToImage(this IScreenCapture capture, nint clContext, nint clImage)
-		{
-			var factory = GetFactory(capture);
-			return factory.CopyToImage(capture, clContext, clImage);
-		}
-
-		public static nint CreateImage(this IScreenCapture capture, nint clContext, nint clEvent)
-		{
-			var factory = GetFactory(capture);
-			return factory.CreateImage(capture, clContext, clEvent);
-		}
-
-		public static nint CreateOrCopyToImage(this IScreenCapture capture, nint clContext, nint clImage, nint clEvent)
-		{
-			var factory = GetFactory(capture);
-			return factory.CreateOrCopyToImage(capture, clContext, clImage, clEvent);
-		}
-
-		public static nint CopyToImage(this IScreenCapture capture, nint clContext, nint clImage, nint clEvent)
-		{
-			var factory = GetFactory(capture);
-			return factory.CopyToImage(capture, clContext, clImage, clEvent);
+			return factory.CreateImage(capture, contextId, queueId);
 		}
 	}
 }
