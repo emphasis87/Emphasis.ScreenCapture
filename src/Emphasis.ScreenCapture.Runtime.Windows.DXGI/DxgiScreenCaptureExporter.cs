@@ -48,10 +48,9 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 			var result = new DxgiTexture(data.DataPointer, data.RowPitch, data.SlicePitch);
 
-			result.Add(
-				new CompositeDisposable(
-					Disposable.Create(() => device.ImmediateContext.UnmapSubresource(targetTexture, 0)),
-					targetTexture));
+			result.Add(Disposable.Create(() => 
+				device.ImmediateContext.UnmapSubresource(targetTexture, 0)));
+			result.Add(targetTexture);
 
 			return result;
 		}
