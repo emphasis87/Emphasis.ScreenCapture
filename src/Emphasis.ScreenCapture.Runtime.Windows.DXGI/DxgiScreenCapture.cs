@@ -17,6 +17,8 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 		public Resource ScreenResource { get; }
 		public OutputDuplicateFrameInformation FrameInformation { get; }
+		
+		private readonly IDisposable _disposable;
 
 		internal DxgiScreenCapture(
 			[NotNull] IScreen screen,
@@ -33,14 +35,21 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 			ScreenResource = screenResource;
 			FrameInformation = frameInformation;
 			
-			Add(Disposable.Create(() =>
+			_disposable = Disposable.Create(() =>
 			{
 				ScreenResource.Dispose();
 				OutputDuplication.ReleaseFrame();
 				SharedResources.RemoveReference();
-			}));
+			});
 
 			SharedResources.AddReference();
+		}
+
+		public override void Dispose()
+		{
+			base.Dispose();
+			
+			_disposable.Dispose();
 		}
 	}
 }

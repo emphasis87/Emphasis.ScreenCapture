@@ -6,7 +6,7 @@ namespace Emphasis.ScreenCapture
 {
 	public interface IScreenCaptureOclImageFactory
 	{
-		Task<IOclImage> CreateImage(IScreenCapture capture, nint contextId, nint queueId);
+		Task<IOclImage> CreateImage(IScreenCapture capture, nint contextId, nint queueId, nint imageId = default, nint[] waitEventIds = default);
 	}
 
 	public static class ScreenCaptureOclExtensions
@@ -20,10 +20,10 @@ namespace Emphasis.ScreenCapture
 			return factory;
 		}
 
-		public static Task<IOclImage> CreateImage(this IScreenCapture capture, nint contextId, nint queueId)
+		public static Task<IOclImage> CreateImage(this IScreenCapture capture, nint contextId, nint queueId, nint imageId = default, nint[] waitEventIds = default)
 		{
 			var factory = GetFactory(capture);
-			return factory.CreateImage(capture, contextId, queueId);
+			return factory.CreateImage(capture, contextId, queueId, imageId, waitEventIds);
 		}
 	}
 }

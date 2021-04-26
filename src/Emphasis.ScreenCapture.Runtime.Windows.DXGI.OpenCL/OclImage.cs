@@ -3,6 +3,7 @@
 	internal class OclImage : IOclImage
 	{
 		public nint ImageId { get; }
+		public nint ImageWriteEventId { get; internal set; }
 		public nint QueueId { get; }
 		public bool IsAcquiringRequired { get; }
 

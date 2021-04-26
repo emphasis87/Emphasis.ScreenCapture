@@ -23,8 +23,9 @@ namespace Emphasis.ScreenCapture.Tests
 	{
 		private static nuint Size<T>(int count) => (nuint)(Marshal.SizeOf<T>() * count);
 
-		[Test]
-		public async Task CreateImage_CopyHostPtr()
+		[TestCase(false)]
+		[TestCase(true)]
+		public async Task CreateImage_CopyHostPtr(bool reuseImage)
 		{
 			var manager = new ScreenCaptureManager();
 			var screen = manager.GetScreens().FirstOrDefault();
@@ -71,7 +72,7 @@ namespace Emphasis.ScreenCapture.Tests
 			bitmap.Dispose();
 
 			// Benchmark
-			await CreateImage_benchmark(captureStream, api, contextId, queueId);
+			await CreateImage_benchmark(captureStream, api, contextId, queueId, reuseImage);
 
 			api.ReleaseCommandQueue(queueId);
 			api.ReleaseContext(contextId);
@@ -159,8 +160,9 @@ namespace Emphasis.ScreenCapture.Tests
 			api.ReleaseContext(contextId);
 		}
 
-		private static async Task CreateImage_benchmark(IAsyncEnumerator<IScreenCapture> captureStream, CL api, nint contextId, nint queueId)
+		private static async Task CreateImage_benchmark(IAsyncEnumerator<IScreenCapture> captureStream, CL api, nint contextId, nint queueId, bool reuseImage = false)
 		{
+			nint imageId = default;
 			var sw = new Stopwatch();
 			var n = 100;
 			for (var i = 0; i < n; i++)
@@ -168,20 +170,28 @@ namespace Emphasis.ScreenCapture.Tests
 				if (!await captureStream.MoveNextAsync())
 					throw new AssertionException("Unable to capture screen.");
 
-				var capture2 = captureStream.Current;
+				var capture = captureStream.Current;
 				
 				sw.Start();
-				var image2 = await capture2.CreateImage(contextId, queueId);
-				if (image2.IsAcquiringRequired)
+				var image = await capture.CreateImage(contextId, queueId, reuseImage ? imageId : default);
+				if (image.IsAcquiringRequired)
 				{
-					image2.AcquireObject(null, out _);
-					image2.ReleaseObject(null, out _);
+					image.AcquireObject(null, out _);
+					image.ReleaseObject(null, out _);
 				}
-				
-				api.ReleaseMemObject(image2.ImageId);
-				capture2.Dispose();
+
+				api.Finish(queueId);
+
+				imageId = image.ImageId;
+				if (!reuseImage)
+					api.ReleaseMemObject(imageId);
+
+				capture.Dispose();
 				sw.Stop();
 			}
+
+			if (reuseImage && imageId != default)
+				api.ReleaseMemObject(imageId);
 			
 			Console.WriteLine($"Average: {(int)(sw.Elapsed.TotalMicroseconds() / n)} us");
 		}

@@ -30,36 +30,31 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 				OptionFlags = ResourceOptionFlags.None,
 				MipLevels = 1,
 				ArraySize = 1,
-				SampleDescription = { Count = 1, Quality = 0 },
+				SampleDescription = {Count = 1, Quality = 0},
 				Usage = ResourceUsage.Staging
 			};
 			var targetTexture = new Texture2D(device, textureDescription);
 
 			// Copy resource into memory that can be accessed by the CPU
-			var sourceTexture = screenResource.QueryInterface<Texture2D>();
-			try
+			using (var sourceTexture = screenResource.QueryInterface<Texture2D>())
 			{
 				await Task.Run(() =>
 					device.ImmediateContext.CopyResource(sourceTexture, targetTexture));
-
-				// Get the desktop capture texture
-				var data = await Task.Run(() =>
-					device.ImmediateContext.MapSubresource(targetTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None));
-
-				var result = new DxgiTexture(data.DataPointer, data.RowPitch, data.SlicePitch);
-
-				result.Add(Disposable.Create(() =>
-				{
-					device.ImmediateContext.UnmapSubresource(targetTexture, 0);
-					targetTexture.Dispose();
-				}));
-
-				return result;
 			}
-			finally
+
+			// Get the desktop capture texture
+			var data = await Task.Run(() =>
+				device.ImmediateContext.MapSubresource(targetTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None));
+
+			var texture = new DxgiTexture(data.DataPointer, data.RowPitch, data.SlicePitch);
+
+			texture.Add(Disposable.Create(() =>
 			{
-				sourceTexture.Dispose();
-			}
+				device.ImmediateContext.UnmapSubresource(targetTexture, 0);
+				targetTexture.Dispose();
+			}));
+
+			return texture;
 		}
 	}
 }
