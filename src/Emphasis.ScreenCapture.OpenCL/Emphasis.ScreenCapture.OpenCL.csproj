@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Emphasis.ScreenCapture</RootNamespace>
+    <Product>Emphasis.ScreenCapture</Product>
+    <Authors>Luboš Hemala</Authors>
+    <PackageId>Emphasis.ScreenCapture.Bitmap</PackageId>
+    <PackageProjectUrl>https://github.com/emphasis87/Emphasis.ScreenCapture</PackageProjectUrl>
+    <PackageTags>Screen Capture; OpenCL</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>1.0.0</Version>
+    <Description>
+      Emphasis.ScreenCapture is an extensible system for screen capturing.
+      This package provides extensions and interfaces for exporting screen captures to OpenCL.
+      See Emphasis.ScreenCapture.Runtime.* packages for available functionality.
+    </Description>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Common\Emphasis.ScreenCapture.Common.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -9,6 +9,9 @@ namespace Emphasis.ScreenCapture
 		public IScreen Screen { get; }
 		public IServiceProvider ServiceProvider { get; }
 
+		public int Width { get; }
+		public int Height { get; }
+
 		void Add([NotNull] IDisposable disposable);
 		void Remove([NotNull] IDisposable disposable);
 	}

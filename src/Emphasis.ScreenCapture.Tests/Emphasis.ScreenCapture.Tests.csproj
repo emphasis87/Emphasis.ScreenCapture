@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <LangVersion>8</LangVersion>
+    <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -14,10 +14,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SharpDX" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Bitmap\Emphasis.ScreenCapture.Bitmap.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL\Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
   </ItemGroup>
 
