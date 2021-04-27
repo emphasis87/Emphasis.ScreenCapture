@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.Open
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL", "Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL\Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL.csproj", "{7B2575D3-2F8A-468E-AE89-E335C7AAD3B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.OpenCL.Bitmap", "Emphasis.OpenCL.Bitmap\Emphasis.OpenCL.Bitmap.csproj", "{485CA10B-B13F-455B-A415-8A62EF0A2BE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Emphasis.OpenCL.Bitmap", "Emphasis.OpenCL.Bitmap\Emphasis.OpenCL.Bitmap.csproj", "{485CA10B-B13F-455B-A415-8A62EF0A2BE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emphasis.ScreenCapture.Benchmarks", "Emphasis.ScreenCapture.Benchmarks\Emphasis.ScreenCapture.Benchmarks.csproj", "{C800E42B-E649-4EA3-8DF3-09B4DB3BABDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,12 +67,17 @@ Global
 		{485CA10B-B13F-455B-A415-8A62EF0A2BE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{485CA10B-B13F-455B-A415-8A62EF0A2BE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{485CA10B-B13F-455B-A415-8A62EF0A2BE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C800E42B-E649-4EA3-8DF3-09B4DB3BABDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C800E42B-E649-4EA3-8DF3-09B4DB3BABDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C800E42B-E649-4EA3-8DF3-09B4DB3BABDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C800E42B-E649-4EA3-8DF3-09B4DB3BABDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{41C31144-25CC-4CCD-B755-7DC9A2F97598} = {7E494C55-973D-4E95-BD9E-BCC6D0E79D89}
+		{C800E42B-E649-4EA3-8DF3-09B4DB3BABDF} = {7E494C55-973D-4E95-BD9E-BCC6D0E79D89}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {403BF554-2884-4050-996C-144B9DE4143F}

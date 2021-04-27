@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
+    <PackageReference Include="Silk.NET.OpenCL" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL\Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI\Emphasis.ScreenCapture.Runtime.Windows.DXGI.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
+  </ItemGroup>
+
+</Project>

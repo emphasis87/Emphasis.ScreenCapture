@@ -19,15 +19,6 @@ namespace Emphasis.ScreenCapture.Tests
 	[NonParallelizable]
 	public class OpenCLTests
 	{
-		private static nuint Size<T>(int count) => (nuint)(Marshal.SizeOf<T>() * count);
-
-		private unsafe string GetString(byte* src, int size)
-		{
-			var srcSpan = new Span<byte>(src, size);
-			var str = Encoding.ASCII.GetString(srcSpan.ToArray(), 0, size);
-			return str;
-		}
-
 		private unsafe string GetPlatformName(CL api, nint platformId)
 		{
 			nuint nameSize;
@@ -124,7 +115,7 @@ namespace Emphasis.ScreenCapture.Tests
 				err = api.GetPlatformIDs(32, platformIds, &numPlatforms);
 				err.Should().Be(0);
 
-				platformId = platformIds[1];
+				platformId = platformIds[0];
 				var platformName = GetPlatformName(api, platformId);
 				Console.WriteLine($"Platform: {platformName}");
 
@@ -135,17 +126,10 @@ namespace Emphasis.ScreenCapture.Tests
 				var extPtr = stackalloc byte[2048];
 				err = api.GetDeviceInfo(deviceId, (uint)CLEnum.DeviceExtensions, 2048, extPtr, &size);
 				err.Should().Be(0);
-
-				var extSize = (int) size;
-				bool CheckExtension(string checkedExtension)
-				{
-					var ext = new Span<byte>(extPtr, 2048);
-					var extensions = Encoding.ASCII.GetString(ext.ToArray(), 0, extSize);
-					return extensions.Contains(checkedExtension);
-				}
+				var extensions = GetString(extPtr, (int)size);
 
 				nint* props = default;
-				if (CheckExtension("cl_khr_d3d11_sharing"))
+				if (extensions.Contains("cl_khr_d3d11_sharing"))
 				{
 					var p = stackalloc nint[]
 					{
@@ -156,7 +140,7 @@ namespace Emphasis.ScreenCapture.Tests
 					};
 					props = p;
 				}
-				else if (CheckExtension("cl_nv_d3d11_sharing"))
+				else if (extensions.Contains("cl_nv_d3d11_sharing"))
 				{
 					var p = stackalloc nint[]
 					{
@@ -230,6 +214,9 @@ namespace Emphasis.ScreenCapture.Tests
 
 				capture.Dispose();
 				sw.Stop();
+
+				// Add delay to prevent stalling
+				await Task.Delay(50);
 			}
 
 			if (reuseImage && imageId != default)

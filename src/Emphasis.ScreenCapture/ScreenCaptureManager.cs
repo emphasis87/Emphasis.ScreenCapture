@@ -8,9 +8,9 @@ namespace Emphasis.ScreenCapture
 {
 	public class ScreenCaptureManager
 	{
-		private readonly Lazy<IServiceProvider> _serviceProvider =
-			new Lazy<IServiceProvider>(() => new ScreenCaptureModuleManager().ServiceProvider);
-		private IServiceProvider ServiceProvider => _serviceProvider.Value;
+		private readonly Lazy<ScreenCaptureModuleManager> _moduleManagerLazy =
+			new Lazy<ScreenCaptureModuleManager>(() => new ScreenCaptureModuleManager());
+		private IServiceProvider ServiceProvider => _moduleManagerLazy.Value.ServiceProvider;
 
 		public IScreen[] GetScreens()
 		{
