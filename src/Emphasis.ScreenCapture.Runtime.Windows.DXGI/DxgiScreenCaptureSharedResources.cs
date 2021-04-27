@@ -15,7 +15,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 		private bool _hasChanged;
 		private ValueTask _dispose;
 
-		private readonly CompositeDisposable _disposable = new CompositeDisposable();
+		private readonly CompositeDisposable _disposable = new();
 
 		public Factory1 Factory { get; }
 		public Adapter1 Adapter { get; }

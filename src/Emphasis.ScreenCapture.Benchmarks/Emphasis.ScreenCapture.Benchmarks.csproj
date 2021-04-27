@@ -19,6 +19,7 @@
     <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL\Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI\Emphasis.ScreenCapture.Runtime.Windows.DXGI.csproj" />
+    <ProjectReference Include="..\Emphasis.ScreenCapture.Tests\Emphasis.ScreenCapture.Tests.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture\Emphasis.ScreenCapture.csproj" />
   </ItemGroup>
 

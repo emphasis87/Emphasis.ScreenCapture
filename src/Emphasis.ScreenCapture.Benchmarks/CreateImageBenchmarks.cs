@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL;
-using FluentAssertions;
 using Silk.NET.OpenCL;
+using static Emphasis.ScreenCapture.Tests.TestHelper;
 
 namespace Emphasis.ScreenCapture.Benchmarks
 {
 	[MarkdownExporter]
 	[SimpleJob(id: "burst", invocationCount: 100, warmupCount: 0)]
 	[SimpleJob(id: "heavy load", invocationCount: 100, warmupCount: 50)]
-	[BenchmarkCategory("dedicated-gpu")]
+	[BenchmarkCategory("dedicated-gpu", "integrated-gpu")]
 	public class CreateImageBenchmarks
 	{
 		private nint _contextId;
@@ -45,32 +44,16 @@ namespace Emphasis.ScreenCapture.Benchmarks
 			if (capture is not DxgiScreenCapture dxgiCapture)
 				throw new Exception("Dxgi screen capture is required.");
 
-			int err;
+			(_platformId, _deviceId) = FindFirstGpuPlatform(_api);
+			if (_platformId == default)
+				throw new Exception("No GPU device found.");
 
-			unsafe
-			{
-				nint platformId;
-				err = _api.GetPlatformIDs(1, &platformId, null);
-				err.Should().Be(0);
-				_platformId = platformId;
+			_contextId = CreateContext(_api, _platformId, _deviceId);
+			
+			var queueId = _api.CreateCommandQueue(_contextId, _deviceId, default, out var err);
+			if (err != 0)
+				throw new Exception("Unable to create command queue.");
 
-				nint deviceId;
-				err = _api.GetDeviceIDs(_platformId, CLEnum.DeviceTypeGpu, 1, &deviceId, null);
-				err.Should().Be(0);
-				_deviceId = deviceId;
-
-				var props = stackalloc nint[]
-				{
-					(nint)CLEnum.ContextPlatform, _platformId,
-					0
-				};
-				
-				_contextId = _api.CreateContext(props, 1, &deviceId, NotifyErr, null, &err);
-				err.Should().Be(0);
-			}
-
-			var queueId = _api.CreateCommandQueue(_contextId, _deviceId, default, out err);
-			err.Should().Be(0);
 			_queueId = queueId;
 
 			var image = await dxgiCapture.CreateImage(_contextId, _queueId);
@@ -114,11 +97,6 @@ namespace Emphasis.ScreenCapture.Benchmarks
 			var image = await _screenCapture.CreateImage(_contextId, _queueId, _imageId);
 			_imageId = image.ImageId;
 			_api.Finish(_queueId);
-		}
-
-		private static unsafe void NotifyErr(byte* errinfo, void* privateinfo, nuint cb, void* userdata)
-		{
-			Console.WriteLine($"Error: {Marshal.PtrToStringAnsi((nint)errinfo)}");
 		}
 	}
 }

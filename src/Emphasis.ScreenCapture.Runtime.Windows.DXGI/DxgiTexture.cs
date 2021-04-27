@@ -19,7 +19,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 
 		#region IDisposable, ICancelable
 		public bool IsDisposed => _disposable.IsDisposed;
-		private readonly CompositeDisposable _disposable = new CompositeDisposable();
+		private readonly CompositeDisposable _disposable = new();
 
 		public void Dispose()
 		{

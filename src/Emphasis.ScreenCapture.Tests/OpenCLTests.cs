@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using Emphasis.OpenCL.Bitmap;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI;
@@ -11,7 +10,6 @@ using FluentAssertions;
 using FluentAssertions.Extensions;
 using NUnit.Framework;
 using Silk.NET.OpenCL;
-using Silk.NET.OpenCL.Extensions.KHR;
 using static Emphasis.ScreenCapture.Tests.TestHelper;
 
 namespace Emphasis.ScreenCapture.Tests
@@ -24,7 +22,9 @@ namespace Emphasis.ScreenCapture.Tests
 			nuint nameSize;
 			var namePtr = stackalloc byte[256];
 			var err = api.GetPlatformInfo(platformId, (uint)CLEnum.PlatformName, Size<byte>(256), namePtr, &nameSize);
-			err.Should().Be(0);
+			if (err != 0)
+				throw new Exception("Unable to get platform info: CL_PLATFORM_NAME.");
+
 			var name = GetString(namePtr, (int)nameSize - 1);
 			return name;
 		}
@@ -38,29 +38,18 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var api = CL.GetApi();
 
-			int err;
+			var (platformId, deviceId) = FindFirstGpuPlatform(api);
+			if (platformId == default)
+				throw new Exception("No GPU device found.");
 
-			nint contextId;
-			nint platformId;
-			nint deviceId;
-			unsafe
-			{
-				err = api.GetPlatformIDs(1, &platformId, null);
-				err.Should().Be(0);
+			var platformName = GetPlatformName(api, platformId);
+			Console.WriteLine($"Platform: {platformName}");
 
-				var platformName = GetPlatformName(api, platformId);
-				Console.WriteLine($"Platform: {platformName}");
+			var contextId = CreateContext(api, platformId, deviceId);
 
-				err = api.GetDeviceIDs(platformId, CLEnum.DeviceTypeGpu, 1, &deviceId, null);
-				err.Should().Be(0);
-
-				var props = stackalloc nint[]{ (nint) CLEnum.ContextPlatform, platformId, 0 };
-				contextId = api.CreateContext(props, 1, &deviceId, Notify, null, &err);
-				err.Should().Be(0);
-			}
-
-			var queueId = api.CreateCommandQueue(contextId, deviceId, default, out err);
-			err.Should().Be(0);
+			var queueId = api.CreateCommandQueue(contextId, deviceId, default, out var err);
+			if (err != 0)
+				throw new Exception("Unable to create command queue.");
 
 			var captureStream = manager.CaptureStream(screen).GetAsyncEnumerator();
 			if (!await captureStream.MoveNextAsync())
@@ -103,63 +92,16 @@ namespace Emphasis.ScreenCapture.Tests
 
 			var api = CL.GetApi();
 
-			int err;
-
-			nint contextId;
-			nint platformId;
-			nint deviceId;
-			unsafe
-			{
-				uint numPlatforms;
-				var platformIds = stackalloc nint[32];
-				err = api.GetPlatformIDs(32, platformIds, &numPlatforms);
-				err.Should().Be(0);
-
-				platformId = platformIds[0];
-				var platformName = GetPlatformName(api, platformId);
-				Console.WriteLine($"Platform: {platformName}");
-
-				err = api.GetDeviceIDs(platformId, CLEnum.DeviceTypeGpu, 1, &deviceId, null);
-				err.Should().Be(0);
-
-				nuint size;
-				var extPtr = stackalloc byte[2048];
-				err = api.GetDeviceInfo(deviceId, (uint)CLEnum.DeviceExtensions, 2048, extPtr, &size);
-				err.Should().Be(0);
-				var extensions = GetString(extPtr, (int)size);
-
-				nint* props = default;
-				if (extensions.Contains("cl_khr_d3d11_sharing"))
-				{
-					var p = stackalloc nint[]
-					{
-						(nint)CLEnum.ContextPlatform, platformId,
-						(nint)KHR.ContextD3D11DeviceKhr, dxgiCapture.Device.NativePointer,
-						(nint)CLEnum.ContextInteropUserSync, (nint)CLEnum.False,
-						0
-					};
-					props = p;
-				}
-				else if (extensions.Contains("cl_nv_d3d11_sharing"))
-				{
-					var p = stackalloc nint[]
-					{
-						(nint)CLEnum.ContextPlatform, platformId,
-						(nint)NV.CL_CONTEXT_D3D11_DEVICE_NV, dxgiCapture.Device.NativePointer,
-						(nint)CLEnum.ContextInteropUserSync, (nint)CLEnum.False,
-						0
-					};
-					props = p;
-				}
-
-				if (props == default)
-					throw new AssertionException("D3D11 sharing is not supported.");
+			var (platformId, deviceId) = FindGpuPlatform(api, preferIntegrated: true);
+			if (platformId == default)
+				throw new Exception("No GPU device available.");
 				
-				contextId = api.CreateContext(props, 1, &deviceId, Notify, null, &err);
-				err.Should().Be(0);
-			}
+			var platformName = GetPlatformName(api, platformId);
+			Console.WriteLine($"Platform: {platformName}");
+				
+			var contextId = CreateContextWithD3D11Sharing(api, platformId, deviceId, dxgiCapture);
 
-			var queueId = api.CreateCommandQueue(contextId, deviceId, default, out err);
+			var queueId = api.CreateCommandQueue(contextId, deviceId, default, out var err);
 			err.Should().Be(0);
 			
 			var image = await capture.CreateImage(contextId, queueId);
