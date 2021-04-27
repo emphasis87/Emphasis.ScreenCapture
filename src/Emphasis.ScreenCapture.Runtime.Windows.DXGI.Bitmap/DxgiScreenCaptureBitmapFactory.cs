@@ -15,7 +15,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap
 	{
 		public async Task<System.Drawing.Bitmap> ToBitmap(IScreenCapture capture)
 		{
-			if (!(capture is DxgiScreenCapture dxgiCapture))
+			if (capture is not DxgiScreenCapture dxgiCapture)
 				throw new ArgumentOutOfRangeException(nameof(capture), $"Only {typeof(DxgiScreenCapture)} is supported.");
 
 			var width = dxgiCapture.Width;

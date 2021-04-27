@@ -4,8 +4,6 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 {
 	public class DxgiScreenCaptureModule : ScreenCaptureModule
 	{
-		private static readonly DxgiScreenCaptureModule Instance = new DxgiScreenCaptureModule();
-		
 		public override int Priority => 0;
 		
 		protected override IServiceCollection CreateServices()

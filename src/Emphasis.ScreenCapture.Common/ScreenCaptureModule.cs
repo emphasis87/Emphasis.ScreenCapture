@@ -18,8 +18,7 @@ namespace Emphasis.ScreenCapture
 		public abstract int Priority { get; }
 		public IServiceProvider ServiceProvider { get; private set; }
 
-		private static readonly ConcurrentDictionary<Type, Lazy<IServiceCollection>> ServicesByModule = 
-			new ConcurrentDictionary<Type, Lazy<IServiceCollection>>();
+		private static readonly ConcurrentDictionary<Type, Lazy<IServiceCollection>> ServicesByModule = new();
 
 		public void Configure(IServiceCollection services)
 		{

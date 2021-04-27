@@ -19,7 +19,7 @@ namespace Emphasis.ScreenCapture.Tests
 	[NonParallelizable]
 	public class OpenCLTests
 	{
-		private unsafe string GetPlatformName(CL api, nint platformId)
+		private static unsafe string GetPlatformName(CL api, nint platformId)
 		{
 			nuint nameSize;
 			var namePtr = stackalloc byte[256];

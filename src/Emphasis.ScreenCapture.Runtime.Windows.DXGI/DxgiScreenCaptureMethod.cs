@@ -20,9 +20,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI
 	public class DxgiScreenCaptureMethod : IDxgiScreenCaptureMethod
 	{
 		private readonly IScreenCaptureModule _module;
-
-		private readonly ConcurrentDictionary<IScreen, Lazy<DxgiScreenCaptureSharedResources>> _sharedResources =
-			new ConcurrentDictionary<IScreen, Lazy<DxgiScreenCaptureSharedResources>>();
+		private readonly ConcurrentDictionary<IScreen, Lazy<DxgiScreenCaptureSharedResources>> _sharedResources = new();
 
 		public DxgiScreenCaptureMethod(IScreenCaptureModule module)
 		{

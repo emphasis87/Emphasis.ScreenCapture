@@ -13,11 +13,11 @@ using static Emphasis.ScreenCapture.Benchmarks.BenchmarkHelper;
 
 namespace Emphasis.ScreenCapture.Benchmarks
 {
+	[MarkdownExporter]
 	[SimpleJob(id: "burst", invocationCount: 100, warmupCount: 0)]
-	[SimpleJob(id: "burst", invocationCount: 1000, warmupCount: 0)]
-	[SimpleJob(id: "heavy load", invocationCount: 100, warmupCount: 20)]
-	[SimpleJob(id: "heavy load", invocationCount: 1000, warmupCount: 20)]
-	public class CreateImageWithD3D11SharingBenchmarks
+	[SimpleJob(id: "heavy load", invocationCount: 200, warmupCount: 20)]
+	[BenchmarkCategory("dedicated-gpu")]
+	public class CreateImageWithD3D11SharingDedicatedGpuBenchmarks
 	{
 		private nint _contextId;
 		private nint _platformId;
@@ -64,16 +64,19 @@ namespace Emphasis.ScreenCapture.Benchmarks
 				var extPtr = stackalloc byte[2048];
 				err = _api.GetDeviceInfo(_deviceId, (uint)CLEnum.DeviceExtensions, 2048, extPtr, &size);
 				err.Should().Be(0);
-				var extensions = GetString(extPtr, (int) size);
+				var extensions = GetString(extPtr, (int)size);
 
 				nint* props = default;
 				if (extensions.Contains("cl_khr_d3d11_sharing"))
 				{
 					var p = stackalloc nint[]
 					{
-						(nint)CLEnum.ContextPlatform, _platformId,
-						(nint)KHR.ContextD3D11DeviceKhr, dxgiCapture.Device.NativePointer,
-						(nint)CLEnum.ContextInteropUserSync, (nint)CLEnum.False,
+						(nint)CLEnum.ContextPlatform,
+						_platformId,
+						(nint)KHR.ContextD3D11DeviceKhr,
+						dxgiCapture.Device.NativePointer,
+						(nint)CLEnum.ContextInteropUserSync,
+						(nint)CLEnum.False,
 						0
 					};
 					props = p;
@@ -82,9 +85,12 @@ namespace Emphasis.ScreenCapture.Benchmarks
 				{
 					var p = stackalloc nint[]
 					{
-						(nint)CLEnum.ContextPlatform, _platformId,
-						(nint)NV.CL_CONTEXT_D3D11_DEVICE_NV, dxgiCapture.Device.NativePointer,
-						(nint)CLEnum.ContextInteropUserSync, (nint)CLEnum.False,
+						(nint)CLEnum.ContextPlatform,
+						_platformId,
+						(nint)NV.CL_CONTEXT_D3D11_DEVICE_NV,
+						dxgiCapture.Device.NativePointer,
+						(nint)CLEnum.ContextInteropUserSync,
+						(nint)CLEnum.False,
 						0
 					};
 					props = p;
@@ -125,7 +131,7 @@ namespace Emphasis.ScreenCapture.Benchmarks
 		public async Task CreateImage_with_KHR_D3D11_sharing()
 		{
 			var image = await _screenCapture.CreateImage(_contextId, _queueId);
-			
+
 			image.AcquireObject(null, out _);
 			image.ReleaseObject(null, out _);
 
