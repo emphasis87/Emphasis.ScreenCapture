@@ -14,7 +14,9 @@ using static Emphasis.ScreenCapture.Benchmarks.BenchmarkHelper;
 namespace Emphasis.ScreenCapture.Benchmarks
 {
 	[SimpleJob(id: "burst", invocationCount: 100, warmupCount: 0)]
-	[SimpleJob(id: "heavy load", invocationCount: 200, warmupCount: 20)]
+	[SimpleJob(id: "burst", invocationCount: 1000, warmupCount: 0)]
+	[SimpleJob(id: "heavy load", invocationCount: 100, warmupCount: 20)]
+	[SimpleJob(id: "heavy load", invocationCount: 1000, warmupCount: 20)]
 	public class CreateImageWithD3D11SharingBenchmarks
 	{
 		private nint _contextId;

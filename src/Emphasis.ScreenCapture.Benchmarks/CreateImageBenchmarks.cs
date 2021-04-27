@@ -8,10 +8,10 @@ using Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL;
 using FluentAssertions;
 using Silk.NET.OpenCL;
-using static Emphasis.ScreenCapture.Benchmarks.BenchmarkHelper;
 
 namespace Emphasis.ScreenCapture.Benchmarks
 {
+	[MarkdownExporter]
 	[SimpleJob(id: "burst", invocationCount: 100, warmupCount: 0)]
 	[SimpleJob(id: "heavy load", invocationCount: 100, warmupCount: 50)]
 	public class CreateImageBenchmarks
