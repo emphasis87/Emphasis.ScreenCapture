@@ -90,9 +90,10 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 				{
 					int err;
 
+					// TODO: Check if context/device supports image format
 					var imageFormat = stackalloc uint[2];
 					imageFormat[0] = (uint) CLEnum.Bgra;
-					imageFormat[1] = (uint) CLEnum.UnsignedInt8;
+					imageFormat[1] = (uint) CLEnum.UnormInt8;
 
 					var eventsCount = waitEventIds?.Length ?? 0;
 					var events = stackalloc nint[eventsCount];
@@ -106,7 +107,7 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 							if (err != 0)
 								throw new ScreenCaptureException($"Unable to wait for OpenCL events. OpenCL error: {err}.");
 						}
-						
+
 						imageId = api.CreateImage2D(contextId, default , imageFormat, desc.ImageWidth, desc.ImageHeight, default, default, &err);
 						// NOTE: This causes issue with current (04/2021) AMD drivers
 						//imageId = api.CreateImage(contextId, CLEnum.MemCopyHostPtr, imageFormat, &desc, (void*)texture.DataPointer, &err);
@@ -128,6 +129,21 @@ namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 			finally
 			{
 				texture.Dispose();
+			}
+		}
+
+		private unsafe void GetImageFormats(CL api, nint contextId)
+		{
+			uint numFormats;
+			var formats = stackalloc uint[2 * 256];
+			var err = api.GetSupportedImageFormats(contextId, CLEnum.MemReadWrite, (uint)CLEnum.MemObjectImage2D, 255, formats, &numFormats);
+			if (err != 0)
+				throw new ScreenCaptureException($"Unable to get supported image formats supported by OpenCL context. OpenCL error: {err}.");
+
+			var fmt = new Span<uint>(formats, 2 * (int)numFormats);
+			for (var i = 0; i < fmt.Length; i += 2)
+			{
+				Console.WriteLine($"{fmt[i]} {fmt[i + 1]}");
 			}
 		}
 
