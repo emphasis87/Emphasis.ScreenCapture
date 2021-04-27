@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Jobs;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI;
+using Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap;
+using Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL;
 using FluentAssertions;
 using Silk.NET.OpenCL;
 using Silk.NET.OpenCL.Extensions.KHR;
@@ -13,29 +13,34 @@ using static Emphasis.ScreenCapture.Benchmarks.BenchmarkHelper;
 
 namespace Emphasis.ScreenCapture.Benchmarks
 {
+	[SimpleJob(id: "burst", invocationCount: 100, warmupCount: 0)]
+	[SimpleJob(id: "heavy load", invocationCount: 200, warmupCount: 20)]
 	public class CreateImageWithD3D11Sharing
 	{
-		private IAsyncEnumerator<IScreenCapture> _captureStream;
 		private nint _contextId;
 		private nint _platformId;
 		private nint _deviceId;
 		private nint _queueId;
-		private ScreenCaptureManager _manager;
+		private IScreenCaptureModuleManager _moduleManager;
+		private IScreenCaptureManager _manager;
 		private IScreen _screen;
+		private IScreenCapture _screenCapture;
 		private CL _api;
 
 		[GlobalSetup]
 		public async Task Setup()
 		{
-			_manager = new ScreenCaptureManager();
+			_moduleManager = new ScreenCaptureModuleManager(new IScreenCaptureModule[]
+			{
+				new DxgiScreenCaptureModule(),
+				new DxgiScreenCaptureBitmapModule(),
+				new DxgiScreenCaptureOclModule()
+			});
+			_manager = new ScreenCaptureManager(_moduleManager);
 			_screen = _manager.GetScreens().FirstOrDefault();
-			_captureStream = _manager.CaptureStream(_screen).GetAsyncEnumerator();
 			_api = CL.GetApi();
 
-			if (!await _captureStream.MoveNextAsync())
-				throw new Exception("Unable to capture screen.");
-
-			using var capture = _captureStream.Current;
+			using var capture = await _manager.Capture(_screen);
 			if (capture is not DxgiScreenCapture dxgiCapture)
 				throw new Exception("Dxgi screen capture is required.");
 
@@ -102,20 +107,25 @@ namespace Emphasis.ScreenCapture.Benchmarks
 			_api.ReleaseContext(_contextId);
 		}
 
+		[IterationSetup]
+		public void IterationSetup()
+		{
+			_screenCapture = _manager.Capture(_screen).Result;
+		}
+
+		[IterationCleanup]
+		public void IterationCleanup()
+		{
+			_screenCapture.Dispose();
+		}
+
 		[Benchmark]
 		public async Task CreateImage_with_KHR_D3D11_sharing()
 		{
-			if (!await _captureStream.MoveNextAsync())
-				throw new Exception("Unable to capture screen.");
-
-			using var capture = _captureStream.Current;
-
-			var image = await capture.CreateImage(_contextId, _queueId);
-			if (image.IsAcquiringRequired)
-			{
-				image.AcquireObject(null, out _);
-				image.ReleaseObject(null, out _);
-			}
+			var image = await _screenCapture.CreateImage(_contextId, _queueId);
+			
+			image.AcquireObject(null, out _);
+			image.ReleaseObject(null, out _);
 
 			_api.Finish(_queueId);
 			_api.ReleaseMemObject(image.ImageId);

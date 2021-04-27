@@ -6,11 +6,24 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Emphasis.ScreenCapture
 {
-	public class ScreenCaptureManager
+	public interface IScreenCaptureManager
 	{
-		private readonly Lazy<ScreenCaptureModuleManager> _moduleManagerLazy =
-			new Lazy<ScreenCaptureModuleManager>(() => new ScreenCaptureModuleManager());
-		private IServiceProvider ServiceProvider => _moduleManagerLazy.Value.ServiceProvider;
+		IScreen[] GetScreens();
+		Task<IScreenCapture> Capture(IScreen screen, CancellationToken cancellationToken = default);
+		IAsyncEnumerable<IScreenCapture> CaptureStream(IScreen screen, CancellationToken cancellationToken = default);
+	}
+
+	public class ScreenCaptureManager : IScreenCaptureManager
+	{
+		private readonly IScreenCaptureModuleManager _moduleManager;
+		private readonly Lazy<IServiceProvider> _serviceProviderLazy;
+		private IServiceProvider ServiceProvider => _serviceProviderLazy.Value;
+		
+		public ScreenCaptureManager(IScreenCaptureModuleManager moduleManager = null)
+		{
+			_moduleManager = moduleManager ?? new ScreenCaptureModuleManager();
+			_serviceProviderLazy = new Lazy<IServiceProvider>(() => _moduleManager.ServiceProvider);
+		}
 
 		public IScreen[] GetScreens()
 		{
