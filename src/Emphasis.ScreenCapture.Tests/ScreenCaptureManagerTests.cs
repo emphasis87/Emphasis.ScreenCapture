@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NUnit.Framework;
 using static Emphasis.ScreenCapture.Tests.TestHelper;
 
@@ -95,10 +96,8 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 			sw.Stop();
-
-			Console.WriteLine($"Count: {count}");
-			Console.WriteLine($"Elapsed: {sw.Elapsed}");
-			Console.WriteLine($"Average: {sw.Elapsed / count}");
+			
+			Console.WriteLine($"Average: {(int)(sw.Elapsed.TotalMilliseconds / count)} ms");
 			Console.WriteLine($"FPS: {count / sw.Elapsed.TotalSeconds}");
 		}
 
@@ -120,10 +119,8 @@ namespace Emphasis.ScreenCapture.Tests
 			}
 
 			sw.Stop();
-
-			Console.WriteLine($"Count: {count}");
-			Console.WriteLine($"Elapsed: {sw.Elapsed}");
-			Console.WriteLine($"Average: {sw.Elapsed / count}");
+			
+			Console.WriteLine($"Average: {(int)(sw.Elapsed.TotalMicroseconds() / count)} us");
 			Console.WriteLine($"FPS: {count/sw.Elapsed.TotalSeconds}");
 		}
 	}

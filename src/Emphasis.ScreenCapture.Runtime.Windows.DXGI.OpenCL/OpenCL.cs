@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
+﻿namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 {
-	
-
 	internal class OclContextInfo
 	{
 		public bool IsSupportingD3D11Sharing { get; set; }
 		public bool InteropUserSync { get; set; }
 		public nint D3D11DeviceId { get; set; }
 		public nint PlatformId { get; set; }
-		public nint[] Devices { get; set; }
 	}
 
 	internal class OclPlatformInfo

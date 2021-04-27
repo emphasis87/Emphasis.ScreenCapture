@@ -1,4 +1,6 @@
-﻿namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
+﻿using System;
+
+namespace Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL
 {
 	internal class OclImage : IOclImage
 	{
@@ -27,11 +29,14 @@
 
 		public unsafe void AcquireObject(nint[] waitEventIds, out nint eventId)
 		{
-			waitEventIds ??= new nint[0];
+			var eventsCount = waitEventIds?.Length ?? 0;
+			var eventIds = stackalloc nint[eventsCount];
+			waitEventIds?.CopyTo(new Span<nint>(eventIds, eventsCount));
+
 			var imageId = ImageId;
+
 			nint eventId2;
-			var eventIds = stackalloc nint[waitEventIds.Length];
-			var err = _platform.EnqueueAcquireD3D11Objects(QueueId, 1, &imageId, (uint)waitEventIds.Length, eventIds, &eventId2);
+			var err = _platform.EnqueueAcquireD3D11Objects(QueueId, 1, &imageId, (uint)eventsCount, eventIds, &eventId2);
 			if (err != 0)
 				throw new ScreenCaptureException("Unable to acquire D3D11 object.");
 
@@ -40,11 +45,13 @@
 
 		public unsafe void ReleaseObject(nint[] waitEventIds, out nint eventId)
 		{
-			waitEventIds ??= new nint[0];
+			var eventsCount = waitEventIds?.Length ?? 0;
+			var eventIds = stackalloc nint[eventsCount];
+			waitEventIds?.CopyTo(new Span<nint>(eventIds, eventsCount));
+
 			var imageId = ImageId;
 			nint eventId2;
-			var eventIds = stackalloc nint[waitEventIds.Length];
-			var err = _platform.EnqueueReleaseD3D11Objects(QueueId, 1, &imageId, (uint)waitEventIds.Length, eventIds, &eventId2);
+			var err = _platform.EnqueueReleaseD3D11Objects(QueueId, 1, &imageId, (uint)eventsCount, eventIds, &eventId2);
 			if (err != 0)
 				throw new ScreenCaptureException("Unable to release D3D11 object.");
 

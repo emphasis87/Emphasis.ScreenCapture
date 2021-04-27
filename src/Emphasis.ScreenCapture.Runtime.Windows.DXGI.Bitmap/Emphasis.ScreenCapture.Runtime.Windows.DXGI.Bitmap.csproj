@@ -6,10 +6,7 @@
     <Product>Emphasis.ScreenCapture</Product>
     <Authors>Luboš Hemala</Authors>
     <PackageId>Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap</PackageId>
-    <PackageProjectUrl>https://github.com/emphasis87/Emphasis.ScreenCapture</PackageProjectUrl>
     <PackageTags>Screen Capture; Bitmap</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>1.0.0</Version>
     <Description>
       Emphasis.ScreenCapture is an extensible system for screen capturing.
       This package provides a runtime for exporting to a System.Drawing.Bitmap based on Windows DXGI API.

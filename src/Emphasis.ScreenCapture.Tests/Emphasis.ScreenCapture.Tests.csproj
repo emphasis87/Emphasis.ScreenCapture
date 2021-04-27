@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Emphasis.OpenCL.Bitmap\Emphasis.OpenCL.Bitmap.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.Bitmap\Emphasis.ScreenCapture.Bitmap.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.OpenCL\Emphasis.ScreenCapture.OpenCL.csproj" />
     <ProjectReference Include="..\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap\Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap.csproj" />
