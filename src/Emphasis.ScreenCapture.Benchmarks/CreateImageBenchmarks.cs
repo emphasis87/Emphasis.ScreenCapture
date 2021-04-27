@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Order;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL;
@@ -13,7 +14,7 @@ namespace Emphasis.ScreenCapture.Benchmarks
 	[MarkdownExporter]
 	[SimpleJob(id: "burst", invocationCount: 100, warmupCount: 0)]
 	[SimpleJob(id: "heavy load", invocationCount: 100, warmupCount: 50)]
-	[BenchmarkCategory("dedicated-gpu", "integrated-gpu")]
+	[Orderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical)]
 	public class CreateImageBenchmarks
 	{
 		private nint _contextId;

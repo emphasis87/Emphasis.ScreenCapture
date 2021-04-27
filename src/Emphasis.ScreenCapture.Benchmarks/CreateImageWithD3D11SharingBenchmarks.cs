@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Order;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI.Bitmap;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI.OpenCL;
@@ -11,10 +12,10 @@ using static Emphasis.ScreenCapture.Tests.TestHelper;
 namespace Emphasis.ScreenCapture.Benchmarks
 {
 	[MarkdownExporter]
-	[SimpleJob(id: "burst", invocationCount: 1000, warmupCount: 0)]
-	[SimpleJob(id: "heavy load", invocationCount: 1000, warmupCount: 20)]
-	[BenchmarkCategory("integrated-gpu")]
-	public class CreateImageWithD3D11SharingIntegratedGpuBenchmarks
+	[SimpleJob(id: "burst", invocationCount: 100, warmupCount: 0)]
+	[SimpleJob(id: "heavy load", invocationCount: 200, warmupCount: 20)]
+	[Orderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical)]
+	public class CreateImageWithD3D11SharingBenchmarks
 	{
 		private nint _contextId;
 		private nint _platformId;
@@ -43,9 +44,9 @@ namespace Emphasis.ScreenCapture.Benchmarks
 			if (capture is not DxgiScreenCapture dxgiCapture)
 				throw new Exception("Dxgi screen capture is required.");
 
-			(_platformId, _deviceId) = FindIntegratedGpuPlatform(_api);
+			(_platformId, _deviceId) = FindGpuPlatform(_api, preferIntegrated: true);
 			if (_deviceId == default)
-				throw new Exception("No integrated GPU device found.");
+				throw new Exception("No GPU device found.");
 
 			_contextId = CreateContextWithD3D11Sharing(_api, _platformId, _deviceId, dxgiCapture);
 
@@ -79,6 +80,9 @@ namespace Emphasis.ScreenCapture.Benchmarks
 		public async Task CreateImage_with_KHR_D3D11_sharing()
 		{
 			var image = await _screenCapture.CreateImage(_contextId, _queueId);
+
+			if (!image.IsAcquiringRequired)
+				throw new Exception("Created image is not using D3D11 sharing.");
 
 			image.AcquireObject(null, out _);
 			image.ReleaseObject(null, out _);
