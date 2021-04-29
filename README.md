@@ -25,3 +25,10 @@ var info = new ProcessStartInfo("capture.png") { UseShellExecute = true };
 Process.Start(info);
 ```
 The DXGI API requires that each frame is released before acquiring the next. Therefore make sure to dispose each ```IScreenCapture``` instance before capturing the next one.
+
+## Tests
+
+To test screen capture run in the git folder:
+```csharp
+dotnet test "src/Emphasis.ScreenCapture.sln" --filter Name~Capture_Bitmap
+```
