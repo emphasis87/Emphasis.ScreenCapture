@@ -12,6 +12,7 @@
       This package provides a runtime for exporting to a System.Drawing.Bitmap based on Windows DXGI API.
     </Description>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

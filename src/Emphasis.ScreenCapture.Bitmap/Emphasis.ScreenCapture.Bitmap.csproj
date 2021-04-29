@@ -13,6 +13,7 @@
 	  See Emphasis.ScreenCapture.Runtime.* packages for available functionality.
 	</Description>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	<IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

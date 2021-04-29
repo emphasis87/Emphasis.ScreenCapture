@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Emphasis.OpenCL.Bitmap;
 using Emphasis.ScreenCapture.Runtime.Windows.DXGI;
 using Silk.NET.OpenCL;
 using Silk.NET.OpenCL.Extensions.KHR;
@@ -202,6 +203,11 @@ namespace Emphasis.ScreenCapture.Tests
 				throw new Exception("Unable to create context with D3D11 sharing.");
 
 			return contextId;
+		}
+
+		public static Bitmap CreateBitmap(this CL api, nint queueId, nint imageId)
+		{
+			return BitmapHelper.CreateBitmap(queueId, imageId);
 		}
 
 		private static unsafe void OnCreateContext(byte* errInfo, void* privateInfo, nuint cb, void* userData)

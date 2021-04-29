@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using Silk.NET.OpenCL;
@@ -10,8 +9,11 @@ namespace Emphasis.OpenCL.Bitmap
 	{
 		private static nuint Size<T>(int count) => (nuint)(Marshal.SizeOf<T>() * count);
 
-		public static unsafe System.Drawing.Bitmap CreateBitmap(this CL api, nint queueId, nint imageId)
+		private static readonly Lazy<CL> OpenCLApiLazy = new(CL.GetApi);
+
+		public static unsafe System.Drawing.Bitmap CreateBitmap(nint queueId, nint imageId)
 		{
+			var api = OpenCLApiLazy.Value;
 			var err = api.GetImageInfo(imageId, (uint)CLEnum.ImageWidth, Size<nuint>(1), out nuint width, out _);
 			if (err != 0)
 				throw new Exception($"Unable to get image width. OpenCL error: {err}.");
