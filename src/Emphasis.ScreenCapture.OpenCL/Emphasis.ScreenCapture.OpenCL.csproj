@@ -5,7 +5,7 @@
     <RootNamespace>Emphasis.ScreenCapture</RootNamespace>
     <Product>Emphasis.ScreenCapture</Product>
     <Authors>Luboš Hemala</Authors>
-    <PackageId>Emphasis.ScreenCapture.Bitmap</PackageId>
+    <PackageId>Emphasis.ScreenCapture.OpenCL</PackageId>
     <PackageTags>Screen Capture; OpenCL</PackageTags>
     <Description>
       Emphasis.ScreenCapture is an extensible system for screen capturing.
