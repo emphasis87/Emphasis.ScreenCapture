@@ -13,7 +13,6 @@
       See Emphasis.ScreenCapture.Runtime.* packages for available functionality.
     </Description>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
