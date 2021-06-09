@@ -3,6 +3,6 @@
     <LangVersion>9.0</LangVersion>
     <PackageProjectUrl>https://github.com/emphasis87/Emphasis.ScreenCapture</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
   </PropertyGroup>
 </Project>

@@ -19,8 +19,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
-    <PackageReference Include="Silk.NET.OpenCL" Version="2.4.0" />
-    <PackageReference Include="Silk.NET.OpenCL.Extensions.KHR" Version="2.4.0" />
+    <PackageReference Include="Silk.NET.OpenCL" Version="2.5.0" />
+    <PackageReference Include="Silk.NET.OpenCL.Extensions.KHR" Version="2.5.0" />
   </ItemGroup>
 
   <ItemGroup>
